@@ -1,8 +1,3 @@
-<picture>
-	<source media="(prefers-color-scheme: light)" srcset="../../.github/assets/web_cover_light.png">
-	<img alt="Modrinth Website Cover" src="../../.github/assets/web_cover.png">
-</picture>
-
 # Modrinth Web Interface
 
 Welcome to the Modrinth Web Interface! This web-based platform is designed for discovering, downloading, and managing Minecraft mods.

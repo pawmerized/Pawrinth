@@ -14,8 +14,12 @@ import {
 import { useQuery } from '@tanstack/vue-query'
 import { computed, ref, shallowRef, triggerRef, watch, watchEffect } from 'vue'
 
+import { rememberPrivateNames, usePrivacy } from '@/features/plus-privacy/use-privacy'
+import { users as getMinecraftAccounts } from '@/helpers/auth'
 import { useAppEvent } from '@/composables/use-app-event'
 import { useInstanceConsole } from '@/composables/useInstanceConsole'
+import { useCrashFindings } from '@/features/plus-updates/crash-findings'
+import { plus_diagnose_log, plus_settings_get } from '@/helpers/plus'
 import { delete_logs_by_filename, get_output_by_filename } from '@/helpers/logs.js'
 
 import { injectInstancePage } from '../instance-context'
@@ -102,13 +106,31 @@ const logSources = computed(() =>
 
 const activeConsole = computed(() => (isLive.value ? liveConsole : historicalConsole))
 
+const { streamerMode, redactForStream } = usePrivacy()
+const knownNamesRevision = ref(0)
+watch(
+	streamerMode,
+	async (enabled) => {
+		if (!enabled) return
+		const accounts = await getMinecraftAccounts().catch(() => [])
+		rememberPrivateNames(accounts.map((account) => account.profile.name))
+		knownNamesRevision.value++
+	},
+	{ immediate: true },
+)
+
 const logLines = shallowRef(activeConsole.value.output.value)
 watchEffect(() => {
-	logLines.value = activeConsole.value.output.value
+	const lines = activeConsole.value.output.value
+	void knownNamesRevision.value
+	logLines.value = streamerMode.value
+		? lines.map((line) => ({ ...line, text: redactForStream(line.text) }))
+		: lines
 	triggerRef(logLines)
 })
 
 const crashAnalysis = ref(null)
+const { findingsToAnalysis } = useCrashFindings()
 
 async function analyseForCrash() {
 	const lines = liveConsole.output.value
@@ -116,6 +138,13 @@ async function analyseForCrash() {
 
 	const content = lines.map((l) => l.text).join('\n')
 	try {
+		const { findings } = await plus_diagnose_log(instanceId.value, content)
+		if (findings.length > 0) {
+			crashAnalysis.value = findingsToAnalysis(findings)
+			return
+		}
+		const plusSettings = await plus_settings_get()
+		if (!plusSettings.diagnostics.send_logs_to_mclogs) return
 		const data = await client.mclogs.insights_v1.analyse(content)
 		if (data.analysis?.problems?.length > 0) {
 			crashAnalysis.value = data

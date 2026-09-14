@@ -1,11 +1,16 @@
 <template>
 	<div class="w-full p-2">
+		<div v-if="hideOwnProfile" class="p-4">
+			<StreamerModeNotice />
+		</div>
 		<UserProfilePageLayout
+			v-else
 			:user-id="userId"
 			:project-type="projectType"
 			variant="app"
 			site-url="https://modrinth.com"
 			project-link-mode="app"
+			project-tools
 			:edit-profile-link="openProfileSettings"
 			external-navigation
 		>
@@ -42,6 +47,7 @@ import {
 	Button,
 	commonMessages,
 	defineMessages,
+	injectAuth,
 	injectNotificationManager,
 	provideUserProfile,
 	UserProfilePageLayout,
@@ -51,6 +57,8 @@ import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, ref, watch } from 'vue'
 import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 
+import StreamerModeNotice from '@/features/plus-privacy/streamer-mode-notice.vue'
+import { usePrivacy } from '@/features/plus-privacy/use-privacy'
 import { injectSettingsActions } from '@/features/settings/settings-actions'
 import {
 	block_user,
@@ -156,6 +164,14 @@ const { data: user } = useQuery({
 	staleTime: 30_000,
 })
 
+const auth = injectAuth()
+const { streamerMode, shownName } = usePrivacy()
+const hideOwnProfile = computed(() => {
+	const signedIn = auth.user.value
+	if (!streamerMode.value || !signedIn) return false
+	return [signedIn.id, signedIn.username].includes(userId.value)
+})
+
 const breadcrumbUserId = ref(userId.value)
 const breadcrumbLabel = ref(getCachedUserSummary(userId.value)?.username ?? userId.value)
 const breadcrumbTo = ref(route.fullPath)
@@ -173,11 +189,13 @@ watch(
 useBreadcrumb({
 	slot: 'user',
 	id: () => `user:${breadcrumbUserId.value}`,
-	label: breadcrumbLabel,
+	label: () => (hideOwnProfile.value ? shownName(breadcrumbLabel.value) : breadcrumbLabel.value),
 	to: breadcrumbTo,
 	visual: () => ({
 		type: 'image',
-		src: user.value?.avatar_url ?? getCachedUserSummary(breadcrumbUserId.value)?.avatar_url,
+		src: hideOwnProfile.value
+			? undefined
+			: (user.value?.avatar_url ?? getCachedUserSummary(breadcrumbUserId.value)?.avatar_url),
 		alt: breadcrumbLabel.value,
 		circle: true,
 		tintBy: breadcrumbUserId.value,

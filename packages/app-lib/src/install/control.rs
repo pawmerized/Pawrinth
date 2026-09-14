@@ -1,10 +1,14 @@
+use dashmap::DashMap;
 use std::collections::HashMap;
 use std::sync::{Arc, LazyLock, Mutex};
-use tokio::sync::watch;
+use tokio::sync::{Mutex as AsyncMutex, OwnedMutexGuard, watch};
 use uuid::Uuid;
 
 static CONTROLS: LazyLock<Mutex<HashMap<Uuid, Arc<InstallControl>>>> =
     LazyLock::new(|| Mutex::new(HashMap::new()));
+
+static SHARED_STEPS: LazyLock<DashMap<String, Arc<AsyncMutex<()>>>> =
+    LazyLock::new(DashMap::new);
 
 tokio::task_local! {
     pub(crate) static CURRENT_INSTALL: Arc<InstallControl>;
@@ -155,6 +159,13 @@ pub(super) async fn checkpoint(job_id: Uuid) -> crate::Result<()> {
     Ok(())
 }
 
+pub(super) fn ensure_not_canceled(job_id: Uuid) -> crate::Result<()> {
+    if get(job_id).is_some_and(|control| control.is_canceling()) {
+        return Err(canceled());
+    }
+    Ok(())
+}
+
 fn unavailable() -> crate::Error {
     crate::ErrorKind::InputError(
         "install job is no longer controllable".to_string(),
@@ -164,6 +175,23 @@ fn unavailable() -> crate::Error {
 
 fn canceled() -> crate::Error {
     crate::ErrorKind::InputError("install was canceled".to_string()).into()
+}
+
+/// Takes a turn at a step that installs of different instances would otherwise run on the
+/// same shared files. Waiting ends if the install is canceled. A paused install still takes
+/// its turn, because the holder never stops for a pause, so it can't hold up the others.
+pub(crate) async fn lock_shared_step(
+    key: String,
+) -> crate::Result<OwnedMutexGuard<()>> {
+    let lock = SHARED_STEPS.entry(key).or_default().value().clone();
+    let Ok(control) = CURRENT_INSTALL.try_with(Clone::clone) else {
+        return Ok(lock.lock_owned().await);
+    };
+    tokio::select! {
+        biased;
+        () = control.canceled() => Err(canceled()),
+        guard = lock.lock_owned() => Ok(guard),
+    }
 }
 
 pub(crate) async fn download_step<F: std::future::Future>(
@@ -180,5 +208,47 @@ pub(crate) async fn download_step<F: std::future::Future>(
             control.checkpoint().await?;
             Ok(output)
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+
+    #[tokio::test]
+    async fn a_paused_install_still_takes_its_turn() {
+        let registration = register(Uuid::new_v4());
+        registration.control.set_paused(true).unwrap();
+
+        let result = tokio::time::timeout(
+            Duration::from_secs(5),
+            CURRENT_INSTALL.scope(
+                registration.control.clone(),
+                lock_shared_step("paused-test".to_string()),
+            ),
+        )
+        .await
+        .expect("a pause must not hold back the turn");
+
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn canceling_stops_waiting_for_a_turn() {
+        let registration = register(Uuid::new_v4());
+        let _held = lock_shared_step("canceled-test".to_string()).await;
+        let waiting = tokio::spawn(CURRENT_INSTALL.scope(
+            registration.control.clone(),
+            lock_shared_step("canceled-test".to_string()),
+        ));
+
+        registration.control.cancel().unwrap();
+        let result = tokio::time::timeout(Duration::from_secs(5), waiting)
+            .await
+            .expect("canceling must end the wait")
+            .unwrap();
+
+        assert!(result.is_err());
     }
 }

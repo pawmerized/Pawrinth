@@ -412,12 +412,12 @@ defineExpose({ markSaved })
 			v-if="mode === 'view' && loadingEditorData && !nativeImageView"
 			:src="item.src"
 			:alt="item.alt"
-			class="pointer-events-none relative z-[2] m-auto block h-full w-full shrink-0 object-contain"
+			class="image-viewer-content pointer-events-none relative z-[2] m-auto block h-full w-full shrink-0 object-contain"
 			draggable="false"
 		/>
 		<div
 			v-show="nativeImageView || !loadingEditorData"
-			class="editor-canvas relative z-[2] m-auto shrink-0"
+			class="image-viewer-content editor-canvas relative z-[2] m-auto shrink-0"
 			:class="{
 				'h-full w-full': nativeImageView && loadingEditorData,
 				'is-native-image-view': nativeImageView,

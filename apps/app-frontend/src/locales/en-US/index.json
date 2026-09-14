@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "View logs"
   },
-  "app.ads-consent.accept": {
-    "message": "Accept all"
-  },
-  "app.ads-consent.body": {
-    "message": "Ads make Modrinth possible and fund creator payouts. Our partners may store or access cookies in the app to personalize ads and measure performance."
-  },
-  "app.ads-consent.manage": {
-    "message": "Manage preferences"
-  },
-  "app.ads-consent.reject": {
-    "message": "Reject all"
-  },
-  "app.ads-consent.title": {
-    "message": "Your privacy and how ads support Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Display library instances in a compact row layout."
   },
@@ -165,7 +150,7 @@
     "message": "Hide nametag"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimize Modrinth App when Minecraft starts."
+    "message": "Minimize Pawrinth when Minecraft starts."
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "Minimize app"
@@ -207,7 +192,7 @@
     "message": "Home and content"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "Bring Modrinth App to the foreground when Minecraft exits."
+    "message": "Bring Pawrinth to the foreground when Minecraft exits."
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "Refocus app when Minecraft closes"
@@ -511,18 +496,6 @@
   },
   "app.home.jump-back-in.view-instance": {
     "message": "View instance"
-  },
-  "app.hosting.update-required.description": {
-    "message": "You need to update to use Modrinth Hosting through the Modrinth App"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Download to update"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Excited Modrinth Bot"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Modrinth App update required"
   },
   "app.install.phase.downloading_content": {
     "message": "Downloading content"
@@ -1388,9 +1361,6 @@
   "app.nav.modrinth-account": {
     "message": "Modrinth account"
   },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
-  },
   "app.nav.remove-account": {
     "message": "Remove account"
   },
@@ -1402,9 +1372,6 @@
   },
   "app.nav.switch-account": {
     "message": "Switch account"
-  },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Upgrade to Modrinth+"
   },
   "app.nav.view-profile": {
     "message": "View profile"
@@ -1420,12 +1387,6 @@
   },
   "app.navigation.next-image": {
     "message": "Next image"
-  },
-  "app.news.title": {
-    "message": "News"
-  },
-  "app.news.view-all": {
-    "message": "View all news"
   },
   "app.notification.warning": {
     "message": "Warning"
@@ -1620,7 +1581,7 @@
     "message": "Export ZIP"
   },
   "app.screenshots.selection.global-export-filename": {
-    "message": "Modrinth screenshots.zip"
+    "message": "Pawrinth screenshots.zip"
   },
   "app.screenshots.selection.instance-export-filename": {
     "message": "{instance} screenshots.zip"
@@ -1650,7 +1611,7 @@
     "message": "Oldest"
   },
   "app.settings.app-version": {
-    "message": "Modrinth App {version}"
+    "message": "Pawrinth {version}"
   },
   "app.settings.default-instance-options.environment-variables.description": {
     "message": "Environment variables set when launching an instance."
@@ -1917,7 +1878,7 @@
     "message": "Some of your instances cannot use this setting"
   },
   "app.settings.game-options.compatibility.reason.launcher-controlled": {
-    "message": "This setting is managed by Modrinth’s launch settings."
+    "message": "This setting is managed by Pawrinth’s launch settings."
   },
   "app.settings.game-options.custom-value.placeholder": {
     "message": "Enter a value"
@@ -2750,21 +2711,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Ads make Modrinth possible and fund creator payouts. Our partners may store or access cookies in the app to personalize ads and measure performance. You can opt out or manage your preferences below."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Show Modrinth App as your current activity on Discord. This does not affect Rich Presence added to instances by mods. Requires an app restart."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth collects anonymized analytics and usage data to improve our user experience and customize your experience. By disabling this option, you opt out and your data will no longer be collected."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Telemetry"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Show the Copy details action while an install is queued or running. It is always available for failed or interrupted installs."
   },
@@ -2793,7 +2739,7 @@
     "message": "Browse for an app directory"
   },
   "app.settings.resource-management.app-directory.description": {
-    "message": "Where Modrinth App stores instances and other files. Changes take effect after restarting the app."
+    "message": "Where Pawrinth stores instances and other files. Changes take effect after restarting the app."
   },
   "app.settings.resource-management.app-directory.select": {
     "message": "Select a new app directory"
@@ -2802,7 +2748,7 @@
     "message": "App directory"
   },
   "app.settings.resource-management.debug-info.description": {
-    "message": "Export app logs and diagnostic data to a ZIP file to share with Modrinth support."
+    "message": "Export app logs and diagnostic data to a ZIP file to share when reporting a problem."
   },
   "app.settings.resource-management.debug-info.export": {
     "message": "Export debug info"
@@ -2964,7 +2910,7 @@
     "message": "These settings changed elsewhere"
   },
   "app.settings.synced-options.game-settings.custom-empty": {
-    "message": "Settings added by mods will appear here after Modrinth finds them in one of your instances."
+    "message": "Settings added by mods will appear here after Pawrinth finds them in one of your instances."
   },
   "app.settings.synced-options.game-settings.description": {
     "message": "Use the same game options across your instances."
@@ -3116,9 +3062,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "Launch hooks"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Privacy"
-  },
   "app.settings.tabs.resources": {
     "message": "Resources"
   },
@@ -3136,24 +3079,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "Clear the app cache?"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "Copied"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "Copy ad details"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "Seen an inappropriate or offensive ad? Copy its details while it's showing and send them to <support>Modrinth Support</support>. We'll review it and remove it."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "Wait for the ad to load, then try again."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "No ad found"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "Report an ad"
   },
   "app.shared-instance-publish.preparing": {
     "message": "Preparing update…"
@@ -3338,21 +3263,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "Toggle on"
   },
-  "app.survey.body": {
-    "message": "Would you mind answering a few questions about your experience with Modrinth App?"
-  },
-  "app.survey.footer": {
-    "message": "This feedback will go directly to the Modrinth team and help guide future updates!"
-  },
-  "app.survey.no-thanks": {
-    "message": "No thanks"
-  },
-  "app.survey.take-survey": {
-    "message": "Take survey"
-  },
-  "app.survey.title": {
-    "message": "Hey there Modrinth user!"
-  },
   "app.sync-instances-update.badge": {
     "message": "New this update"
   },
@@ -3483,13 +3393,13 @@
     "message": "Synced resource packs"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} has finished downloading. Reload to update now, or automatically when you close Modrinth App."
+    "message": "Pawrinth v{version} has finished downloading. Reload to update now, or automatically when you close Pawrinth."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} is available. Use your package manager to update for the latest features and fixes!"
+    "message": "Pawrinth v{version} is available. Use your package manager to update for the latest features and fixes!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} is available now! Since you're on a metered network, we didn't automatically download it."
+    "message": "Pawrinth v{version} is available now! Since you're on a metered network, we didn't automatically download it."
   },
   "app.update-popup.changelog": {
     "message": "Changelog"
@@ -3534,7 +3444,7 @@
     "message": "Press <shortcut>N</shortcut> to quick create an instance"
   },
   "app.welcome-screen.title": {
-    "message": "Welcome to Modrinth"
+    "message": "Welcome to Pawrinth"
   },
   "app.world.server-modal.placeholder-address": {
     "message": "example.modrinth.gg"
@@ -3687,7 +3597,7 @@
     "message": "Unlink shared instance"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-body": {
-    "message": "This deletes the shared instance from Modrinth's servers. People using it in the Modrinth App will stop receiving updates, but your local instance and its content will stay on this device."
+    "message": "This deletes the shared instance from Modrinth's servers. People using it in Pawrinth will stop receiving updates, but your local instance and its content will stay on this device."
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-header": {
     "message": "Unpublishing shared instance"
@@ -4334,9 +4244,6 @@
   "minecraft-required.get-minecraft": {
     "message": "Get Minecraft"
   },
-  "minecraft-required.get-support": {
-    "message": "Get support"
-  },
   "minecraft-required.header": {
     "message": "Minecraft required"
   },
@@ -4387,6 +4294,1806 @@
   },
   "onboarding-checklist.title": {
     "message": "Getting started"
+  },
+  "plus.about.credits": {
+    "message": "Built on Modrinth App"
+  },
+  "plus.about.discord": {
+    "message": "Discord server"
+  },
+  "plus.about.intro": {
+    "message": "Pawrinth is a Minecraft launcher by pawmerized, for Modrinth and CurseForge content alike. It updates itself from its GitHub releases."
+  },
+  "plus.about.not-included": {
+    "message": "Left out"
+  },
+  "plus.about.not-included.list": {
+    "message": "Ads, error reporting to Sentry, Modrinth Hosting and its support chat, and playtime analytics."
+  },
+  "plus.about.releases": {
+    "message": "Release notes"
+  },
+  "plus.about.report": {
+    "message": "Report a problem"
+  },
+  "plus.about.repository": {
+    "message": "Pawrinth on GitHub"
+  },
+  "plus.about.source": {
+    "message": "Modrinth App's source code"
+  },
+  "plus.about.support": {
+    "message": "Report problems on Pawrinth's GitHub rather than to Modrinth, since they may come from Pawrinth's own changes."
+  },
+  "plus.about.title": {
+    "message": "About Pawrinth"
+  },
+  "plus.about.upstream": {
+    "message": "Pawrinth is built on the open-source code of Modrinth App by the Modrinth team and contributors, and like it is available under the GNU General Public License, version 3. Pawrinth isn't affiliated with or endorsed by Rinth, Inc."
+  },
+  "plus.about.version": {
+    "message": "Version {version}"
+  },
+  "plus.background.animate": {
+    "message": "Animate GIF"
+  },
+  "plus.background.animate.note": {
+    "message": "Also pauses while the window is hidden or when reduced motion is on."
+  },
+  "plus.background.blur": {
+    "message": "Blur"
+  },
+  "plus.background.brightness": {
+    "message": "Brightness"
+  },
+  "plus.background.choose": {
+    "message": "Choose image"
+  },
+  "plus.background.description": {
+    "message": "Show your own PNG, JPEG, WebP or GIF behind the app. Cards stay solid so text stays readable."
+  },
+  "plus.background.failed": {
+    "message": "Couldn't load this image"
+  },
+  "plus.background.failed.text": {
+    "message": "It may have been deleted or damaged, so the app is showing your theme without it. Choose it again or pick another image."
+  },
+  "plus.background.fit": {
+    "message": "Fit"
+  },
+  "plus.background.fit.contain": {
+    "message": "Fit inside window"
+  },
+  "plus.background.fit.cover": {
+    "message": "Fill window"
+  },
+  "plus.background.fit.tile": {
+    "message": "Tile"
+  },
+  "plus.background.ignore-system": {
+    "message": "Play even with Windows animations off"
+  },
+  "plus.background.ignore-system.note": {
+    "message": "Windows is set to reduce animations, so GIFs stay still unless you allow this."
+  },
+  "plus.background.opacity": {
+    "message": "Image opacity"
+  },
+  "plus.background.overlay": {
+    "message": "Theme overlay"
+  },
+  "plus.background.overlay.note": {
+    "message": "How strongly your theme's background covers the image."
+  },
+  "plus.background.position": {
+    "message": "Position"
+  },
+  "plus.background.position.bottom": {
+    "message": "Bottom"
+  },
+  "plus.background.position.center": {
+    "message": "Center"
+  },
+  "plus.background.position.left": {
+    "message": "Left"
+  },
+  "plus.background.position.right": {
+    "message": "Right"
+  },
+  "plus.background.position.top": {
+    "message": "Top"
+  },
+  "plus.background.remove": {
+    "message": "Remove"
+  },
+  "plus.background.replace": {
+    "message": "Replace image"
+  },
+  "plus.background.reset": {
+    "message": "Reset adjustments"
+  },
+  "plus.background.tint": {
+    "message": "Tint color"
+  },
+  "plus.background.tint-on": {
+    "message": "Use a tint"
+  },
+  "plus.background.tint-strength": {
+    "message": "Tint strength"
+  },
+  "plus.background.title": {
+    "message": "Background image"
+  },
+  "plus.browse.sync.off.status": {
+    "message": "Browsing every version and loader"
+  },
+  "plus.browse.sync.off.text": {
+    "message": "Results can include content that doesn't work with this instance."
+  },
+  "plus.browse.sync.off.title": {
+    "message": "Filters are unlocked"
+  },
+  "plus.browse.sync.on.status": {
+    "message": "Showing {target}"
+  },
+  "plus.browse.sync.on.text": {
+    "message": "Unlocking these filters may allow you to install incompatible content."
+  },
+  "plus.browse.sync.on.title": {
+    "message": "Filters are provided by the instance"
+  },
+  "plus.browse.sync.on.unknown-loader": {
+    "message": "Showing {target}. Couldn't tell this instance's loader, so it isn't filtered."
+  },
+  "plus.browse.sync.relock": {
+    "message": "Sync with instance"
+  },
+  "plus.browse.sync.unlock": {
+    "message": "Unlock filters"
+  },
+  "plus.compare.choose": {
+    "message": "Compare this instance with"
+  },
+  "plus.compare.copied": {
+    "message": "Files copied"
+  },
+  "plus.compare.copied-text": {
+    "message": "{copied, plural, one {# file copied} other {# files copied}}. The other instance was not changed."
+  },
+  "plus.compare.copy": {
+    "message": "{count, plural, one {Copy # file to this instance} other {Copy # files to this instance}}"
+  },
+  "plus.compare.different": {
+    "message": "Different versions"
+  },
+  "plus.compare.different-sources": {
+    "message": "Different sources"
+  },
+  "plus.compare.incompatible": {
+    "message": "These instances use a different game version or loader, so content cannot be copied between them."
+  },
+  "plus.compare.only-here": {
+    "message": "Only in this instance"
+  },
+  "plus.compare.only-there": {
+    "message": "Only in the other instance"
+  },
+  "plus.compare.other": {
+    "message": "Other instance"
+  },
+  "plus.compare.placeholder": {
+    "message": "Select an instance"
+  },
+  "plus.compare.same": {
+    "message": "{count, plural, one {# file is the same in both} other {# files are the same in both}}"
+  },
+  "plus.compare.setup": {
+    "message": "{loader} {loaderVersion} on Minecraft {game}"
+  },
+  "plus.compare.this": {
+    "message": "This instance"
+  },
+  "plus.compare.title": {
+    "message": "Compare instances"
+  },
+  "plus.content.compare": {
+    "message": "Compare"
+  },
+  "plus.content.curseforge-pack.missing.header": {
+    "message": "Some modpack files are missing"
+  },
+  "plus.content.curseforge-pack.missing.modal": {
+    "message": "You can download these from CurseForge and add them to this instance yourself."
+  },
+  "plus.content.curseforge-pack.missing.show": {
+    "message": "Show files"
+  },
+  "plus.content.curseforge-pack.missing.text": {
+    "message": "{count, plural, one {# file} other {# files}} from this CurseForge modpack couldn't be downloaded through Pawrinth, so the pack may not work properly."
+  },
+  "plus.content.curseforge-source": {
+    "message": "CurseForge"
+  },
+  "plus.content.curseforge-updates": {
+    "message": "CurseForge updates"
+  },
+  "plus.content.no-space": {
+    "message": "Not enough disk space"
+  },
+  "plus.content.no-space.text": {
+    "message": "Updating with recovery data needs about {required}, but {available} is free. Nothing was changed. Free up space, or turn off recovery data in settings to update without it."
+  },
+  "plus.content.over-budget": {
+    "message": "Recovery data is over your allowance"
+  },
+  "plus.content.over-budget.text": {
+    "message": "This update still saves recovery data. Remove old entries in Update history to free space."
+  },
+  "plus.content.summary.done": {
+    "message": "Update finished"
+  },
+  "plus.content.summary.partial": {
+    "message": "Update partly finished"
+  },
+  "plus.content.summary.restore": {
+    "message": "Restore previous versions"
+  },
+  "plus.content.summary.text": {
+    "message": "{count, plural, one {# file changed} other {# files changed}}. Recovery data was saved, so you can go back."
+  },
+  "plus.content.update-history": {
+    "message": "Update history"
+  },
+  "plus.curseforge.author.all": {
+    "message": "All"
+  },
+  "plus.curseforge.author.back": {
+    "message": "Back"
+  },
+  "plus.curseforge.author.projects": {
+    "message": "{count, plural, one {# project} other {# projects}}"
+  },
+  "plus.curseforge.back-to-instance": {
+    "message": "Back to instance"
+  },
+  "plus.curseforge.browse.breadcrumb": {
+    "message": "Discover on CurseForge"
+  },
+  "plus.curseforge.browse.failed": {
+    "message": "Couldn't load projects"
+  },
+  "plus.curseforge.browse.key-rejected": {
+    "message": "CurseForge rejected your API key"
+  },
+  "plus.curseforge.browse.key-rejected.text": {
+    "message": "No projects can be shown until this is fixed. The key may have been revoked, so check it in Settings."
+  },
+  "plus.curseforge.browse.needs-key": {
+    "message": "CurseForge needs an API key"
+  },
+  "plus.curseforge.browse.needs-key.text": {
+    "message": "CurseForge only allows searching and downloading with an API key, so no projects can be shown yet. Add your own key in Settings to browse here."
+  },
+  "plus.curseforge.browse.open-api-settings": {
+    "message": "Open API configuration"
+  },
+  "plus.curseforge.browse.retry": {
+    "message": "Try again"
+  },
+  "plus.curseforge.browse.sample.text": {
+    "message": "These aren't real CurseForge projects. This development build has no API key, so it shows samples. The tabs, categories and game versions are real."
+  },
+  "plus.curseforge.card.restricted": {
+    "message": "This project's author doesn't allow downloads through other apps."
+  },
+  "plus.curseforge.card.unsupported": {
+    "message": "Installing this kind of CurseForge project isn't supported yet."
+  },
+  "plus.curseforge.card.view": {
+    "message": "View"
+  },
+  "plus.curseforge.description": {
+    "message": "Searching CurseForge, installing from it and checking for updates all need an API key from CurseForge. Pawrinth keeps yours in your system’s credential store, which on Windows is Credential Manager. It’s only ever sent to CurseForge."
+  },
+  "plus.curseforge.development": {
+    "message": "Using a development key"
+  },
+  "plus.curseforge.development.text": {
+    "message": "This development build found a key in CURSEFORGE_API_KEY. Release builds ignore that variable. A key saved here takes priority."
+  },
+  "plus.curseforge.direct.conflicts": {
+    "message": "This version says it doesn't work with {count, plural, one {# project} other {# projects}} already in the instance."
+  },
+  "plus.curseforge.direct.failed": {
+    "message": "Couldn't install {name}"
+  },
+  "plus.curseforge.direct.incompatible": {
+    "message": "That version doesn't work with {instance}: {reason}."
+  },
+  "plus.curseforge.direct.installed": {
+    "message": "Installed {name}"
+  },
+  "plus.curseforge.direct.installed.dependencies": {
+    "message": "Added to {instance}, with {count, plural, one {# required project} other {# required projects}}."
+  },
+  "plus.curseforge.direct.installed.text": {
+    "message": "Added to {instance}."
+  },
+  "plus.curseforge.direct.missing-dependencies": {
+    "message": "It also needs {names}, which can't be downloaded through Pawrinth. Get {count, plural, one {it} other {them}} from CurseForge's website."
+  },
+  "plus.curseforge.direct.no-loader": {
+    "message": "{instance} has no mod loader, so mods can't run in it."
+  },
+  "plus.curseforge.direct.no-version": {
+    "message": "CurseForge has no version of it for {target}."
+  },
+  "plus.curseforge.direct.not-distributable": {
+    "message": "Its author only allows downloads from CurseForge's website."
+  },
+  "plus.curseforge.direct.switched": {
+    "message": "Switched {name}"
+  },
+  "plus.curseforge.direct.switched.text": {
+    "message": "It now uses {version}."
+  },
+  "plus.curseforge.direct.unknown-loader": {
+    "message": "Pawrinth couldn't tell which mod loader {instance} uses. Check it in the instance's settings."
+  },
+  "plus.curseforge.direct.unknown-version": {
+    "message": "Pawrinth couldn't tell which Minecraft version {instance} uses. Check it in the instance's settings."
+  },
+  "plus.curseforge.filter.category": {
+    "message": "Category"
+  },
+  "plus.curseforge.filter.loader": {
+    "message": "Loader"
+  },
+  "plus.curseforge.filter.version": {
+    "message": "Game version"
+  },
+  "plus.curseforge.getting-key": {
+    "message": "Getting a key"
+  },
+  "plus.curseforge.getting-key.open": {
+    "message": "Open CurseForge console"
+  },
+  "plus.curseforge.getting-key.text": {
+    "message": "CurseForge issues keys through its developer console. A key is tied to you, and CurseForge’s terms don’t allow sharing it."
+  },
+  "plus.curseforge.install.no-changelog": {
+    "message": "This version doesn't have a changelog."
+  },
+  "plus.curseforge.installed": {
+    "message": "Installed"
+  },
+  "plus.curseforge.key.cancel": {
+    "message": "Cancel"
+  },
+  "plus.curseforge.key.hide": {
+    "message": "Hide key"
+  },
+  "plus.curseforge.key.label": {
+    "message": "API key"
+  },
+  "plus.curseforge.key.placeholder": {
+    "message": "Paste your API key"
+  },
+  "plus.curseforge.key.remove": {
+    "message": "Remove"
+  },
+  "plus.curseforge.key.replace": {
+    "message": "Replace"
+  },
+  "plus.curseforge.key.save": {
+    "message": "Save key"
+  },
+  "plus.curseforge.key.saved": {
+    "message": "Saved key"
+  },
+  "plus.curseforge.key.show": {
+    "message": "Show key"
+  },
+  "plus.curseforge.key.test": {
+    "message": "Test connection"
+  },
+  "plus.curseforge.live": {
+    "message": "Connected to CurseForge"
+  },
+  "plus.curseforge.live.text": {
+    "message": "Project search, downloads and updates come from the official API."
+  },
+  "plus.curseforge.no-key": {
+    "message": "No API key saved"
+  },
+  "plus.curseforge.no-key.text": {
+    "message": "The CurseForge tab can’t show any projects until you add a key."
+  },
+  "plus.curseforge.pack.install-failed": {
+    "message": "Couldn't install {name}"
+  },
+  "plus.curseforge.pack.install-without": {
+    "message": "Install without them"
+  },
+  "plus.curseforge.pack.kept.header": {
+    "message": "Your changes stay"
+  },
+  "plus.curseforge.pack.kept.text": {
+    "message": "These were changed or added in this instance, so the update leaves them as they are:"
+  },
+  "plus.curseforge.pack.missing.download-page": {
+    "message": "Download page"
+  },
+  "plus.curseforge.pack.missing.header": {
+    "message": "Some files can't be downloaded"
+  },
+  "plus.curseforge.pack.missing.not-distributable": {
+    "message": "Its author only allows downloads from CurseForge's website"
+  },
+  "plus.curseforge.pack.missing.text": {
+    "message": "{count, plural, one {# file} other {# files}} in {pack} can't be installed through Pawrinth, so the pack may not work properly without {count, plural, one {it} other {them}}. You can download {count, plural, one {it} other {them}} from CurseForge and add {count, plural, one {it} other {them}} to the instance yourself."
+  },
+  "plus.curseforge.pack.missing.unavailable": {
+    "message": "CurseForge doesn't offer this file any more"
+  },
+  "plus.curseforge.pack.missing.unsupported": {
+    "message": "Pawrinth can't install this kind of file yet"
+  },
+  "plus.curseforge.pack.update": {
+    "message": "Update"
+  },
+  "plus.curseforge.pack.update-failed": {
+    "message": "Couldn't update {name}"
+  },
+  "plus.curseforge.pack.update-without": {
+    "message": "Update without them"
+  },
+  "plus.curseforge.page.back-to-browse": {
+    "message": "Back to discover"
+  },
+  "plus.curseforge.page.failed": {
+    "message": "Couldn't load this project"
+  },
+  "plus.curseforge.page.likes": {
+    "message": "{count, plural, one {like} other {likes}}"
+  },
+  "plus.curseforge.page.needs-key": {
+    "message": "CurseForge only shows project details to apps with an API key."
+  },
+  "plus.curseforge.page.no-description": {
+    "message": "CurseForge doesn't have a description for this project."
+  },
+  "plus.curseforge.page.sample": {
+    "message": "This isn't a real CurseForge project."
+  },
+  "plus.curseforge.page.tab.description": {
+    "message": "Description"
+  },
+  "plus.curseforge.page.tab.gallery": {
+    "message": "Gallery"
+  },
+  "plus.curseforge.page.tab.versions": {
+    "message": "Versions"
+  },
+  "plus.curseforge.project.changelog": {
+    "message": "Changelog"
+  },
+  "plus.curseforge.project.not-distributable": {
+    "message": "This project's author doesn't allow downloads through other apps. You can still get it from the CurseForge website."
+  },
+  "plus.curseforge.project.not-distributable.header": {
+    "message": "Download on CurseForge"
+  },
+  "plus.curseforge.project.unsupported.header": {
+    "message": "Pawrinth can't install this yet"
+  },
+  "plus.curseforge.project.website": {
+    "message": "Open on CurseForge"
+  },
+  "plus.curseforge.provider": {
+    "message": "CurseForge"
+  },
+  "plus.curseforge.result.connected.text": {
+    "message": "CurseForge accepted the saved key."
+  },
+  "plus.curseforge.result.limited": {
+    "message": "CurseForge is limiting requests"
+  },
+  "plus.curseforge.result.limited.text": {
+    "message": "Too many requests were sent. Try again in a few minutes."
+  },
+  "plus.curseforge.result.malformed": {
+    "message": "That doesn’t look like an API key"
+  },
+  "plus.curseforge.result.malformed.text": {
+    "message": "Keys have no spaces and are at most 256 characters long."
+  },
+  "plus.curseforge.result.refused": {
+    "message": "CurseForge rejected this key"
+  },
+  "plus.curseforge.result.refused-cut-off.text": {
+    "message": "Keys normally start with $2a$, and this one doesn’t, so the beginning may have been cut off when it was copied. A rejected key is never saved."
+  },
+  "plus.curseforge.result.refused-saved.text": {
+    "message": "It may have been revoked. Replace it to use CurseForge again."
+  },
+  "plus.curseforge.result.refused.text": {
+    "message": "Check that you copied all of it. A rejected key is never saved."
+  },
+  "plus.curseforge.result.removed": {
+    "message": "Key removed"
+  },
+  "plus.curseforge.result.removed.text": {
+    "message": "It’s been deleted from your credential store."
+  },
+  "plus.curseforge.result.saved": {
+    "message": "Key saved"
+  },
+  "plus.curseforge.result.saved-unchecked.text": {
+    "message": "It’s saved, but CurseForge couldn’t confirm it just now."
+  },
+  "plus.curseforge.result.saved.text": {
+    "message": "CurseForge accepted it. The CurseForge tab now shows real projects."
+  },
+  "plus.curseforge.result.service": {
+    "message": "CurseForge had a problem"
+  },
+  "plus.curseforge.result.service.text": {
+    "message": "This isn’t caused by your key. Try again later."
+  },
+  "plus.curseforge.result.unreachable": {
+    "message": "Couldn’t reach CurseForge"
+  },
+  "plus.curseforge.result.unreachable.text": {
+    "message": "Check your internet connection and try again."
+  },
+  "plus.curseforge.result.works": {
+    "message": "This key works"
+  },
+  "plus.curseforge.result.works.text": {
+    "message": "Save it to start using it."
+  },
+  "plus.curseforge.rules": {
+    "message": "What to expect"
+  },
+  "plus.curseforge.rules.text": {
+    "message": "Some authors don't allow downloads through other apps; those projects link to the CurseForge website instead."
+  },
+  "plus.curseforge.sample": {
+    "message": "Showing sample data"
+  },
+  "plus.curseforge.saved-rejected": {
+    "message": "CurseForge rejected the saved key"
+  },
+  "plus.curseforge.saved-rejected.text": {
+    "message": "It may have been revoked. Replace it to use CurseForge again."
+  },
+  "plus.curseforge.sort.downloads": {
+    "message": "Downloads"
+  },
+  "plus.curseforge.sort.name": {
+    "message": "Name"
+  },
+  "plus.curseforge.sort.popularity": {
+    "message": "Popularity"
+  },
+  "plus.curseforge.sort.rating": {
+    "message": "Rating"
+  },
+  "plus.curseforge.sort.released": {
+    "message": "Newest"
+  },
+  "plus.curseforge.sort.updated": {
+    "message": "Recently updated"
+  },
+  "plus.curseforge.store-unavailable": {
+    "message": "Your credential store isn’t available"
+  },
+  "plus.curseforge.store-unavailable.text": {
+    "message": "Keys are only ever kept in your system’s credential store, so one can’t be saved right now."
+  },
+  "plus.curseforge.title": {
+    "message": "CurseForge"
+  },
+  "plus.curseforge.unchecked": {
+    "message": "Key saved but not checked"
+  },
+  "plus.curseforge.unchecked.text": {
+    "message": "CurseForge couldn’t be reached just now. Test the connection to try again."
+  },
+  "plus.curseforge.updates": {
+    "message": "CurseForge updates"
+  },
+  "plus.curseforge.updates.apply": {
+    "message": "{count, plural, one {Update # project} other {Update # projects}}"
+  },
+  "plus.curseforge.updates.blocked": {
+    "message": "This author doesn't allow downloads through other apps."
+  },
+  "plus.curseforge.updates.done": {
+    "message": "CurseForge updates finished"
+  },
+  "plus.curseforge.updates.none": {
+    "message": "Everything installed from CurseForge is up to date."
+  },
+  "plus.curseforge.updates.note": {
+    "message": "Old versions are kept, so you can restore them from Update history."
+  },
+  "plus.diagnostics.confirmed": {
+    "message": "The log says: {detail}"
+  },
+  "plus.diagnostics.corrupt-config": {
+    "message": "A config file may be damaged."
+  },
+  "plus.diagnostics.corrupt-config.fix": {
+    "message": "Check the config file named in the log line below."
+  },
+  "plus.diagnostics.evidence": {
+    "message": "Log line: {line}"
+  },
+  "plus.diagnostics.java-version": {
+    "message": "The game or a mod needs a different Java version."
+  },
+  "plus.diagnostics.java-version.fix": {
+    "message": "Choose another Java version in this instance’s Java settings."
+  },
+  "plus.diagnostics.mclogs": {
+    "message": "Also check crashes with mclo.gs"
+  },
+  "plus.diagnostics.mclogs.description": {
+    "message": "When Pawrinth's own checks find nothing, sends the game's log to the mclo.gs service for analysis. Logs can contain personal details."
+  },
+  "plus.diagnostics.missing-dependency": {
+    "message": "A required mod is missing{subject, select, none {} other { ({subject})}}."
+  },
+  "plus.diagnostics.missing-dependency.fix": {
+    "message": "Install the missing mod for this game version and loader."
+  },
+  "plus.diagnostics.mixin-failure": {
+    "message": "A mod failed to patch the game{subject, select, none {} other { ({subject})}}."
+  },
+  "plus.diagnostics.mixin-failure.fix": {
+    "message": "This is often a mod conflict or version mismatch, but the log alone can’t confirm it."
+  },
+  "plus.diagnostics.mod-conflict": {
+    "message": "Installed mods conflict with each other{subject, select, none {} other { ({subject})}}."
+  },
+  "plus.diagnostics.mod-conflict.fix": {
+    "message": "Disable one of the mods named in the log line below."
+  },
+  "plus.diagnostics.out-of-memory": {
+    "message": "The game ran out of memory."
+  },
+  "plus.diagnostics.out-of-memory.fix": {
+    "message": "Increase the memory for this instance in its Java settings."
+  },
+  "plus.diagnostics.possible": {
+    "message": "Possible cause: {detail}"
+  },
+  "plus.diagnostics.related": {
+    "message": "Installed files that match: {files}"
+  },
+  "plus.diagnostics.version-mismatch": {
+    "message": "A mod needs a different version of another mod{subject, select, none {} other { ({subject})}}."
+  },
+  "plus.diagnostics.version-mismatch.fix": {
+    "message": "Update or change the version named in the log line below."
+  },
+  "plus.diagnostics.wrong-loader": {
+    "message": "A mod was made for a different mod loader."
+  },
+  "plus.diagnostics.wrong-loader.fix": {
+    "message": "Replace it with a version made for this instance’s loader."
+  },
+  "plus.discord.activity-refused": {
+    "message": "Discord refused this status: {reason}"
+  },
+  "plus.discord.application": {
+    "message": "Your own Discord application (optional)"
+  },
+  "plus.discord.application-refused": {
+    "message": "Discord refused this Application ID. Check it, or go back to the default."
+  },
+  "plus.discord.application.invalid": {
+    "message": "An Application ID is 17 to 20 digits, so this one isn't used."
+  },
+  "plus.discord.application.placeholder": {
+    "message": "Application ID"
+  },
+  "plus.discord.application.text": {
+    "message": "Only needed to show a different name than Pawrinth. It's the Application ID alone, never a bot token or secret. Leave it empty to use Pawrinth's."
+  },
+  "plus.discord.blocked": {
+    "message": "Windows is blocking Pawrinth from reaching Discord, which usually means Discord is running as administrator. Close Discord completely and open it normally."
+  },
+  "plus.discord.button": {
+    "message": "Profile buttons"
+  },
+  "plus.discord.button.label": {
+    "message": "Button text"
+  },
+  "plus.discord.button.text": {
+    "message": "Adds up to two links other people can click on your profile. Discord doesn't show them to you. The address must start with https://."
+  },
+  "plus.discord.button.url": {
+    "message": "https://example.com"
+  },
+  "plus.discord.button.url.invalid": {
+    "message": "That address won't be used, because it doesn't start with https://."
+  },
+  "plus.discord.connected": {
+    "message": "Connected. Discord is showing this now."
+  },
+  "plus.discord.description": {
+    "message": "Choose what your Discord profile shows while Pawrinth is open. This doesn't affect Rich Presence added to instances by mods."
+  },
+  "plus.discord.enable": {
+    "message": "Show Pawrinth on Discord"
+  },
+  "plus.discord.enable.text": {
+    "message": "Turn this off to keep Pawrinth off your profile, or to use another presence app."
+  },
+  "plus.discord.idle-text": {
+    "message": "Text while browsing"
+  },
+  "plus.discord.logo-image": {
+    "message": "Logo picture"
+  },
+  "plus.discord.logo-image.placeholder": {
+    "message": "Picture name or link"
+  },
+  "plus.discord.logo-image.text": {
+    "message": "The name of a picture uploaded to the Discord application, or a link starting with https://. Leave it empty to use Pawrinth's logo."
+  },
+  "plus.discord.logo-text": {
+    "message": "Text when hovering over the logo"
+  },
+  "plus.discord.mode": {
+    "message": "Presence style"
+  },
+  "plus.discord.mode.custom": {
+    "message": "Custom"
+  },
+  "plus.discord.mode.custom.text": {
+    "message": "Choose your own text, picture and buttons, and optionally your own Discord application."
+  },
+  "plus.discord.mode.default": {
+    "message": "Default"
+  },
+  "plus.discord.mode.default.text": {
+    "message": "Uses Pawrinth's name and logo, with buttons to install Pawrinth and join its Discord server. There's nothing to set up."
+  },
+  "plus.discord.no-reply": {
+    "message": "Discord didn't answer. Pawrinth will keep trying."
+  },
+  "plus.discord.not-running": {
+    "message": "Discord isn't open. Pawrinth connects by itself as soon as it starts."
+  },
+  "plus.discord.off": {
+    "message": "Off. Discord isn't showing Pawrinth."
+  },
+  "plus.discord.open-portal": {
+    "message": "Open Discord Developer Portal"
+  },
+  "plus.discord.playing-text": {
+    "message": "Text while playing"
+  },
+  "plus.discord.playing-text.help": {
+    "message": "You can use {tokens}. Leave a box empty to use the default."
+  },
+  "plus.discord.preview": {
+    "message": "Preview"
+  },
+  "plus.discord.preview.buttons-note": {
+    "message": "Other people see the buttons when they look at your profile. Discord doesn't show your own status's buttons to you."
+  },
+  "plus.discord.preview.elapsed": {
+    "message": "12:34 elapsed"
+  },
+  "plus.discord.preview.idle": {
+    "message": "While browsing"
+  },
+  "plus.discord.preview.playing": {
+    "message": "While playing"
+  },
+  "plus.discord.restore": {
+    "message": "Restore defaults"
+  },
+  "plus.discord.second-line": {
+    "message": "Second line (optional)"
+  },
+  "plus.discord.show-badge": {
+    "message": "Show the mod loader as a small picture"
+  },
+  "plus.discord.show-badge.text": {
+    "message": "Adds the loader to the corner of the logo while playing. Upload its pictures to your Discord application first, or it won't show."
+  },
+  "plus.discord.show-elapsed": {
+    "message": "Show time played"
+  },
+  "plus.discord.show-hidden.text": {
+    "message": "With both off, or in streamer mode, Discord only says \"Playing Minecraft\"."
+  },
+  "plus.discord.show-instance": {
+    "message": "Show the instance name"
+  },
+  "plus.discord.show-version": {
+    "message": "Show the Minecraft version"
+  },
+  "plus.discord.steps": {
+    "message": "Setting one up"
+  },
+  "plus.discord.steps.four": {
+    "message": "For the small mod loader picture, also upload pictures named fabric, forge, neoforge and quilt."
+  },
+  "plus.discord.steps.one": {
+    "message": "Create an application in the Discord Developer Portal. Its name is what Discord shows."
+  },
+  "plus.discord.steps.three": {
+    "message": "Under Rich Presence, then Art Assets, upload your logo and name it pawrinth."
+  },
+  "plus.discord.steps.two": {
+    "message": "Copy its Application ID from General Information, and paste it here."
+  },
+  "plus.discord.test": {
+    "message": "Test connection"
+  },
+  "plus.discord.test.application": {
+    "message": "Discord knows this application as {name}."
+  },
+  "plus.discord.test.application-unknown": {
+    "message": "Discord doesn't know this Application ID."
+  },
+  "plus.discord.test.logo-found": {
+    "message": "The picture named {name} is uploaded."
+  },
+  "plus.discord.test.logo-missing": {
+    "message": "There's no picture named {name} on this application, so the status shows without a logo."
+  },
+  "plus.discord.test.offline": {
+    "message": "Couldn't ask Discord's website about the application and its pictures."
+  },
+  "plus.discord.title": {
+    "message": "Discord Rich Presence"
+  },
+  "plus.export-modal.curseforge-complete": {
+    "message": "{name} lists {listed, plural, one {# file} other {# files}} from CurseForge."
+  },
+  "plus.export-modal.curseforge-included": {
+    "message": "{count, plural, one {# file isn't} other {# files aren't}} on CurseForge, so {count, plural, one {it's} other {they're}} inside the zip: {names}."
+  },
+  "plus.export-modal.curseforge-not-looked-up": {
+    "message": "Add a CurseForge API key in Settings, so files from elsewhere can be matched to CurseForge too."
+  },
+  "plus.export-modal.format": {
+    "message": "Format"
+  },
+  "plus.export-modal.format.curseforge": {
+    "message": "CurseForge (.zip)"
+  },
+  "plus.export-modal.format.curseforge.text": {
+    "message": "For the CurseForge app. Mods from CurseForge are listed so it downloads them itself, and anything that isn't on CurseForge goes inside the zip."
+  },
+  "plus.export-modal.format.modrinth": {
+    "message": "Modrinth (.mrpack)"
+  },
+  "plus.export-modal.format.modrinth.text": {
+    "message": "For Pawrinth, Modrinth App and other launchers that open .mrpack files."
+  },
+  "plus.history.back": {
+    "message": "Back"
+  },
+  "plus.history.busy": {
+    "message": "Wait for the current install to finish."
+  },
+  "plus.history.change.added": {
+    "message": "Remove {name}"
+  },
+  "plus.history.change.removed": {
+    "message": "Bring back {name}"
+  },
+  "plus.history.change.updated": {
+    "message": "{after} → {before}"
+  },
+  "plus.history.changed-count": {
+    "message": "{count, plural, one {# file changed} other {# files changed}}"
+  },
+  "plus.history.confirm-remove": {
+    "message": "Remove"
+  },
+  "plus.history.confirm-restore": {
+    "message": "{count, plural, one {Restore # file} other {Restore # files}}"
+  },
+  "plus.history.create-snapshot": {
+    "message": "Create snapshot"
+  },
+  "plus.history.empty": {
+    "message": "No updates recorded yet. Updates and snapshots for this instance appear here."
+  },
+  "plus.history.keep": {
+    "message": "Keep"
+  },
+  "plus.history.kind.rollback": {
+    "message": "Restore"
+  },
+  "plus.history.kind.snapshot": {
+    "message": "Snapshot"
+  },
+  "plus.history.kind.update-all": {
+    "message": "Update all"
+  },
+  "plus.history.kind.update-one": {
+    "message": "Single update"
+  },
+  "plus.history.nothing": {
+    "message": "The instance already matches this point, so there is nothing to restore."
+  },
+  "plus.history.over-budget": {
+    "message": "Recovery data is over your allowance. Nothing is deleted automatically; remove old entries to free space."
+  },
+  "plus.history.remove": {
+    "message": "Remove from history"
+  },
+  "plus.history.remove-warning": {
+    "message": "This deletes the only recovery copy of these files. Remove it anyway?"
+  },
+  "plus.history.restore": {
+    "message": "Restore previous versions"
+  },
+  "plus.history.restore-snapshot": {
+    "message": "Restore snapshot"
+  },
+  "plus.history.restored": {
+    "message": "Restore complete"
+  },
+  "plus.history.restored-text": {
+    "message": "{restored, plural, one {# file restored} other {# files restored}} and verified. {skipped, plural, =0 {} one {# file skipped.} other {# files skipped.}}"
+  },
+  "plus.history.review": {
+    "message": "Review what will change"
+  },
+  "plus.history.review-note": {
+    "message": "Only the selected files change. Worlds, configs and other content stay as they are."
+  },
+  "plus.history.snapshot-name": {
+    "message": "Snapshot name"
+  },
+  "plus.history.snapshot-note": {
+    "message": "Snapshots save mods, resource packs, shaders and datapacks. Worlds and configs are not included."
+  },
+  "plus.history.state.applied": {
+    "message": "Completed"
+  },
+  "plus.history.state.applying": {
+    "message": "In progress"
+  },
+  "plus.history.state.captured": {
+    "message": "Saved"
+  },
+  "plus.history.state.needs-attention": {
+    "message": "Needs attention"
+  },
+  "plus.history.state.partial": {
+    "message": "Partly completed"
+  },
+  "plus.history.status.already": {
+    "message": "Already restored"
+  },
+  "plus.history.status.changed": {
+    "message": "Changed since this update. Select it to overwrite your change."
+  },
+  "plus.history.status.damaged": {
+    "message": "The preserved copy is damaged, so this file cannot be restored."
+  },
+  "plus.history.status.occupied": {
+    "message": "Another file now has this name. Select it to replace that file."
+  },
+  "plus.history.status.removed": {
+    "message": "Removed since this update. Select it to bring it back anyway."
+  },
+  "plus.history.status.restorable": {
+    "message": "Ready to restore"
+  },
+  "plus.history.storage": {
+    "message": "Recovery data uses {used} of your {limit} allowance."
+  },
+  "plus.history.title": {
+    "message": "Update history"
+  },
+  "plus.interface.compact": {
+    "message": "Compact layout"
+  },
+  "plus.interface.compact.description": {
+    "message": "Tightens text and spacing throughout the app so more fits on screen."
+  },
+  "plus.interface.last-page": {
+    "message": "Reopen the last page"
+  },
+  "plus.interface.last-page.description": {
+    "message": "Start on the page you had open instead of your default page."
+  },
+  "plus.interface.motion": {
+    "message": "Reduce motion"
+  },
+  "plus.interface.motion.description": {
+    "message": "Turns off interface animations and transitions."
+  },
+  "plus.interface.reset-all": {
+    "message": "Reset interface settings"
+  },
+  "plus.interface.scale": {
+    "message": "Interface scale"
+  },
+  "plus.interface.scale.description": {
+    "message": "Makes the whole app larger or smaller, on top of your Windows display scaling. The smallest window size grows with it."
+  },
+  "plus.interface.scale.reset": {
+    "message": "Reset to 100%"
+  },
+  "plus.interface.setup": {
+    "message": "First-launch setup"
+  },
+  "plus.interface.setup.action": {
+    "message": "Run setup"
+  },
+  "plus.interface.setup.description": {
+    "message": "Run the setup steps again. Your instances and settings are kept."
+  },
+  "plus.interface.title": {
+    "message": "Interface"
+  },
+  "plus.mineskin.settings.accepted": {
+    "message": "MineSkin accepted this key, and it is saved."
+  },
+  "plus.mineskin.settings.description": {
+    "message": "The skin gallery uses MineSkin. It works without a key, with stricter limits, but MineSkin's terms ask apps to use one, so you can add your own. It stays in your system's credential store and is only sent to MineSkin."
+  },
+  "plus.mineskin.settings.get-key": {
+    "message": "Get a key from MineSkin"
+  },
+  "plus.mineskin.settings.malformed": {
+    "message": "That can't be an API key. Check it was copied whole."
+  },
+  "plus.mineskin.settings.no-key": {
+    "message": "No key saved. The gallery is using MineSkin without one."
+  },
+  "plus.mineskin.settings.placeholder": {
+    "message": "Paste your MineSkin API key"
+  },
+  "plus.mineskin.settings.rejected": {
+    "message": "MineSkin rejected this key, so it wasn't saved."
+  },
+  "plus.mineskin.settings.remove": {
+    "message": "Remove key"
+  },
+  "plus.mineskin.settings.save": {
+    "message": "Save key"
+  },
+  "plus.mineskin.settings.saved": {
+    "message": "Saved key"
+  },
+  "plus.mineskin.settings.store-unavailable": {
+    "message": "Your system's credential store can't be reached, so a key can't be saved right now."
+  },
+  "plus.mineskin.settings.title": {
+    "message": "MineSkin"
+  },
+  "plus.mineskin.settings.unchecked": {
+    "message": "The key is saved, but MineSkin couldn't check it right now."
+  },
+  "plus.news.category.announcement": {
+    "message": "Announcement"
+  },
+  "plus.news.category.community": {
+    "message": "Community"
+  },
+  "plus.news.category.compatibility": {
+    "message": "Compatibility"
+  },
+  "plus.news.category.feature": {
+    "message": "New feature"
+  },
+  "plus.news.category.maintenance": {
+    "message": "Maintenance"
+  },
+  "plus.news.category.release": {
+    "message": "Release"
+  },
+  "plus.news.category.update": {
+    "message": "Update"
+  },
+  "plus.news.empty": {
+    "message": "No announcements yet."
+  },
+  "plus.news.empty.text": {
+    "message": "Pawrinth release, update and maintenance news will show up here."
+  },
+  "plus.news.failed": {
+    "message": "Couldn't load Pawrinth News."
+  },
+  "plus.news.modrinth": {
+    "message": "Modrinth's own news"
+  },
+  "plus.news.retry": {
+    "message": "Try again"
+  },
+  "plus.news.title": {
+    "message": "Pawrinth News"
+  },
+  "plus.news.view-all": {
+    "message": "View all news"
+  },
+  "plus.organization.back": {
+    "message": "Back"
+  },
+  "plus.organization.failed": {
+    "message": "Couldn't load this organization"
+  },
+  "plus.organization.failed.text": {
+    "message": "It may have been removed, or Modrinth may be unreachable right now."
+  },
+  "plus.organization.no-match": {
+    "message": "No projects match these filters"
+  },
+  "plus.organization.no-projects": {
+    "message": "This organization hasn't published any projects"
+  },
+  "plus.organization.open": {
+    "message": "Open on Modrinth"
+  },
+  "plus.organization.project-count": {
+    "message": "{count, plural, one {# project} other {# projects}}"
+  },
+  "plus.privacy.blur": {
+    "message": "Blur usernames"
+  },
+  "plus.privacy.blur.streamer": {
+    "message": "Streamer mode already does this."
+  },
+  "plus.privacy.blur.text": {
+    "message": "Blurs your Minecraft and Modrinth names wherever Pawrinth shows them."
+  },
+  "plus.privacy.description": {
+    "message": "Keep your names and details off your screen while streaming or recording."
+  },
+  "plus.privacy.display-name": {
+    "message": "Name to show instead"
+  },
+  "plus.privacy.display-name.placeholder": {
+    "message": "Your real name is used"
+  },
+  "plus.privacy.display-name.text": {
+    "message": "Shows this in place of your account names. Leave it empty to use the real ones."
+  },
+  "plus.privacy.limits": {
+    "message": "This only changes what you see here"
+  },
+  "plus.privacy.limits.text": {
+    "message": "You stay signed in and your accounts aren't changed. The game, servers and other players still see your real Minecraft username, and it can still appear inside the game window, in chat and on the tab list. Hide those separately if you're streaming the game."
+  },
+  "plus.privacy.notice.header": {
+    "message": "Hidden by streamer mode"
+  },
+  "plus.privacy.notice.text": {
+    "message": "Your account details are kept off the screen while streamer mode is on. Turn it off to see or change them."
+  },
+  "plus.privacy.streamer": {
+    "message": "Streamer mode"
+  },
+  "plus.privacy.streamer.text": {
+    "message": "Replaces your Minecraft and Modrinth names with \"Hidden account\" and hides your profile details. Blurs avatars, friends, screenshots and folder paths, and removes account names, your user folder and IP addresses from logs, errors and notifications. Discord only says \"Playing Minecraft\", and your CurseForge key hint is hidden too."
+  },
+  "plus.privacy.streamer.turn-off": {
+    "message": "Turn off streamer mode"
+  },
+  "plus.privacy.streamer.turn-on": {
+    "message": "Turn on streamer mode"
+  },
+  "plus.privacy.title": {
+    "message": "Privacy and streaming"
+  },
+  "plus.project.no-compatible.header": {
+    "message": "No compatible version"
+  },
+  "plus.project.no-compatible.text": {
+    "message": "This project has no version for {target}."
+  },
+  "plus.provider.curseforge": {
+    "message": "CurseForge"
+  },
+  "plus.provider.modrinth": {
+    "message": "Modrinth"
+  },
+  "plus.recovery.cleanup": {
+    "message": "Remove old entries automatically"
+  },
+  "plus.recovery.cleanup.description": {
+    "message": "Removes entries past the limits below. Each instance's newest entry and all snapshots are always kept."
+  },
+  "plus.recovery.count": {
+    "message": "Entries to keep per instance"
+  },
+  "plus.recovery.days": {
+    "message": "Days to keep entries"
+  },
+  "plus.recovery.days.description": {
+    "message": "0 keeps them until you remove them."
+  },
+  "plus.recovery.enabled": {
+    "message": "Save recovery data before updating"
+  },
+  "plus.recovery.enabled.description": {
+    "message": "Keeps the files each update replaces, so you can restore them from Update history even if the old version is no longer available."
+  },
+  "plus.recovery.limit": {
+    "message": "Storage allowance"
+  },
+  "plus.recovery.limit.description": {
+    "message": "You are warned when recovery data goes over this. Nothing is deleted because of it."
+  },
+  "plus.recovery.title": {
+    "message": "Updates and recovery"
+  },
+  "plus.recovery.usage": {
+    "message": "Currently using {used} across {count, plural, one {# entry} other {# entries}}."
+  },
+  "plus.settings.category": {
+    "message": "Pawrinth"
+  },
+  "plus.settings.tabs.about": {
+    "message": "About"
+  },
+  "plus.settings.tabs.api-configuration": {
+    "message": "API configuration"
+  },
+  "plus.settings.tabs.discord": {
+    "message": "Discord status"
+  },
+  "plus.settings.tabs.interface": {
+    "message": "Interface"
+  },
+  "plus.settings.tabs.privacy": {
+    "message": "Streamer mode"
+  },
+  "plus.settings.tabs.recovery": {
+    "message": "Update recovery"
+  },
+  "plus.settings.tabs.themes": {
+    "message": "Themes"
+  },
+  "plus.skins.card.favorite": {
+    "message": "Add to favorites"
+  },
+  "plus.skins.card.preview": {
+    "message": "Preview {name}"
+  },
+  "plus.skins.card.unfavorite": {
+    "message": "Remove from favorites"
+  },
+  "plus.skins.card.untitled": {
+    "message": "Untitled skin"
+  },
+  "plus.skins.card.view": {
+    "message": "View"
+  },
+  "plus.skins.detail.back": {
+    "message": "Back"
+  },
+  "plus.skins.detail.front": {
+    "message": "Front"
+  },
+  "plus.skins.detail.load-failed": {
+    "message": "Couldn't load this skin."
+  },
+  "plus.skins.detail.made-for": {
+    "message": "This skin is made for {model} arms."
+  },
+  "plus.skins.detail.no-creator.mineskin": {
+    "message": "MineSkin doesn't say who made its skins."
+  },
+  "plus.skins.detail.tags": {
+    "message": "Tags"
+  },
+  "plus.skins.detail.views": {
+    "message": "Views on MineSkin"
+  },
+  "plus.skins.detail.zoom-in": {
+    "message": "Zoom in"
+  },
+  "plus.skins.detail.zoom-out": {
+    "message": "Zoom out"
+  },
+  "plus.skins.favorites.empty": {
+    "message": "No favorites yet. Press the heart on a skin to keep it here."
+  },
+  "plus.skins.favorites.no-matches": {
+    "message": "None of your favorites match “{query}”."
+  },
+  "plus.skins.favorites.saved": {
+    "message": "Saved on this computer. Pictures load from Mojang when you view them, and each skin remembers where it came from."
+  },
+  "plus.skins.favorites.search": {
+    "message": "Search your favorites"
+  },
+  "plus.skins.favorites.title": {
+    "message": "Favorites"
+  },
+  "plus.skins.find.add-file": {
+    "message": "Add skin from file"
+  },
+  "plus.skins.find.add-hint": {
+    "message": "Found one you like? Download its PNG from the site, then add it here."
+  },
+  "plus.skins.find.attribution": {
+    "message": "Links open in your browser. These sites aren't connected to Pawrinth, and skins belong to their creators."
+  },
+  "plus.skins.find.browse": {
+    "message": "Browse {site}"
+  },
+  "plus.skins.find.import": {
+    "message": "Add to my skins"
+  },
+  "plus.skins.find.placeholder": {
+    "message": "Search skins like cat, hoodie or creeper, or a Minecraft username"
+  },
+  "plus.skins.find.player.default-skin": {
+    "message": "{name} has no custom skin."
+  },
+  "plus.skins.find.player.model": {
+    "message": "Model"
+  },
+  "plus.skins.find.player.model.classic": {
+    "message": "Classic"
+  },
+  "plus.skins.find.player.model.slim": {
+    "message": "Slim"
+  },
+  "plus.skins.find.player.no-creator": {
+    "message": "Player profiles don't say who made a skin or what it's called."
+  },
+  "plus.skins.find.player.rate-limited": {
+    "message": "Mojang is limiting lookups right now. Try again in a minute."
+  },
+  "plus.skins.find.player.retry": {
+    "message": "Try again"
+  },
+  "plus.skins.find.player.source": {
+    "message": "Source"
+  },
+  "plus.skins.find.player.unavailable": {
+    "message": "Couldn't reach Mojang's profile service. Check your connection and try again."
+  },
+  "plus.skins.find.png-filter": {
+    "message": "PNG image"
+  },
+  "plus.skins.find.read-only": {
+    "message": "Skins can't be added while Minecraft's servers can't be reached."
+  },
+  "plus.skins.find.recent": {
+    "message": "Recent"
+  },
+  "plus.skins.find.save-png": {
+    "message": "Save PNG"
+  },
+  "plus.skins.find.saved-png": {
+    "message": "Skin saved."
+  },
+  "plus.skins.find.search": {
+    "message": "Search"
+  },
+  "plus.skins.find.search-kind.creations": {
+    "message": "Search creations"
+  },
+  "plus.skins.find.search-kind.creators": {
+    "message": "Search creators"
+  },
+  "plus.skins.find.search-kind.everything": {
+    "message": "Search {site}"
+  },
+  "plus.skins.find.search-kind.players": {
+    "message": "Search players"
+  },
+  "plus.skins.find.search-kind.skins": {
+    "message": "Search skins"
+  },
+  "plus.skins.find.sites.enter-query": {
+    "message": "Enter something above to search {site}."
+  },
+  "plus.skins.find.sites.minecraftskins": {
+    "message": "Find skins by name or by creator on The Skindex. Its terms don't allow apps to read its pages, so results open on its own site."
+  },
+  "plus.skins.find.sites.namemc": {
+    "message": "Find names, UUIDs and tagged skins. NameMC's terms don't allow apps to read its pages, so results open on its own site."
+  },
+  "plus.skins.find.sites.skinmc": {
+    "message": "Find player profiles, skins and community creations. SkinMC doesn't publish a way for apps to search it, so results open on its own site."
+  },
+  "plus.skins.find.view-on": {
+    "message": "View on {site}"
+  },
+  "plus.skins.gallery.empty": {
+    "message": "MineSkin found no skins for “{query}”. Try another word, or search another site."
+  },
+  "plus.skins.gallery.empty-latest": {
+    "message": "MineSkin didn't return any skins."
+  },
+  "plus.skins.gallery.end": {
+    "message": "That's everything MineSkin returned."
+  },
+  "plus.skins.gallery.key-rejected": {
+    "message": "MineSkin rejected your API key. Check or remove it in Settings."
+  },
+  "plus.skins.gallery.latest": {
+    "message": "Latest skins"
+  },
+  "plus.skins.gallery.live": {
+    "message": "Live results from MineSkin"
+  },
+  "plus.skins.gallery.live-search": {
+    "message": "Live results from MineSkin. These are its closest matches, so some may be loose."
+  },
+  "plus.skins.gallery.load-more": {
+    "message": "Load more"
+  },
+  "plus.skins.gallery.more-rate-limited": {
+    "message": "MineSkin is limiting requests, so more couldn't be loaded. Try again in a minute."
+  },
+  "plus.skins.gallery.more-unavailable": {
+    "message": "Couldn't load more from MineSkin. Try again."
+  },
+  "plus.skins.gallery.next": {
+    "message": "Next"
+  },
+  "plus.skins.gallery.page": {
+    "message": "Page {page}"
+  },
+  "plus.skins.gallery.pages": {
+    "message": "Pages {first} to {last}"
+  },
+  "plus.skins.gallery.previous": {
+    "message": "Previous"
+  },
+  "plus.skins.gallery.rate-limited": {
+    "message": "MineSkin is limiting requests right now. Try again in a minute."
+  },
+  "plus.skins.gallery.results-for": {
+    "message": "Skins matching “{query}”"
+  },
+  "plus.skins.gallery.unavailable": {
+    "message": "Couldn't reach MineSkin. Check your connection and try again."
+  },
+  "plus.skins.source.mineskin": {
+    "message": "MineSkin"
+  },
+  "plus.skins.source.mojang": {
+    "message": "Minecraft player"
+  },
+  "plus.skins.tab.find": {
+    "message": "Find skins"
+  },
+  "plus.skins.tab.mine": {
+    "message": "My skins"
+  },
+  "plus.skins.thumbnail.failed": {
+    "message": "This picture couldn't be loaded."
+  },
+  "plus.skins.thumbnail.preview": {
+    "message": "Preview of {name}"
+  },
+  "plus.themes.applied": {
+    "message": "Applied"
+  },
+  "plus.themes.apply": {
+    "message": "Apply"
+  },
+  "plus.themes.cancel": {
+    "message": "Cancel"
+  },
+  "plus.themes.color.accent": {
+    "message": "Accent"
+  },
+  "plus.themes.color.background": {
+    "message": "Background"
+  },
+  "plus.themes.color.border": {
+    "message": "Borders"
+  },
+  "plus.themes.color.button": {
+    "message": "Buttons"
+  },
+  "plus.themes.color.panel": {
+    "message": "Panels"
+  },
+  "plus.themes.color.raised": {
+    "message": "Raised surfaces"
+  },
+  "plus.themes.color.selection": {
+    "message": "Text selection"
+  },
+  "plus.themes.color.sidebar": {
+    "message": "Navigation"
+  },
+  "plus.themes.color.surface": {
+    "message": "Cards"
+  },
+  "plus.themes.color.text": {
+    "message": "Text"
+  },
+  "plus.themes.color.text-muted": {
+    "message": "Secondary text"
+  },
+  "plus.themes.contrast.blocking": {
+    "message": "{foreground} on {background} is too hard to read ({ratio}:1). Raise it to at least 3:1 to save."
+  },
+  "plus.themes.contrast.title": {
+    "message": "Contrast"
+  },
+  "plus.themes.contrast.warning": {
+    "message": "{foreground} on {background} has low contrast ({ratio}:1). 4.5:1 is recommended."
+  },
+  "plus.themes.copy-suffix": {
+    "message": "{name} copy"
+  },
+  "plus.themes.customize": {
+    "message": "Customize"
+  },
+  "plus.themes.delete": {
+    "message": "Delete"
+  },
+  "plus.themes.delete.description": {
+    "message": "This can't be undone, unless you've exported it."
+  },
+  "plus.themes.delete.title": {
+    "message": "Delete {name}?"
+  },
+  "plus.themes.description": {
+    "message": "Custom themes recolor the whole app. Choose a stock theme in Appearance to switch back at any time."
+  },
+  "plus.themes.duplicate": {
+    "message": "Duplicate"
+  },
+  "plus.themes.edit": {
+    "message": "Edit"
+  },
+  "plus.themes.editor": {
+    "message": "Theme editor"
+  },
+  "plus.themes.export": {
+    "message": "Copy theme to clipboard"
+  },
+  "plus.themes.export-current": {
+    "message": "Export current theme"
+  },
+  "plus.themes.export-file": {
+    "message": "Export to a file"
+  },
+  "plus.themes.exported": {
+    "message": "Theme copied to clipboard."
+  },
+  "plus.themes.exported-file": {
+    "message": "Theme exported."
+  },
+  "plus.themes.file-filter": {
+    "message": "Pawrinth theme"
+  },
+  "plus.themes.import": {
+    "message": "Import and export"
+  },
+  "plus.themes.import-file": {
+    "message": "Import from a file"
+  },
+  "plus.themes.import.action": {
+    "message": "Preview"
+  },
+  "plus.themes.import.adjustments": {
+    "message": "Also use its background adjustments"
+  },
+  "plus.themes.import.adjustments.note": {
+    "message": "Applies to your current background image, if you have one."
+  },
+  "plus.themes.import.description": {
+    "message": "Theme files hold colors and background adjustments. A background image itself is not included."
+  },
+  "plus.themes.import.duplicate": {
+    "message": "You already have a theme called {name}"
+  },
+  "plus.themes.import.duplicate.text": {
+    "message": "Keep both, or replace the one you have."
+  },
+  "plus.themes.import.invalid-colors": {
+    "message": "That theme has missing or invalid colors."
+  },
+  "plus.themes.import.keep-both": {
+    "message": "Keep both"
+  },
+  "plus.themes.import.not-json": {
+    "message": "That text isn't valid JSON."
+  },
+  "plus.themes.import.paste": {
+    "message": "Or paste a copied theme"
+  },
+  "plus.themes.import.preview": {
+    "message": "Previewing {name}"
+  },
+  "plus.themes.import.preview.description": {
+    "message": "This is how it looks. Nothing is saved until you choose below."
+  },
+  "plus.themes.import.read-failed": {
+    "message": "That file couldn't be read as a theme."
+  },
+  "plus.themes.import.replace": {
+    "message": "Replace existing"
+  },
+  "plus.themes.import.save": {
+    "message": "Save for later"
+  },
+  "plus.themes.import.save-apply": {
+    "message": "Save and apply"
+  },
+  "plus.themes.import.unreadable": {
+    "message": "That theme was rejected because its text would be too hard to read."
+  },
+  "plus.themes.import.unsupported": {
+    "message": "That theme was made by a newer version of Pawrinth. Update to use it."
+  },
+  "plus.themes.import.wrong-format": {
+    "message": "That isn't a Pawrinth theme."
+  },
+  "plus.themes.name": {
+    "message": "Name"
+  },
+  "plus.themes.new": {
+    "message": "New theme"
+  },
+  "plus.themes.new-dark": {
+    "message": "New dark theme"
+  },
+  "plus.themes.new-light": {
+    "message": "New light theme"
+  },
+  "plus.themes.none": {
+    "message": "You have no saved themes yet. Customize a preset or start from scratch."
+  },
+  "plus.themes.presets": {
+    "message": "Presets"
+  },
+  "plus.themes.rename": {
+    "message": "Rename"
+  },
+  "plus.themes.rename.save": {
+    "message": "Save name"
+  },
+  "plus.themes.reset": {
+    "message": "Reset colors"
+  },
+  "plus.themes.restore-default": {
+    "message": "Restore default theme"
+  },
+  "plus.themes.restore-default.description": {
+    "message": "Goes back to the original dark theme. Your saved themes are kept."
+  },
+  "plus.themes.save": {
+    "message": "Save and apply"
+  },
+  "plus.themes.stock": {
+    "message": "Stock theme"
+  },
+  "plus.themes.stock.amoled": {
+    "message": "AMOLED"
+  },
+  "plus.themes.stock.description": {
+    "message": "Use the theme selected in Appearance."
+  },
+  "plus.themes.stock.light": {
+    "message": "Light"
+  },
+  "plus.themes.stock.original": {
+    "message": "Original dark"
+  },
+  "plus.themes.title": {
+    "message": "Themes"
+  },
+  "plus.themes.undo": {
+    "message": "Undo"
+  },
+  "plus.themes.your-themes": {
+    "message": "Your themes"
+  },
+  "plus.wizard.accent": {
+    "message": "Accent color"
+  },
+  "plus.wizard.accent.text": {
+    "message": "Colors buttons and highlights, using your current dark or light base."
+  },
+  "plus.wizard.accent.theme-name": {
+    "message": "My accent"
+  },
+  "plus.wizard.accent.unreadable": {
+    "message": "That color would be too hard to read, so it wasn't applied."
+  },
+  "plus.wizard.appearance": {
+    "message": "Choose a look"
+  },
+  "plus.wizard.back": {
+    "message": "Back"
+  },
+  "plus.wizard.content": {
+    "message": "Bring your existing game"
+  },
+  "plus.wizard.create-instance": {
+    "message": "Create an instance"
+  },
+  "plus.wizard.done": {
+    "message": "Done"
+  },
+  "plus.wizard.features": {
+    "message": "Pawrinth features"
+  },
+  "plus.wizard.finish": {
+    "message": "You're all set"
+  },
+  "plus.wizard.finish.text": {
+    "message": "You can run this setup again from Settings, under Pawrinth → Interface."
+  },
+  "plus.wizard.import": {
+    "message": "{count, plural, one {Copy # instance} other {Copy # instances}}"
+  },
+  "plus.wizard.import.started": {
+    "message": "Copying started. You can follow it in the download manager."
+  },
+  "plus.wizard.launchers": {
+    "message": "Instances in other launchers"
+  },
+  "plus.wizard.launchers.already": {
+    "message": "Already in Pawrinth"
+  },
+  "plus.wizard.launchers.none": {
+    "message": "No instances were found in other launchers."
+  },
+  "plus.wizard.launchers.text": {
+    "message": "Choose any to copy into Pawrinth. The originals stay where they are."
+  },
+  "plus.wizard.layout": {
+    "message": "Set your layout"
+  },
+  "plus.wizard.minecraft.found": {
+    "message": "Minecraft folder found"
+  },
+  "plus.wizard.minecraft.found.text": {
+    "message": "{path} has {saves, plural, one {# world} other {# worlds}} and {versions, plural, one {# game version} other {# game versions}}. Pawrinth keeps its own instances and leaves this folder as it is."
+  },
+  "plus.wizard.minecraft.missing": {
+    "message": "No Minecraft launcher folder was found in the usual place."
+  },
+  "plus.wizard.next": {
+    "message": "Next"
+  },
+  "plus.wizard.recovery.text": {
+    "message": "Lets you restore earlier mod versions after an update. Uses some disk space."
+  },
+  "plus.wizard.scale.text": {
+    "message": "Makes the whole app larger or smaller, on top of your Windows display scaling."
+  },
+  "plus.wizard.skip": {
+    "message": "Skip setup"
+  },
+  "plus.wizard.step-of": {
+    "message": "Step {current} of {total}"
+  },
+  "plus.wizard.stock": {
+    "message": "Standard themes"
+  },
+  "plus.wizard.title": {
+    "message": "Set up Pawrinth"
+  },
+  "plus.wizard.welcome": {
+    "message": "Welcome to Pawrinth"
+  },
+  "plus.wizard.welcome.fork": {
+    "message": "Pawrinth is an unofficial, community-developed fork of Modrinth App, maintained by pawmerized."
+  },
+  "plus.wizard.welcome.text": {
+    "message": "A few quick choices and you're ready to play. Every step is optional, and you can change anything later in Settings."
   },
   "search.filter.locked.instance": {
     "message": "Provided by the instance"

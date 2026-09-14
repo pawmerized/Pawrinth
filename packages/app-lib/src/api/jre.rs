@@ -12,7 +12,8 @@ use dashmap::DashMap;
 use reqwest::Method;
 use serde::Deserialize;
 use std::future::Future;
-use std::path::PathBuf;
+use std::io::{Read, Seek};
+use std::path::{Path, PathBuf};
 use std::pin::Pin;
 use sysinfo::{MemoryRefreshKind, RefreshKind};
 
@@ -62,22 +63,140 @@ pub async fn find_filtered_jres(
     })
 }
 
+/// Downloads Java again even if this build is already installed, which is what makes
+/// the reinstall button able to repair a damaged install.
 pub async fn auto_install_java(java_version: u32) -> crate::Result<PathBuf> {
-    auto_install_java_with_loading(java_version, true).await
+    auto_install_java_inner(java_version, true, None, ExistingJava::Replace)
+        .await
 }
 
 pub async fn auto_install_java_with_loading(
     java_version: u32,
     show_loading: bool,
 ) -> crate::Result<PathBuf> {
-    auto_install_java_inner(java_version, show_loading, None).await
+    auto_install_java_inner(
+        java_version,
+        show_loading,
+        None,
+        ExistingJava::Reuse,
+    )
+    .await
 }
 
 pub async fn auto_install_java_with_reporter(
     java_version: u32,
     reporter: InstallProgressReporter,
 ) -> crate::Result<PathBuf> {
-    auto_install_java_inner(java_version, false, Some(reporter)).await
+    auto_install_java_inner(
+        java_version,
+        false,
+        Some(reporter),
+        ExistingJava::Reuse,
+    )
+    .await
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ExistingJava {
+    Reuse,
+    Replace,
+}
+
+/// Written last, so a folder without it was left behind by an interrupted install.
+const JAVA_INSTALL_COMPLETE_MARKER: &str = ".install-complete";
+
+/// Every install of a Java version uses the same folder, and replacing that folder while
+/// another install is extracting into it breaks both.
+async fn lock_java_install(
+    java_version: u32,
+) -> crate::Result<tokio::sync::OwnedMutexGuard<()>> {
+    crate::install::control::lock_shared_step(format!("java-{java_version}"))
+        .await
+}
+
+fn java_executable(install_dir: &Path) -> PathBuf {
+    #[cfg(target_os = "macos")]
+    {
+        install_dir
+            .join("Contents")
+            .join("Home")
+            .join("bin")
+            .join("java")
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        install_dir.join("bin").join(jre::JAVA_BIN)
+    }
+}
+
+async fn is_finished_java_install(
+    install_dir: &Path,
+    java_version: u32,
+) -> bool {
+    install_dir.join(JAVA_INSTALL_COMPLETE_MARKER).exists()
+        && jre::check_java_at_filepath(&java_executable(install_dir))
+            .await
+            .is_ok_and(|java| {
+                extract_java_version(&java.version)
+                    .is_ok_and(|version| version == java_version)
+            })
+}
+
+/// The top folder of a Java archive, refusing anything that would land outside
+/// `java_versions_dir`.
+fn java_archive_dir(
+    java_versions_dir: &Path,
+    first_entry: &str,
+) -> crate::Result<Option<PathBuf>> {
+    let Some(dir) = first_entry.split('/').next() else {
+        return Ok(None);
+    };
+    if dir.is_empty()
+        || dir == "."
+        || dir == ".."
+        || dir.contains(['\\', ':'])
+        || !matches!(
+            Path::new(dir).components().next(),
+            Some(std::path::Component::Normal(_))
+        )
+    {
+        bail!(ErrorKind::InputError(
+            "invalid Java archive directory".to_string()
+        ));
+    }
+    Ok(Some(java_versions_dir.join(dir)))
+}
+
+/// Puts an archive in place. Only one install of a major version gets here at a time, and
+/// one that was waiting keeps the finished result instead of deleting it.
+async fn install_java_archive<R: Read + Seek + Send>(
+    java_version: u32,
+    archive: &mut zip::ZipArchive<R>,
+    java_versions_dir: &Path,
+    install_dir: Option<&Path>,
+    existing: ExistingJava,
+) -> crate::Result<()> {
+    let _install = lock_java_install(java_version).await?;
+    if let Some(install_dir) = install_dir {
+        if existing == ExistingJava::Reuse
+            && is_finished_java_install(install_dir, java_version).await
+        {
+            return Ok(());
+        }
+        if install_dir.exists() {
+            io::remove_dir_all(install_dir).await?;
+        }
+    }
+    archive
+        .extract(java_versions_dir)
+        .context(ErrorKind::InputError(
+            "failed to extract java zip".to_string(),
+        ))?;
+    if let Some(install_dir) = install_dir {
+        io::write(install_dir.join(JAVA_INSTALL_COMPLETE_MARKER), b"").await?;
+    }
+    Ok(())
 }
 
 const JAVA_INSTALL_STEPS: u64 = 4;
@@ -117,6 +236,7 @@ async fn auto_install_java_inner(
     java_version: u32,
     show_loading: bool,
     reporter: Option<InstallProgressReporter>,
+    existing: ExistingJava,
 ) -> crate::Result<PathBuf> {
     let state = State::get().await?;
     let _runtime_lease = state.content_store.runtime_cache_lock.read().await;
@@ -185,6 +305,23 @@ async fn auto_install_java_inner(
     }
 
     if let Some(download) = packages.first() {
+        let path = state.directories.java_versions_dir();
+        let expected_dir = path.join(
+            download
+                .name
+                .file_stem()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .to_string(),
+        );
+
+        if existing == ExistingJava::Reuse {
+            let _install = lock_java_install(java_version).await?;
+            if is_finished_java_install(&expected_dir, java_version).await {
+                return Ok(java_executable(&expected_dir));
+            }
+        }
+
         if let Some(reporter) = &reporter {
             reporter
                 .set_context(
@@ -268,8 +405,6 @@ async fn auto_install_java_inner(
             .await?
         };
 
-        let path = state.directories.java_versions_dir();
-
         if let Some(reporter) = &reporter {
             reporter
                 .set_context(
@@ -289,30 +424,14 @@ async fn auto_install_java_inner(
                 "failed to read java zip".to_string(),
             ))?;
 
-        let names = archive.file_names().collect::<Result<Vec<_>, _>>()?;
-        // removes the old installation of java
-        if let Some(file) = names.first()
-            && let Some(dir) = file.split('/').next()
+        let install_dir = match archive
+            .file_names()
+            .collect::<Result<Vec<_>, _>>()?
+            .first()
         {
-            if dir.is_empty()
-                || dir == "."
-                || dir == ".."
-                || dir.contains(['\\', ':'])
-                || !matches!(
-                    std::path::Path::new(dir).components().next(),
-                    Some(std::path::Component::Normal(_))
-                )
-            {
-                bail!(ErrorKind::InputError(
-                    "invalid Java archive directory".to_string()
-                ));
-            }
-            let path = path.join(dir);
-
-            if path.exists() {
-                io::remove_dir_all(path).await?;
-            }
-        }
+            Some(first_entry) => java_archive_dir(&path, first_entry)?,
+            None => None,
+        };
 
         if let Some(loading_bar) = &loading_bar {
             emit_loading(loading_bar, 0.0, Some("Extracting java"))?;
@@ -338,36 +457,19 @@ async fn auto_install_java_inner(
                 )
                 .await?;
         }
-        archive.extract(&path).context(ErrorKind::InputError(
-            "failed to extract java zip".to_string(),
-        ))?;
+        install_java_archive(
+            java_version,
+            &mut archive,
+            &path,
+            install_dir.as_deref(),
+            existing,
+        )
+        .await?;
         if let Some(loading_bar) = &loading_bar {
             emit_loading(loading_bar, 10.0, Some("Done extracting java"))?;
         }
-        let mut base_path = path.join(
-            download
-                .name
-                .file_stem()
-                .unwrap_or_default()
-                .to_string_lossy()
-                .to_string(),
-        );
 
-        #[cfg(target_os = "macos")]
-        {
-            base_path = base_path
-                .join("Contents")
-                .join("Home")
-                .join("bin")
-                .join("java")
-        }
-
-        #[cfg(not(target_os = "macos"))]
-        {
-            base_path = base_path.join("bin").join(jre::JAVA_BIN)
-        }
-
-        Ok(base_path)
+        Ok(java_executable(&expected_dir))
     } else {
         bail!(ErrorKind::LauncherError(format!(
             "no Java Version found for Java version {}, OS {}, and Architecture {}",
@@ -428,4 +530,127 @@ pub fn default_memory_max_mb() -> u32 {
 // Gets maximum memory in KiB.
 pub async fn get_max_memory() -> crate::Result<u64> {
     Ok(system_memory_bytes() / 1024)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{Cursor, Write};
+
+    const ARCHIVE_FILES: usize = 200;
+
+    fn java_archive() -> zip::ZipArchive<Cursor<Vec<u8>>> {
+        let mut writer = zip::ZipWriter::new(Cursor::new(Vec::new()));
+        for index in 0..ARCHIVE_FILES {
+            writer
+                .start_file(
+                    format!("zulu-test/lib/file-{index}"),
+                    zip::write::SimpleFileOptions::default(),
+                )
+                .unwrap();
+            writer.write_all(&[7; 4096]).unwrap();
+        }
+        zip::ZipArchive::new(writer.finish().unwrap()).unwrap()
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn installs_at_the_same_time_leave_a_complete_folder() {
+        let root = tempfile::tempdir().unwrap();
+        let install_dir = root.path().join("zulu-test");
+
+        let installs = (0..6)
+            .map(|_| {
+                let root = root.path().to_owned();
+                let install_dir = install_dir.clone();
+                tokio::spawn(async move {
+                    install_java_archive(
+                        9001,
+                        &mut java_archive(),
+                        &root,
+                        Some(&install_dir),
+                        ExistingJava::Reuse,
+                    )
+                    .await
+                })
+            })
+            .collect::<Vec<_>>();
+        for install in installs {
+            install.await.unwrap().unwrap();
+        }
+
+        assert_eq!(
+            std::fs::read_dir(install_dir.join("lib")).unwrap().count(),
+            ARCHIVE_FILES
+        );
+        assert!(install_dir.join(JAVA_INSTALL_COMPLETE_MARKER).exists());
+    }
+
+    #[tokio::test]
+    async fn an_interrupted_install_is_replaced() {
+        let root = tempfile::tempdir().unwrap();
+        let install_dir = root.path().join("zulu-test");
+        std::fs::create_dir_all(&install_dir).unwrap();
+        std::fs::write(install_dir.join("leftover"), b"").unwrap();
+
+        assert!(!is_finished_java_install(&install_dir, 9002).await);
+        install_java_archive(
+            9002,
+            &mut java_archive(),
+            root.path(),
+            Some(&install_dir),
+            ExistingJava::Reuse,
+        )
+        .await
+        .unwrap();
+
+        assert!(!install_dir.join("leftover").exists());
+        assert!(install_dir.join(JAVA_INSTALL_COMPLETE_MARKER).exists());
+    }
+
+    #[tokio::test]
+    async fn a_marked_folder_without_working_java_is_not_finished() {
+        let root = tempfile::tempdir().unwrap();
+        let install_dir = root.path().join("zulu-test");
+        std::fs::create_dir_all(&install_dir).unwrap();
+        std::fs::write(install_dir.join(JAVA_INSTALL_COMPLETE_MARKER), b"")
+            .unwrap();
+
+        assert!(!is_finished_java_install(&install_dir, 9003).await);
+    }
+
+    #[tokio::test]
+    async fn reinstalling_replaces_a_finished_install() {
+        let root = tempfile::tempdir().unwrap();
+        let install_dir = root.path().join("zulu-test");
+        std::fs::create_dir_all(&install_dir).unwrap();
+        std::fs::write(install_dir.join(JAVA_INSTALL_COMPLETE_MARKER), b"")
+            .unwrap();
+        std::fs::write(install_dir.join("old"), b"").unwrap();
+
+        install_java_archive(
+            9004,
+            &mut java_archive(),
+            root.path(),
+            Some(&install_dir),
+            ExistingJava::Replace,
+        )
+        .await
+        .unwrap();
+
+        assert!(!install_dir.join("old").exists());
+        assert!(install_dir.join("lib").exists());
+    }
+
+    #[test]
+    fn archive_folders_stay_inside_the_java_folder() {
+        let root = Path::new("java_versions");
+        assert_eq!(
+            java_archive_dir(root, "zulu17/bin/java").unwrap(),
+            Some(root.join("zulu17"))
+        );
+        for first_entry in ["../evil/file", "/evil", "C:/evil", "..\\evil/file"]
+        {
+            assert!(java_archive_dir(root, first_entry).is_err());
+        }
+    }
 }

@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT DISTINCT owner_id FROM store_retained_refs\n        WHERE owner_kind = 'plus-op'\n          AND owner_id NOT IN (SELECT id FROM plus_content_operations)\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "owner_id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "store_retained_refs",
+            "name": "owner_id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "590f4b9bd10dcf35863ce2a5c4c772a85b76f30f10e0b1fbaad0dc4cecc1eb92"
+}

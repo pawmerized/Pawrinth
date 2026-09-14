@@ -20,10 +20,14 @@ const props = withDefaults(
 		deprioritizedTags?: string[]
 		excludeLoaders?: boolean
 		maxTags?: number
+		tagAction?: (tag: string) => ((event: MouseEvent) => void) | undefined
+		isTagSelected?: (tag: string) => boolean
 	}>(),
 	{
 		maxTags: 5,
 		excludeLoaders: false,
+		tagAction: undefined,
+		isTagSelected: undefined,
 		extraTags: () => [],
 		deprioritizedTags: () => [],
 	},
@@ -55,6 +59,11 @@ const overflowTags = computed(() => [
 		:key="'visible-tag-' + tag"
 		hide-non-loader-icon
 		:tag="tag"
+		:action="tagAction?.(tag)"
+		:class="[
+			tagAction?.(tag) ? 'smart-clickable:allow-pointer-events' : '',
+			isTagSelected?.(tag) ? '!border-brand !bg-brand-highlight !text-brand' : '',
+		]"
 	/>
 	<TagsOverflow
 		v-if="overflowTags"

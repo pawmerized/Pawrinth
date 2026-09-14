@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Переглянути журнали"
   },
-  "app.ads-consent.accept": {
-    "message": "Прийняти всі"
-  },
-  "app.ads-consent.body": {
-    "message": "Реклама підтримує існування Modrinth і фінансує виплати творцям. Наші партнери можуть зберігати й отримувати доступ до cookie в застосунку, щоб персоналізувати рекламу та збирати метрики."
-  },
-  "app.ads-consent.manage": {
-    "message": "Налаштувати"
-  },
-  "app.ads-consent.reject": {
-    "message": "Відхилити всі"
-  },
-  "app.ads-consent.title": {
-    "message": "Ваша приватність і як реклама підтримує Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Показувати примірники у вигляді компактних рядків."
   },
@@ -165,7 +150,7 @@
     "message": "Приховати ім'я"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "Згортати Modrinth App під час запуску Minecraft."
+    "message": "Згортати Pawrinth під час запуску Minecraft."
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "Згортати застосунок"
@@ -207,7 +192,7 @@
     "message": "Головна й уміст"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "Виводити Modrinth App на передній план, коли Minecraft закривається."
+    "message": "Виводити Pawrinth на передній план, коли Minecraft закривається."
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "Повернути фокус при закритті Minecraft"
@@ -522,7 +507,7 @@
     "message": "Схвильований бот Modrinth"
   },
   "app.hosting.update-required.title": {
-    "message": "Потрібне оновлення Modrinth App"
+    "message": "Потрібне оновлення Pawrinth"
   },
   "app.install.phase.downloading_content": {
     "message": "Завантаження вмісту"
@@ -1394,9 +1379,6 @@
   "app.nav.switch-account": {
     "message": "Змінити обліковий запис"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Покращитися до Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "Переглянути профіль"
   },
@@ -1411,12 +1393,6 @@
   },
   "app.navigation.next-image": {
     "message": "Наступне зображення"
-  },
-  "app.news.title": {
-    "message": "Новини"
-  },
-  "app.news.view-all": {
-    "message": "Переглянути всі новини"
   },
   "app.notification.warning": {
     "message": "Попередження"
@@ -1641,7 +1617,7 @@
     "message": "Найстаріші"
   },
   "app.settings.app-version": {
-    "message": "Modrinth App {version}"
+    "message": "Pawrinth {version}"
   },
   "app.settings.default-instance-options.environment-variables.description": {
     "message": "Змінні середовища встановлюються, коли примірник запускається."
@@ -2741,21 +2717,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Реклама підтримує існування Modrinth і фінансує виплати творцям. Наші партнери можуть зберігати й отримувати доступ до cookie в застосунку, щоб персоналізувати рекламу та збирати метрики. Ви можете відмовитися від них або керувати налаштуваннями нижче."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Показувати Modrinth App як вашу поточну активність у Discord. Це не впливає на активність, додану модами. Потребує перезапуску застосунку."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth збирає анонімізовану аналітику та дані про використання для покращення зручності та адаптації сервісу. Вимкнувши цю опцію, ви відмовляєтеся від збору, і ваші дані більше не збиратимуться."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Телеметрія"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Показувати кнопку «Копіювати деталі», коли встановлення перебуває в черзі або виконується. Вона завжди доступна для невдалих або перерваних встановлень."
   },
@@ -2784,7 +2745,7 @@
     "message": "Оглянути каталог застосунку"
   },
   "app.settings.resource-management.app-directory.description": {
-    "message": "Де Modrinth App зберігає примірники й інші файли. Зміни набудуть чинності після перезапуску застосунку."
+    "message": "Де Pawrinth зберігає примірники й інші файли. Зміни набудуть чинності після перезапуску застосунку."
   },
   "app.settings.resource-management.app-directory.select": {
     "message": "Вибрати новий каталог застосунку"
@@ -3107,9 +3068,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "Параметри запуску"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Конфіденційність"
-  },
   "app.settings.tabs.resources": {
     "message": "Ресурси"
   },
@@ -3127,24 +3085,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "Очистити кеш програми?"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "Скопійовано"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "Скопіювати деталі реклами"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "Побачили неприйнятну чи образливу рекламу? Скопіюйте її деталі під час її показу та надішліть їх <support>підтримці Modrinth</support>. Ми переглянемо й видалимо її."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "Дочекайтеся завантаження реклами, і спробуйте знову."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "Не знайдено жодної реклами"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "Поскаржитися на рекламу"
   },
   "app.shared-instance-publish.preparing": {
     "message": "Підготовка оновлення…"
@@ -3323,21 +3263,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "Увімкнути"
   },
-  "app.survey.body": {
-    "message": "Не бажаєте відповісти на кілька запитань про ваш досвід користування Modrinth App?"
-  },
-  "app.survey.footer": {
-    "message": "Цей відгук надійде безпосередньо команді Modrinth і допоможе у створенні майбутніх оновлень!"
-  },
-  "app.survey.no-thanks": {
-    "message": "Ні, дякую"
-  },
-  "app.survey.take-survey": {
-    "message": "Пройти опитування"
-  },
-  "app.survey.title": {
-    "message": "Привіт, користувачу Modrinth!"
-  },
   "app.sync-instances-update.badge": {
     "message": "У цьому оновленні"
   },
@@ -3468,13 +3393,13 @@
     "message": "Синхронізовані пакети ресурсів"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} завантажено. Перезапустіть, щоб оновити зараз, або це відбудеться автоматично після закриття застосунку."
+    "message": "Pawrinth v{version} завантажено. Перезапустіть, щоб оновити зараз, або це відбудеться автоматично після закриття застосунку."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} вже доступно. Скористайтеся менеджером пакетів, щоб отримати найновіші функції та виправлення!"
+    "message": "Pawrinth v{version} вже доступно. Скористайтеся менеджером пакетів, щоб отримати найновіші функції та виправлення!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} вже доступно! Оскільки ви використовуєте лімітне підключення, ми не завантажили його автоматично."
+    "message": "Pawrinth v{version} вже доступно! Оскільки ви використовуєте лімітне підключення, ми не завантажили його автоматично."
   },
   "app.update-popup.changelog": {
     "message": "Список змін"
@@ -3672,7 +3597,7 @@
     "message": "Відв'язати спільний примірник"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-body": {
-    "message": "Це видалить спільний примірник із серверів Modrinth. Користувачі Modrinth App припинять отримувати оновлення, але ваш локальний примірник і його вміст залишаться на цьому пристрої."
+    "message": "Це видалить спільний примірник із серверів Modrinth. Користувачі Pawrinth припинять отримувати оновлення, але ваш локальний примірник і його вміст залишаться на цьому пристрої."
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-header": {
     "message": "Скасування публікації спільного примірника"
@@ -4285,9 +4210,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "Отримати Minecraft"
-  },
-  "minecraft-required.get-support": {
-    "message": "Отримати підтримку"
   },
   "minecraft-required.header": {
     "message": "Потрібний Minecraft"

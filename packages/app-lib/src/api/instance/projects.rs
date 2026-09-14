@@ -187,14 +187,34 @@ pub async fn switch_project_version_with_dependencies(
     let metadata = super::get::get(instance_id)
         .await?
         .ok_or(ErrorKind::InputError("unknown instance".to_string()))?;
-    let path =
+    let operation_id = uuid::Uuid::new_v4().to_string();
+    let recording = crate::plus::operations::begin_update(
+        &operation_id,
+        instance_id,
+        crate::plus::operations::OperationKind::UpdateOne,
+        &state,
+    )
+    .await?;
+    let result =
         crate::state::instances::commands::switch_project_version_with_dependencies(
             instance_id,
             project_path,
             version_id,
             &state,
         )
-        .await?;
+        .await;
+    if recording
+        && let Err(error) = crate::plus::operations::finish_update(
+            &operation_id,
+            instance_id,
+            result.is_ok(),
+            &state,
+        )
+        .await
+    {
+        tracing::warn!("Failed to record update operation: {error}");
+    }
+    let path = result?;
     if super::synced_packs::is_pack_path(project_path)
         || super::synced_packs::is_pack_path(&path)
     {

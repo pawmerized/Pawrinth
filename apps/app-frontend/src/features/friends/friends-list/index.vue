@@ -224,10 +224,10 @@ const messages = defineMessages({
 					<div>
 						<p class="m-0">
 							<template v-if="friend.id === userCredentials?.user_id">
-								<span class="text-contrast">{{ friend.username }}</span> sent you a friend request
+								<span class="plus-private-stream text-contrast">{{ friend.username }}</span> sent you a friend request
 							</template>
 							<template v-else>
-								You sent <span class="font-bold">{{ friend.username }}</span> a friend request
+								You sent <span class="plus-private-stream font-bold">{{ friend.username }}</span> a friend request
 							</template>
 						</p>
 						<p class="m-0 text-sm text-secondary">

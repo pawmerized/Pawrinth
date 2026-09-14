@@ -17,6 +17,25 @@
 			<span class="text-sm text-contrast"> {{ formatMessage(messages.offline) }} </span>
 		</div>
 		<AppUpdateButton />
+		<button
+			v-if="streamerMode"
+			v-tooltip="formatMessage(messages.streamerModeOff)"
+			type="button"
+			class="flex cursor-pointer items-center gap-1 rounded-xl border border-solid border-brand bg-transparent px-3 py-1.5 text-sm font-medium text-brand"
+			@click="setStreamerMode(false)"
+		>
+			<EyeOffIcon aria-hidden="true" />
+			{{ formatMessage(messages.streamerMode) }}
+		</button>
+		<IconButton
+			v-else
+			v-tooltip="formatMessage(messages.streamerModeOn)"
+			type="quiet"
+			:label="formatMessage(messages.streamerModeOn)"
+			@click="setStreamerMode(true)"
+		>
+			<EyeOffIcon aria-hidden="true" />
+		</IconButton>
 		<div
 			class="flex border-solid border-surface-5 text-sm font-medium items-center gap-2 py-1.5 px-3 rounded-xl border"
 		>
@@ -125,6 +144,7 @@
 import {
 	DownloadIcon,
 	DropdownIcon,
+	EyeOffIcon,
 	OnlineIndicatorIcon,
 	StarIcon,
 	StopCircleIcon,
@@ -154,6 +174,8 @@ import { get_all as getRunningProcesses, kill as killProcess } from '@/helpers/p
 import type { LoadingBar } from '@/helpers/state'
 import { progress_bars_list } from '@/helpers/state'
 import type { GameInstance } from '@/helpers/types'
+import { usePrivacy } from '@/features/plus-privacy/use-privacy'
+import { patchPlusSettings } from '@/features/plus-settings/use-plus-settings'
 
 const { handleError } = injectNotificationManager()
 const popupNotificationManager = injectPopupNotificationManager()
@@ -170,6 +192,9 @@ interface RunningProcess {
 }
 
 const messages = defineMessages({
+	streamerMode: { id: 'plus.privacy.streamer', defaultMessage: 'Streamer mode' },
+	streamerModeOff: { id: 'plus.privacy.streamer.turn-off', defaultMessage: 'Turn off streamer mode' },
+	streamerModeOn: { id: 'plus.privacy.streamer.turn-on', defaultMessage: 'Turn on streamer mode' },
 	offline: {
 		id: 'app.action-bar.offline',
 		defaultMessage: 'Offline',
@@ -227,6 +252,12 @@ const messages = defineMessages({
 		defaultMessage: 'Show active downloads',
 	},
 })
+
+const { streamerMode } = usePrivacy()
+
+function setStreamerMode(enabled: boolean): void {
+	void patchPlusSettings({ privacy: { streamer_mode: enabled } })
+}
 
 const downloadState = computed(() => popupNotificationManager.getDownloadState())
 const downloadToggleLabel = computed(() =>

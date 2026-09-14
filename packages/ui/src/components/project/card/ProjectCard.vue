@@ -74,6 +74,8 @@
 							:tags="tags"
 							:exclude-loaders="excludeLoaders"
 							:deprioritized-tags="deprioritizedTags"
+							:tag-action="tagAction"
+							:is-tag-selected="isTagSelected"
 							:max-tags="(maxTags || 6) + (!!environment ? 0 : 1)"
 						/>
 						<ServerModpackContent
@@ -155,7 +157,7 @@
 							:hide-label="true"
 						/>
 					</template>
-					<div class="flex items-center gap-1">
+					<div class="flex min-w-0 flex-wrap items-center gap-1">
 						<template v-if="isServerProject">
 							<ServerPing v-if="serverPing && serverStatusOnline" :ping="serverPing" />
 							<ServerRegion
@@ -171,6 +173,8 @@
 							:extra-tags="extraTags"
 							:exclude-loaders="excludeLoaders"
 							:deprioritized-tags="deprioritizedTags"
+							:tag-action="tagAction"
+							:is-tag-selected="isTagSelected"
 							:max-tags="(maxTags || (!!$slots.actions ? 4 : 5)) + (!!environment ? 0 : 1)"
 						/>
 					</div>
@@ -252,6 +256,9 @@ const props = defineProps<{
 	environment?: ProjectCardEnvironmentValue
 	status?: ProjectStatus
 	maxTags?: number
+	/** Makes a tag clickable when it returns something for that tag. */
+	tagAction?: (tag: string) => ((event: MouseEvent) => void) | undefined
+	isTagSelected?: (tag: string) => boolean
 }>()
 
 const baseCardStyle =
@@ -342,6 +349,7 @@ const cssColor = computed(() => {
 
 .grid-project-card-list__tags {
 	grid-area: tags;
+	min-width: 0;
 }
 
 @container (width < 850px) {

@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "查看紀錄"
   },
-  "app.ads-consent.accept": {
-    "message": "全部接受"
-  },
-  "app.ads-consent.body": {
-    "message": "廣告使 Modrinth 得以營運，並為創作者提供收益。我們的合作夥伴可能會在應用程式中儲存或存取 Cookie，以實現個人化廣告並衡量廣告成效。"
-  },
-  "app.ads-consent.manage": {
-    "message": "管理偏好設定"
-  },
-  "app.ads-consent.reject": {
-    "message": "全部拒絕"
-  },
-  "app.ads-consent.title": {
-    "message": "關於你的隱私，以及廣告如何幫助 Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "以密集的橫列版面顯示遊戲庫實例。"
   },
@@ -165,7 +150,7 @@
     "message": "隱藏名牌"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "當 Minecraft 啟動時將 Modrinth App 最小化。"
+    "message": "當 Minecraft 啟動時將 Pawrinth 最小化。"
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "最小化應用程式"
@@ -207,7 +192,7 @@
     "message": "首頁與內容"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "當 Minecraft 關閉時，將 Modrinth App 切換至前景。"
+    "message": "當 Minecraft 關閉時，將 Pawrinth 切換至前景。"
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "Minecraft 關閉後開啟應用程式"
@@ -513,7 +498,7 @@
     "message": "查看實例"
   },
   "app.hosting.update-required.description": {
-    "message": "你需要更新才能透過 Modrinth App 使用 Modrinth Hosting"
+    "message": "你需要更新才能透過 Pawrinth 使用 Modrinth Hosting"
   },
   "app.hosting.update-required.download": {
     "message": "下載即可更新"
@@ -522,7 +507,7 @@
     "message": "興奮的 Modrinth Bot"
   },
   "app.hosting.update-required.title": {
-    "message": "需要更新 Modrinth App"
+    "message": "需要更新 Pawrinth"
   },
   "app.install.phase.downloading_content": {
     "message": "正在下載內容"
@@ -1403,9 +1388,6 @@
   "app.nav.switch-account": {
     "message": "切換帳號"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "升級至 Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "查看個人檔案"
   },
@@ -1420,12 +1402,6 @@
   },
   "app.navigation.next-image": {
     "message": "下一張圖片"
-  },
-  "app.news.title": {
-    "message": "新聞"
-  },
-  "app.news.view-all": {
-    "message": "查看所有新聞"
   },
   "app.notification.warning": {
     "message": "警告"
@@ -1650,7 +1626,7 @@
     "message": "由舊到新"
   },
   "app.settings.app-version": {
-    "message": "Modrinth App {version}"
+    "message": "Pawrinth {version}"
   },
   "app.settings.default-instance-options.environment-variables.description": {
     "message": "啟動實例時設定的環境變數。"
@@ -2750,21 +2726,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "廣告使 Modrinth 得以營運，並為創作者提供收益。我們的合作夥伴可能會在應用程式中儲存或存取 Cookie，以實現個人化廣告並衡量廣告成效。你可以在下方選擇退出或管理偏好設定。"
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "在 Discord 上將 Modrinth App 顯示為目前活動。這不會影響模組為實例新增的豐富狀態。需要重新啟動應用程式。"
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord 豐富狀態"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth 會收集匿名化的分析與使用資料，以提升使用者體驗並提供客製化服務。若停用此選項，即表示你選擇退出，你的資料將不再被收集。"
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "遙測"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "當安裝已排入佇列或正在執行時，顯示「複製詳細資訊」按鈕。這項設定僅適用於前述安裝情形，安裝失敗或中斷時一律顯示該按鈕。"
   },
@@ -2793,7 +2754,7 @@
     "message": "瀏覽應用程式資料夾"
   },
   "app.settings.resource-management.app-directory.description": {
-    "message": "Modrinth App 儲存實例及其他檔案的位置。變更將於重新啟動應用程式後生效。"
+    "message": "Pawrinth 儲存實例及其他檔案的位置。變更將於重新啟動應用程式後生效。"
   },
   "app.settings.resource-management.app-directory.select": {
     "message": "選擇新的應用程式資料夾"
@@ -3116,9 +3077,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "啟動掛勾"
   },
-  "app.settings.tabs.privacy": {
-    "message": "隱私"
-  },
   "app.settings.tabs.resources": {
     "message": "資源"
   },
@@ -3136,24 +3094,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "要清除應用程式快取嗎？"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "已複製"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "複製廣告詳細資訊"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "看到內容不當或冒犯性的廣告嗎？請在廣告出現時複製它的詳細資訊，然後傳送給 <support>Modrinth 客服</support>。我們將進行審查並將其移除。"
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "請等待廣告載入完畢，然後再試一次。"
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "找不到廣告"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "檢舉廣告"
   },
   "app.shared-instance-publish.preparing": {
     "message": "正在準備更新…"
@@ -3338,21 +3278,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "開啟"
   },
-  "app.survey.body": {
-    "message": "你方便回答幾個關於 Modrinth App 使用體驗的問題嗎？"
-  },
-  "app.survey.footer": {
-    "message": "你的回覆將直接傳送給 Modrinth 團隊，作為未來更新方向的指引！"
-  },
-  "app.survey.no-thanks": {
-    "message": "不用了，謝謝"
-  },
-  "app.survey.take-survey": {
-    "message": "填寫問卷調查"
-  },
-  "app.survey.title": {
-    "message": "你好啊，Modrinth 使用者！"
-  },
   "app.sync-instances-update.badge": {
     "message": "更新內容"
   },
@@ -3483,13 +3408,13 @@
     "message": "已同步資源包"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} 已完成下載！立即重新載入以更新，或在關閉 Modrinth App 時自動更新。"
+    "message": "Pawrinth v{version} 已完成下載！立即重新載入以更新，或在關閉 Pawrinth 時自動更新。"
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} 現已推出。請使用軟體包管理員進行更新，以取得最新的功能與修正！"
+    "message": "Pawrinth v{version} 現已推出。請使用軟體包管理員進行更新，以取得最新的功能與修正！"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} 現已推出！由於你目前使用的是計量付費網路，我們並未自動下載更新。"
+    "message": "Pawrinth v{version} 現已推出！由於你目前使用的是計量付費網路，我們並未自動下載更新。"
   },
   "app.update-popup.changelog": {
     "message": "更新日誌"
@@ -3687,7 +3612,7 @@
     "message": "取消連結共用實例"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-body": {
-    "message": "這將從 Modrinth 的伺服器刪除共用實例。在 Modrinth App 使用該實例的使用者將不再收到更新，但本機實例及其內容仍會保留在此裝置上。"
+    "message": "這將從 Modrinth 的伺服器刪除共用實例。在 Pawrinth 使用該實例的使用者將不再收到更新，但本機實例及其內容仍會保留在此裝置上。"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-header": {
     "message": "即將取消發布共用實例"
@@ -4324,9 +4249,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "取得 Minecraft"
-  },
-  "minecraft-required.get-support": {
-    "message": "取得支援"
   },
   "minecraft-required.header": {
     "message": "需要 Minecraft"

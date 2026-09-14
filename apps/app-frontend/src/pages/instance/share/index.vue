@@ -75,8 +75,9 @@
 							size="20px"
 							circle
 							no-shadow
+							class="plus-private-stream"
 						/>
-						<span class="min-w-0 truncate">{{ linkedAccount.username }}</span>
+						<span class="plus-private-stream min-w-0 truncate">{{ linkedAccount.username }}</span>
 					</span>
 					<span v-else class="font-semibold text-primary">{{
 						formatMessage(messages.linkedAccountFallback)

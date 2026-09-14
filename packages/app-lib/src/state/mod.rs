@@ -149,6 +149,11 @@ impl State {
         }
         state.content_store.recover(None).await?;
         crate::install::recovery::recover_interrupted_jobs(state).await?;
+        if let Err(error) =
+            crate::plus::operations::reconcile_operations(state).await
+        {
+            tracing::error!("Failed to settle content operations: {error}");
+        }
         content_store::migrate(state).await?;
         state
             .startup_complete
@@ -221,12 +226,9 @@ impl State {
                 tracing::error!("Error migrating legacy instance icons: {e}");
             }
 
+            crate::plus::discord::refresh_in_background();
+
             let res = tokio::try_join!(
-                state.presence.discord_rpc.clear_to_default(
-                    true,
-                    &state.pool,
-                    &state.process_manager,
-                ),
                 refresh_all_instances(state),
                 Settings::migrate(&state.pool),
                 ModrinthCredentials::refresh_all(
@@ -238,6 +240,8 @@ impl State {
             if let Err(e) = res {
                 tracing::error!("Error running discord RPC: {e}");
             }
+
+            crate::plus::discord::start_keep_alive();
 
             let _ = state
                 .presence
@@ -299,6 +303,7 @@ impl State {
         .ok_or(ErrorKind::FSError(
             "could not find the application directory".to_string(),
         ))?;
+        crate::plus::guard::ensure_isolated_data_dir(&settings_dir)?;
         let store_lock =
             content_store::ContentStore::lock_process(&settings_dir).await?;
         let pool = db::connect(&app_identifier).await?;
@@ -307,6 +312,11 @@ impl State {
 
         tracing::info!("Fetching app settings");
         let mut settings = Settings::get(&pool).await?;
+        if let Some(custom_dir) = &settings.custom_dir {
+            crate::plus::guard::ensure_isolated_data_dir(
+                std::path::Path::new(custom_dir),
+            )?;
+        }
 
         let fetch_semaphore =
             FetchSemaphore(Semaphore::new(settings.max_concurrent_downloads));

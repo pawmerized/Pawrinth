@@ -11,6 +11,8 @@ import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
 
 import { useAppSettings } from '@/composables/use-app-settings.ts'
 import { type ColorTheme, isDarkTheme, useTheme } from '@/composables/use-theme.ts'
+import { patchPlusSettings } from '@/features/plus-settings/use-plus-settings'
+import { setThemeLibrary } from '@/features/plus-themes/theme-engine'
 import { injectAppSettingsModal } from '@/features/settings/app-settings-modal/context'
 import { type AppSettings, get, set } from '@/helpers/settings.ts'
 
@@ -60,6 +62,10 @@ const { saved, current, changes, saving, hasChanges, reset, save } = useSavable(
 		}
 
 		await set(nextSettings)
+		if (appearanceChanges.theme !== undefined) {
+			const plus = await patchPlusSettings({ appearance: { active_theme_id: null } })
+			setThemeLibrary(plus.appearance.themes, plus.appearance.active_theme_id)
+		}
 		if (isDarkTheme(value.theme)) {
 			theme.preferredDark = value.theme
 		}

@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Tignan ang logs"
   },
-  "app.ads-consent.accept": {
-    "message": "Tanggapin lahat"
-  },
-  "app.ads-consent.body": {
-    "message": "Ginagawang posible ng mga advertisement ang Modrinth at pinopondohan nito ang mga bayad sa mga creator. Maaaring mag-imbak o mag-access ng cookies ang aming mga partner sa app upang i-personalize ang mga advertisement at sukatin ang pagsasagawa."
-  },
-  "app.ads-consent.manage": {
-    "message": "Pamahalaan ang mga kagustuhan"
-  },
-  "app.ads-consent.reject": {
-    "message": "Tanggihan lahat"
-  },
-  "app.ads-consent.title": {
-    "message": "Iyong pagkapribado at kung paano sinusuportahan ng mga ad ang Modrinth\n"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Ipakita ang mga instansya ng librerya sa masiksik na layout."
   },
@@ -165,7 +150,7 @@
     "message": "Itago ang nametag"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "Itago ang Modrinth App pag nagsimula ang Minecraft."
+    "message": "Itago ang Pawrinth pag nagsimula ang Minecraft."
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "Itago ang aplikasyon"
@@ -207,7 +192,7 @@
     "message": "Tahanan at nilalaman"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "Ilitaw ang Modrinth App kapag nagsara ang Minecraft."
+    "message": "Ilitaw ang Pawrinth kapag nagsara ang Minecraft."
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "Ibabalik ang pokus sa aplikasyon kapag nagsara ang Minecraft"
@@ -398,9 +383,6 @@
   "app.settings.tabs.language": {
     "message": "Wika"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Pribasiya"
-  },
   "app.skins.apply-button": {
     "message": "Ilapat"
   },
@@ -432,13 +414,13 @@
     "message": "Modrinth Pride"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Tapos nang ma-download ang Modrinth App v{version}. Mag-reload upang ma-update ngayon, o awtomatiko sa pagsara ng Modrinth App."
+    "message": "Tapos nang ma-download ang Pawrinth v{version}. Mag-reload upang ma-update ngayon, o awtomatiko sa pagsara ng Pawrinth."
   },
   "app.update-popup.body.linux": {
-    "message": "Magagamit na ngayon ang Modrinth App v{version}. Gamitin ang iyong package manager upang i-update sa pinabagong tampok at pag-aayos!"
+    "message": "Magagamit na ngayon ang Pawrinth v{version}. Gamitin ang iyong package manager upang i-update sa pinabagong tampok at pag-aayos!"
   },
   "app.update-popup.body.metered": {
-    "message": "Magagamit na ngayon ang Modrinth App v{version}! Hindi namin dinanload kaagad dahil naka-metro ang inyong network."
+    "message": "Magagamit na ngayon ang Pawrinth v{version}! Hindi namin dinanload kaagad dahil naka-metro ang inyong network."
   },
   "app.update-popup.changelog": {
     "message": "Changelog"

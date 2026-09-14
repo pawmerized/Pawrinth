@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "查看日志"
   },
-  "app.ads-consent.accept": {
-    "message": "全部接受"
-  },
-  "app.ads-consent.body": {
-    "message": "​广告维持着 Modrinth 的持续运营，并为创作者收益提供资金支持。我们的合作伙伴可能会在应用中存储或读取 Cookie，以提供个性化广告并评估广告效果。"
-  },
-  "app.ads-consent.manage": {
-    "message": "管理偏好设置"
-  },
-  "app.ads-consent.reject": {
-    "message": "全部拒绝"
-  },
-  "app.ads-consent.title": {
-    "message": "您的隐私以及广告如何支持 Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "用紧凑行式布局显示库实例。"
   },
@@ -165,7 +150,7 @@
     "message": "隐藏名牌"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "当 Minecraft 进程启动时，将 Modrinth App 最小化。"
+    "message": "当 Minecraft 进程启动时，将 Pawrinth 最小化。"
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "最小化 App"
@@ -207,10 +192,10 @@
     "message": "主页与内容"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "当 Minecraft 退出时，将Modrinth App调至前台。"
+    "message": "当 Minecraft 退出时，将Pawrinth调至前台。"
   },
   "app.behavior-settings.refocus-on-game-close.title": {
-    "message": "当《我的世界》关闭时，重新聚焦于Modrinth App"
+    "message": "当《我的世界》关闭时，重新聚焦于Pawrinth"
   },
   "app.behavior-settings.startup-and-navigation.title": {
     "message": "启动与导航"
@@ -513,7 +498,7 @@
     "message": "查看实例"
   },
   "app.hosting.update-required.description": {
-    "message": "你需要更新才能通过 Modrinth App 使用 Modrinth Hosting"
+    "message": "你需要更新才能通过 Pawrinth 使用 Modrinth Hosting"
   },
   "app.hosting.update-required.download": {
     "message": "更新升级"
@@ -522,7 +507,7 @@
     "message": "兴奋的 Modrinth Bot"
   },
   "app.hosting.update-required.title": {
-    "message": "需要更新 Modrinth App"
+    "message": "需要更新 Pawrinth"
   },
   "app.install.phase.downloading_content": {
     "message": "正在下载内容"
@@ -1403,9 +1388,6 @@
   "app.nav.switch-account": {
     "message": "切换账户"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "升级至Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "查看个人主页"
   },
@@ -1420,12 +1402,6 @@
   },
   "app.navigation.next-image": {
     "message": "下一张图片"
-  },
-  "app.news.title": {
-    "message": "新闻"
-  },
-  "app.news.view-all": {
-    "message": "查看所有新闻"
   },
   "app.notification.warning": {
     "message": "警告"
@@ -1650,7 +1626,7 @@
     "message": "从旧到新"
   },
   "app.settings.app-version": {
-    "message": "Modrinth App {version}"
+    "message": "Pawrinth {version}"
   },
   "app.settings.default-instance-options.environment-variables.description": {
     "message": "启动实例时设置的环境变量。"
@@ -2750,21 +2726,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "广告使 Modrinth 得以运营，并为创作者报酬提供资金支持。我们的合作伙伴可能会在应用中存储或访问 Cookie，以便实现广告个性化和效果衡量。您可以在下方选择退出或管理您的偏好设置。"
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "在 Discord 上将 Modrinth App 显示为您当前的活动。这不会影响模组为游戏实例添加的 Rich Presence。需要重启应用生效。"
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth 收集匿名分析和使用数据，以提升用户体验并为您提供个性化服务。若禁用此选项，即表示您选择退出，您的数据将不再被收集。"
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "遥测"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "在安装排队或运行时显示“复制详细信息”选项。对于失败或中断的安装，该选项始终可用。"
   },
@@ -2793,7 +2754,7 @@
     "message": "浏览应用目录"
   },
   "app.settings.resource-management.app-directory.description": {
-    "message": "Modrinth App存储实例和其他文件的位置。更改会在重启程序后生效。"
+    "message": "Pawrinth存储实例和其他文件的位置。更改会在重启程序后生效。"
   },
   "app.settings.resource-management.app-directory.select": {
     "message": "选择新的应用目录"
@@ -3116,9 +3077,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "启动 hook"
   },
-  "app.settings.tabs.privacy": {
-    "message": "隐私"
-  },
   "app.settings.tabs.resources": {
     "message": "资源"
   },
@@ -3136,24 +3094,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "要清除应用缓存吗？"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "已复制"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "复制广告详情"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "看到了不当或冒犯性广告？请在广告显示时复制它的详情，并将其发送到<support>Modrinth支持</support>。我们会审核并移除它。"
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "请等待广告加载后再试。"
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "未找到广告"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "举报广告"
   },
   "app.shared-instance-publish.preparing": {
     "message": "准备更新…"
@@ -3338,21 +3278,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "切换至开"
   },
-  "app.survey.body": {
-    "message": "您是否介意回答一些关于使用 Modrinth App 的问题？"
-  },
-  "app.survey.footer": {
-    "message": "此反馈将直接发送给Modrinth团队，为今后的更新提供指导！"
-  },
-  "app.survey.no-thanks": {
-    "message": "不，谢谢"
-  },
-  "app.survey.take-survey": {
-    "message": "参与调研"
-  },
-  "app.survey.title": {
-    "message": "嗨，Modrinth用户！"
-  },
   "app.sync-instances-update.badge": {
     "message": "本次更新的新功能"
   },
@@ -3483,13 +3408,13 @@
     "message": "同步的资源包"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} 更新已下载完成！立即重启更新，或退出时自动安装。"
+    "message": "Pawrinth v{version} 更新已下载完成！立即重启更新，或退出时自动安装。"
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} 现已发布。请使用你的软件包管理器进行更新，获取最新功能与修复！"
+    "message": "Pawrinth v{version} 现已发布。请使用你的软件包管理器进行更新，获取最新功能与修复！"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} 现已发布！由于你正在使用按流量计费的网络，该更新未自动下载。"
+    "message": "Pawrinth v{version} 现已发布！由于你正在使用按流量计费的网络，该更新未自动下载。"
   },
   "app.update-popup.changelog": {
     "message": "更新日志"
@@ -3687,7 +3612,7 @@
     "message": "解除共享实例关联"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-body": {
-    "message": "这将从 Modrinth 服务器上删除该共享实例。在 Modrinth App 中使用它的用户将停止接收更新，但你的本地实例及其内容仍会保留在此设备上。"
+    "message": "这将从 Modrinth 服务器上删除该共享实例。在 Pawrinth 中使用它的用户将停止接收更新，但你的本地实例及其内容仍会保留在此设备上。"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-header": {
     "message": "取消发布共享实例"
@@ -4333,9 +4258,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "获取 Minecraft"
-  },
-  "minecraft-required.get-support": {
-    "message": "获取支持"
   },
   "minecraft-required.header": {
     "message": "需要 Minecraft"

@@ -1,0 +1,74 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT id, instance_id, kind, parent_id, scope\n        FROM plus_content_operations\n        WHERE state = 'applying'\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "instance_id",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "instance_id"
+          }
+        }
+      },
+      {
+        "name": "kind",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "kind"
+          }
+        }
+      },
+      {
+        "name": "parent_id",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "parent_id"
+          }
+        }
+      },
+      {
+        "name": "scope",
+        "ordinal": 4,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "scope"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "26e38b54007312f64918c555da0b27cb3b922211fdc07ae789501f9620a6e10f"
+}

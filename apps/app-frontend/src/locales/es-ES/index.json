@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Ver registros"
   },
-  "app.ads-consent.accept": {
-    "message": "Aceptar todo"
-  },
-  "app.ads-consent.body": {
-    "message": "Los anuncios hacen que Modrinth sea posible y financian los pagos a los creadores. Nuestros socios pueden almacenar o acceder a cookies en la aplicación para personalizar los anuncios y medir el rendimiento."
-  },
-  "app.ads-consent.manage": {
-    "message": "Gestionar preferencias"
-  },
-  "app.ads-consent.reject": {
-    "message": "Rechazar todo"
-  },
-  "app.ads-consent.title": {
-    "message": "Tu privacidad y cómo los anuncios apoyan a Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Muestra las instancias de la biblioteca en un diseño compacto de filas."
   },
@@ -522,7 +507,7 @@
     "message": "Modrinth Bot emocionado"
   },
   "app.hosting.update-required.title": {
-    "message": "Se requiere actualizar Modrinth App"
+    "message": "Se requiere actualizar Pawrinth"
   },
   "app.install.phase.downloading_content": {
     "message": "Descargando contenido"
@@ -1397,9 +1382,6 @@
   "app.nav.switch-account": {
     "message": "Cambiar cuenta"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Actualizar a Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "Ver perfil"
   },
@@ -1414,12 +1396,6 @@
   },
   "app.navigation.next-image": {
     "message": "Siguiente imagen"
-  },
-  "app.news.title": {
-    "message": "Noticias"
-  },
-  "app.news.view-all": {
-    "message": "Ver todas las noticias"
   },
   "app.notification.warning": {
     "message": "Advertencia"
@@ -1644,7 +1620,7 @@
     "message": "Antiguo"
   },
   "app.settings.app-version": {
-    "message": "Modrinth App {version}"
+    "message": "Pawrinth {version}"
   },
   "app.settings.default-instance-options.environment-variables.description": {
     "message": "Variables de entorno definidas al ejecutar una instancia."
@@ -2744,21 +2720,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Los anuncios hacen Modrinth posible y financian los pagos a los creadores. Nuestros socios pueden almacenar o acceder a cookies en la aplicación para personalizar los anuncios y medir el rendimiento. Puedes desactivar esta opción o modificar tus preferencias a continuación."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Mostrar Modrinth App como tu actividad actual en Discord.\nEsto no afecta tu Presencia Enriquecida añadida a instancias por mods. Requiere reiniciar la aplicación."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Estado de la actividad en Discord"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth recopila análisis y datos de uso anónimos para mejorar la experiencia de usuario y personalizar tu experiencia. Deshabilitando esta opción sus datos dejarán de ser recopilados."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Telemetría"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Muestra la opción 'Copiar detalles' mientras haya una instalación en cola o instalando. Siempre está disponible para las instalaciones fallidas o interrumpidas."
   },
@@ -2787,7 +2748,7 @@
     "message": "Buscar un directorio de aplicaciones"
   },
   "app.settings.resource-management.app-directory.description": {
-    "message": "Donde Modrinth App almacena instancias y otros archivos. Los cambios entran en vigor tras reiniciar la aplicación."
+    "message": "Donde Pawrinth almacena instancias y otros archivos. Los cambios entran en vigor tras reiniciar la aplicación."
   },
   "app.settings.resource-management.app-directory.select": {
     "message": "Seleccionar un nuevo directorio de aplicaciones"
@@ -3089,9 +3050,6 @@
   "app.settings.tabs.language": {
     "message": "Idioma"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Privacidad"
-  },
   "app.sidebar.playing-as": {
     "message": "Jugando como"
   },
@@ -3257,21 +3215,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "Activar"
   },
-  "app.survey.body": {
-    "message": "¿Te importaría responder a algunas preguntas sobre tu experiencia con Modrinth App?"
-  },
-  "app.survey.footer": {
-    "message": "¡Estos comentarios irán directamente al equipo de Modrinth y ayudarán a guiar futuras actualizaciones!"
-  },
-  "app.survey.no-thanks": {
-    "message": "No, gracias"
-  },
-  "app.survey.take-survey": {
-    "message": "Completar la encuesta"
-  },
-  "app.survey.title": {
-    "message": "¡Hola, usuario Modrinth!"
-  },
   "app.sync-instances-update.badge": {
     "message": "Nueva actualización"
   },
@@ -3402,13 +3345,13 @@
     "message": "Paquetes de recursos sincronizados"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} se ha descargado. Actualiza la página ahora o espera a que se actualice automáticamente al cerrar Modrinth App."
+    "message": "Pawrinth v{version} se ha descargado. Actualiza la página ahora o espera a que se actualice automáticamente al cerrar Pawrinth."
   },
   "app.update-popup.body.linux": {
-    "message": "Ya está disponible Modrinth App v{version}. ¡Utiliza tu gestor de paquetes para actualizarla y disfrutar de las últimas funciones y correcciones!"
+    "message": "Ya está disponible Pawrinth v{version}. ¡Utiliza tu gestor de paquetes para actualizarla y disfrutar de las últimas funciones y correcciones!"
   },
   "app.update-popup.body.metered": {
-    "message": "¡Modrinth App v{version} ya está disponible! Como estás conectado a una red con tarifa por datos, no la hemos descargado automáticamente."
+    "message": "¡Pawrinth v{version} ya está disponible! Como estás conectado a una red con tarifa por datos, no la hemos descargado automáticamente."
   },
   "app.update-popup.changelog": {
     "message": "Registro de cambios"
@@ -4192,9 +4135,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "Obtener Minecraft"
-  },
-  "minecraft-required.get-support": {
-    "message": "Obtener ayuda"
   },
   "minecraft-required.header": {
     "message": "Minecraft requerido"

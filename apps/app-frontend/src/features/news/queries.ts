@@ -1,27 +1,41 @@
 import type { NewsArticle } from '@modrinth/ui'
 import { queryOptions } from '@tanstack/vue-query'
 
-type NewsFeedArticle = Omit<NewsArticle, 'path'> & { link: string }
+import { type NewsCategory, plus_news_feed, type PlusNewsArticle } from '@/helpers/plus'
+
+const REFRESH_AFTER_MS = 60 * 60 * 1000
 
 export const newsKeys = {
-	articles: ['news', 'articles'] as const,
+	articles: ['pawrinth-news', 'articles'] as const,
+}
+
+export type PawrinthNewsArticle = NewsArticle & { category: NewsCategory }
+
+/** The fields the news card expects. An article with no image shows without one. */
+export function toNewsCard(article: PlusNewsArticle): PawrinthNewsArticle {
+	return {
+		path: article.link,
+		title: article.title,
+		summary: article.summary,
+		date: article.date,
+		thumbnail: article.thumbnail ?? undefined,
+		category: article.category,
+	}
 }
 
 export function newsArticlesQueryOptions() {
 	return queryOptions({
 		queryKey: newsKeys.articles,
-		queryFn: async ({ signal }): Promise<NewsArticle[]> => {
-			const response = await fetch('https://modrinth.com/news/feed/articles.json', { signal })
-			if (!response.ok) {
-				throw new Error(`Failed to fetch news articles: HTTP ${response.status}`)
+		queryFn: async () => {
+			const feed = await plus_news_feed()
+			return {
+				configured: feed.configured,
+				articles: feed.articles.map(toNewsCard),
+				allNewsUrl: feed.all_news_url,
 			}
-			const feed: { articles?: NewsFeedArticle[] } | null = await response.json()
-			return (feed?.articles ?? []).map((article) => ({ ...article, path: article.link }))
 		},
-		staleTime: Infinity,
+		staleTime: REFRESH_AFTER_MS,
 		retry: false,
-		refetchOnMount: false,
 		refetchOnWindowFocus: false,
-		refetchOnReconnect: false,
 	})
 }

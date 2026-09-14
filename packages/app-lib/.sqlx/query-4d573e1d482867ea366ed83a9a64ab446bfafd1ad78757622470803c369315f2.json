@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT manifest FROM plus_content_operations WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "manifest",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "manifest"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "4d573e1d482867ea366ed83a9a64ab446bfafd1ad78757622470803c369315f2"
+}

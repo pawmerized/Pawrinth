@@ -1,0 +1,12 @@
+{
+	"all_news_url": "https://github.com/pawmerized/Pawrinth/releases",
+	"articles": [
+		{
+			"title": "Welcome to Pawrinth",
+			"summary": "CurseForge modpacks and exports, themes, update history with rollback, Discord status and automatic updates, in one launcher.",
+			"date": "2026-11-04",
+			"link": "https://github.com/pawmerized/Pawrinth/releases",
+			"category": "release"
+		}
+	]
+}

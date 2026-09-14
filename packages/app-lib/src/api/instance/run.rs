@@ -227,7 +227,8 @@ async fn run_credentials(
         mc_set_options.push(("fullscreen".to_string(), "true".to_string()));
     }
 
-    if let Some(project_id) = server_play_project_id(&context.link)
+    if crate::plus::REPORT_USAGE_TO_MODRINTH
+        && let Some(project_id) = server_play_project_id(&context.link)
         && !project_id.trim().is_empty()
     {
         let server_id = uuid::Uuid::new_v4().to_string();
@@ -335,7 +336,9 @@ pub async fn try_update_playtime_by_instance_id(
             "tried to update playtime for nonexistent instance {instance_id}"
         ))?;
     let updated_recent_playtime = context.instance.recent_time_played;
-    let res = if updated_recent_playtime > 0 {
+    let res = if crate::plus::REPORT_USAGE_TO_MODRINTH
+        && updated_recent_playtime > 0
+    {
         let modrinth_pack_version_id = match &context.link {
             InstanceLink::ModrinthModpack { version_id, .. }
             | InstanceLink::ServerProjectModpack {

@@ -1,0 +1,57 @@
+name: Bug report
+description: Something in Pawrinth isn't working.
+labels: [bug]
+body:
+  - type: checkboxes
+    attributes:
+      label: Before you report
+      options:
+        - label: I searched the [existing issues](https://github.com/pawmerized/Pawrinth/issues?q=is%3Aissue) and this hasn't been reported.
+          required: true
+        - label: I'm on the newest Pawrinth version. It updates itself, and Settings shows the version at the bottom.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: Pawrinth version
+      placeholder: 0.2.0
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where it happens
+      options:
+        - Installing or updating Pawrinth
+        - Modrinth content
+        - CurseForge content or modpacks
+        - Launching Minecraft
+        - Accounts and sign-in
+        - Themes and appearance
+        - Discord status
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to make it happen
+      placeholder: |
+        1. Open ...
+        2. Click ...
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or a bug report file
+      description: Settings can export a bug report file. Streamer mode removes account names from logs, but check before posting.

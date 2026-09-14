@@ -20,6 +20,7 @@
 			<div class="flex gap-2 w-full min-w-0">
 				<Avatar
 					size="36px"
+					class="plus-private"
 					:src="
 						selectedAccount
 							? avatarUrl
@@ -27,8 +28,10 @@
 					"
 				/>
 				<div class="flex flex-col items-start w-full min-w-0">
-					<span class="truncate w-full text-left">{{
-						selectedAccount ? selectedAccount.profile.name : formatMessage(messages.selectAccount)
+					<span class="truncate w-full text-left" :class="{ 'plus-private': !namesReplaced }">{{
+						selectedAccount
+							? shownName(selectedAccount.profile.name)
+							: formatMessage(messages.selectAccount)
 					}}</span>
 					<span class="text-secondary text-xs">{{ formatMessage(messages.minecraftAccount) }}</span>
 				</div>
@@ -46,16 +49,17 @@
 							class="w-5 h-5 text-brand shrink-0"
 						/>
 						<RadioButtonIcon v-else class="w-5 h-5 text-secondary shrink-0" />
-						<Avatar :src="getAccountAvatarUrl(account)" size="24px" />
+						<Avatar :src="getAccountAvatarUrl(account)" size="24px" class="plus-private" />
 						<p
 							class="m-0 truncate min-w-0"
-							:class="
+							:class="[
 								selectedAccount && selectedAccount.profile.id === account.profile.id
 									? 'text-contrast font-semibold'
-									: 'text-primary'
-							"
+									: 'text-primary',
+								{ 'plus-private': !namesReplaced },
+							]"
 						>
-							{{ account.profile.name }}
+							{{ shownName(account.profile.name, accounts.indexOf(account)) }}
 						</p>
 					</button>
 					<IconButton
@@ -108,6 +112,7 @@ import { computed, onUnmounted, ref } from 'vue'
 
 import { useAppEvent } from '@/composables/use-app-event'
 import { handleSevereError } from '@/composables/use-error.js'
+import { rememberPrivateNames, usePrivacy } from '@/features/plus-privacy/use-privacy'
 import { trackEvent } from '@/helpers/analytics'
 import {
 	get_default_user,
@@ -160,6 +165,7 @@ async function refreshValues() {
 	defaultUser.value = await get_default_user().catch(handleError)
 	const userList = await users().catch(handleError)
 	accounts.value = Array.isArray(userList) ? [...userList] : []
+	rememberPrivateNames(accounts.value.map((account) => account.profile.name))
 	accounts.value.sort((a, b) => (a.profile?.name ?? '').localeCompare(b.profile?.name ?? ''))
 
 	try {
@@ -196,6 +202,8 @@ defineExpose({
 })
 
 await refreshValues()
+
+const { namesReplaced, shownName } = usePrivacy()
 
 const selectedAccount = computed(() =>
 	accounts.value.find((account) => account.profile.id === defaultUser.value),

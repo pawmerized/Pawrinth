@@ -2,6 +2,7 @@
 import { FolderOpenIcon, XIcon } from '@modrinth/assets'
 import {
 	Button,
+	Chips,
 	commonMessages,
 	defineMessages,
 	FileTreeSelect,
@@ -17,6 +18,7 @@ import { ref, shallowRef } from 'vue'
 
 import { PackageIcon } from '@/assets/icons'
 import { export_instance_mrpack, get_pack_export_candidates } from '@/helpers/instance'
+import { plus_cf_export } from '@/helpers/plus'
 import { highlightInFolder } from '@/helpers/utils'
 
 const { handleError } = injectNotificationManager()
@@ -51,7 +53,38 @@ const messages = defineMessages({
 		id: 'app.export-modal.export-complete-description',
 		defaultMessage: '{name} was exported successfully.',
 	},
+	formatLabel: { id: 'plus.export-modal.format', defaultMessage: 'Format' },
+	formatModrinth: { id: 'plus.export-modal.format.modrinth', defaultMessage: 'Modrinth (.mrpack)' },
+	formatCurseforge: {
+		id: 'plus.export-modal.format.curseforge',
+		defaultMessage: 'CurseForge (.zip)',
+	},
+	formatModrinthText: {
+		id: 'plus.export-modal.format.modrinth.text',
+		defaultMessage: 'For Pawrinth, Modrinth App and other launchers that open .mrpack files.',
+	},
+	formatCurseforgeText: {
+		id: 'plus.export-modal.format.curseforge.text',
+		defaultMessage:
+			"For the CurseForge app. Mods from CurseForge are listed so it downloads them itself, and anything that isn't on CurseForge goes inside the zip.",
+	},
+	curseforgeComplete: {
+		id: 'plus.export-modal.curseforge-complete',
+		defaultMessage: '{name} lists {listed, plural, one {# file} other {# files}} from CurseForge.',
+	},
+	curseforgeIncluded: {
+		id: 'plus.export-modal.curseforge-included',
+		defaultMessage:
+			"{count, plural, one {# file isn't} other {# files aren't}} on CurseForge, so {count, plural, one {it's} other {they're}} inside the zip: {names}.",
+	},
+	curseforgeNotLookedUp: {
+		id: 'plus.export-modal.curseforge-not-looked-up',
+		defaultMessage:
+			'Add a CurseForge API key in Settings, so files from elsewhere can be matched to CurseForge too.',
+	},
 })
+
+const FORMATS = ['mrpack', 'curseforge']
 
 const props = defineProps({
 	instance: {
@@ -69,6 +102,7 @@ defineExpose({
 })
 
 const exportModal = ref(null)
+const format = ref('mrpack')
 const nameInput = ref(props.instance.name)
 const exportDescription = ref('')
 const versionInput = ref('1.0.0')
@@ -94,13 +128,13 @@ async function initFiles() {
 }
 
 const exportPack = async () => {
+	const curseforge = format.value === 'curseforge'
 	const outputPath = await save({
-		defaultPath: `${nameInput.value} ${versionInput.value}.mrpack`,
+		defaultPath: `${nameInput.value} ${versionInput.value}.${curseforge ? 'zip' : 'mrpack'}`,
 		filters: [
-			{
-				name: 'Modrinth Modpack',
-				extensions: ['mrpack'],
-			},
+			curseforge
+				? { name: 'CurseForge Modpack', extensions: ['zip'] }
+				: { name: 'Modrinth Modpack', extensions: ['mrpack'] },
 		],
 	})
 
@@ -108,20 +142,46 @@ const exportPack = async () => {
 		exportModal.value.hide()
 
 		try {
-			await export_instance_mrpack(
-				props.instance.id,
-				outputPath,
-				includedFilePaths.value,
-				excludedFilePaths.value,
-				versionInput.value,
-				exportDescription.value,
-				nameInput.value,
-			)
-
 			const fileName = outputPath.split(/[\\/]/).pop() ?? outputPath
+			let text = formatMessage(messages.exportCompleteDescription, { name: fileName })
+			if (curseforge) {
+				const report = await plus_cf_export(
+					props.instance.id,
+					outputPath,
+					includedFilePaths.value,
+					excludedFilePaths.value,
+					versionInput.value,
+					nameInput.value,
+				)
+				text = [
+					formatMessage(messages.curseforgeComplete, { name: fileName, listed: report.listed }),
+					report.included.length > 0
+						? formatMessage(messages.curseforgeIncluded, {
+								count: report.included.length,
+								names: report.included.join(', '),
+							})
+						: '',
+					report.included.length > 0 && !report.looked_up
+						? formatMessage(messages.curseforgeNotLookedUp)
+						: '',
+				]
+					.filter(Boolean)
+					.join(' ')
+			} else {
+				await export_instance_mrpack(
+					props.instance.id,
+					outputPath,
+					includedFilePaths.value,
+					excludedFilePaths.value,
+					versionInput.value,
+					exportDescription.value,
+					nameInput.value,
+				)
+			}
+
 			popupNotificationManager.addPopupNotification({
 				title: formatMessage(messages.exportComplete),
-				text: formatMessage(messages.exportCompleteDescription, { name: fileName }),
+				text,
 				type: 'success',
 				buttons: [
 					{
@@ -138,6 +198,7 @@ const exportPack = async () => {
 }
 
 function resetExportState() {
+	format.value = 'mrpack'
 	nameInput.value = props.instance.name
 	exportDescription.value = ''
 	versionInput.value = '1.0.0'
@@ -192,6 +253,29 @@ function normalizeExportPath(path) {
 		max-width="calc(100vw - 2rem)"
 	>
 		<div class="flex flex-col gap-4">
+			<div class="flex flex-col gap-2">
+				<p class="m-0 text-contrast font-semibold">{{ formatMessage(messages.formatLabel) }}</p>
+				<Chips
+					v-model="format"
+					:items="[...FORMATS]"
+					:format-label="
+						(item) =>
+							formatMessage(
+								item === 'curseforge' ? messages.formatCurseforge : messages.formatModrinth,
+							)
+					"
+					:never-empty="true"
+					:capitalize="false"
+					data-export-format
+				/>
+				<p class="m-0 text-secondary">
+					{{
+						formatMessage(
+							format === 'curseforge' ? messages.formatCurseforgeText : messages.formatModrinthText,
+						)
+					}}
+				</p>
+			</div>
 			<div class="grid grid-cols-2 gap-4">
 				<div class="labeled_input w-full">
 					<p class="text-contrast font-semibold">{{ formatMessage(messages.modpackNameLabel) }}</p>
@@ -216,7 +300,7 @@ function normalizeExportPath(path) {
 					/>
 				</div>
 			</div>
-			<div class="flex flex-col gap-2 min-w-0">
+			<div v-if="format === 'mrpack'" class="flex flex-col gap-2 min-w-0">
 				<p class="m-0 text-contrast font-semibold">
 					{{ formatMessage(commonMessages.descriptionLabel) }}
 				</p>

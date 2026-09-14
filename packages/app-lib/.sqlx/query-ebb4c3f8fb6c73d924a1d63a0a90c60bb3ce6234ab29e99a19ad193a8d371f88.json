@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM plus_content_origins WHERE instance_id = $1 AND relative_path = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "ebb4c3f8fb6c73d924a1d63a0a90c60bb3ce6234ab29e99a19ad193a8d371f88"
+}

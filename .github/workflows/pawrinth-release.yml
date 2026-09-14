@@ -1,0 +1,111 @@
+# Builds the Windows installer for a version tag such as v0.2.0 and publishes it as a
+# GitHub release with everything Pawrinth's updater reads: the signed installer and
+# latest.json. Installed copies of Pawrinth find the update on their own.
+#
+# Needs two repository secrets: TAURI_SIGNING_PRIVATE_KEY (the contents of the
+# private key whose public half is in apps/app/tauri-release.conf.json) and
+# TAURI_SIGNING_PRIVATE_KEY_PASSWORD (empty if the key has no password).
+name: Pawrinth release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build, such as v0.2.0
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Windows installer
+    runs-on: windows-latest
+    timeout-minutes: 120
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      SQLX_OFFLINE: true
+    steps:
+      - name: Check out the tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Set up Rust
+        uses: actions-rust-lang/setup-rust-toolchain@166cdcfd11aee3cb47222f9ddb555ce30ddb9659 # v1.17.0
+        with:
+          rustflags: ''
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Set the version from the tag
+        shell: bash
+        run: |
+          VERSION="${TAG#v}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tags must look like v1.2.3, not $TAG" >&2
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          node -e "const fs = require('fs'); const p = 'apps/app-frontend/package.json'; const pkg = JSON.parse(fs.readFileSync(p, 'utf8')); pkg.version = process.argv[1]; fs.writeFileSync(p, JSON.stringify(pkg, null, '\t') + '\n')" "$VERSION"
+          cp packages/app-lib/.env.prod packages/app-lib/.env
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the installer
+        working-directory: apps/app
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: pnpm exec tauri build --config tauri-release.conf.json --bundles nsis
+
+      - name: Write latest.json
+        shell: bash
+        run: |
+          BUNDLE=target/release/bundle/nsis
+          SETUP="Pawrinth_${VERSION}_x64-setup.exe"
+          test -f "$BUNDLE/$SETUP.sig"
+          cp "$BUNDLE/$SETUP" "$BUNDLE/Pawrinth-Setup.exe"
+          node -e "
+            const fs = require('fs')
+            const [bundle, setup, version, repo, tag] = process.argv.slice(1)
+            fs.writeFileSync(bundle + '/latest.json', JSON.stringify({
+              version,
+              notes: 'See https://github.com/' + repo + '/releases/tag/' + tag,
+              pub_date: new Date().toISOString(),
+              platforms: {
+                'windows-x86_64': {
+                  signature: fs.readFileSync(bundle + '/' + setup + '.sig', 'utf8').trim(),
+                  url: 'https://github.com/' + repo + '/releases/download/' + tag + '/' + setup,
+                },
+              },
+            }, null, 2))
+          " "$BUNDLE" "$SETUP" "$VERSION" "$GITHUB_REPOSITORY" "$TAG"
+
+      - name: Publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BUNDLE=target/release/bundle/nsis
+          SETUP="Pawrinth_${VERSION}_x64-setup.exe"
+          FILES=("$BUNDLE/$SETUP" "$BUNDLE/$SETUP.sig" "$BUNDLE/Pawrinth-Setup.exe" "$BUNDLE/latest.json")
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+          else
+            gh release create "$TAG" "${FILES[@]}" --title "Pawrinth $VERSION" --generate-notes --latest
+          fi

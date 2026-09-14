@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Ver registros"
   },
-  "app.ads-consent.accept": {
-    "message": "Aceptar todas"
-  },
-  "app.ads-consent.body": {
-    "message": "Los anuncios hacen posible a Modrinth y financian los pagos a los creadores. Nuestros socios pueden guardar o acceder a cookies en la aplicación para personalizar anuncios y medir su rendimiento."
-  },
-  "app.ads-consent.manage": {
-    "message": "Gestionar preferencias"
-  },
-  "app.ads-consent.reject": {
-    "message": "Rechazar todas"
-  },
-  "app.ads-consent.title": {
-    "message": "Tu privacidad y cómo los anuncios apoyan a Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Muestra las instancias de la biblioteca en un diseño compacto de filas."
   },
@@ -1403,9 +1388,6 @@
   "app.nav.switch-account": {
     "message": "Cambiar de cuenta"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Mejorar a Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "Ver perfil"
   },
@@ -1420,12 +1402,6 @@
   },
   "app.navigation.next-image": {
     "message": "Siguiente imágen"
-  },
-  "app.news.title": {
-    "message": "Noticias"
-  },
-  "app.news.view-all": {
-    "message": "Ver todas las noticias"
   },
   "app.notification.warning": {
     "message": "Advertencia"
@@ -2750,21 +2726,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Los anuncios hacen posible a Modrinth y financian los pagos a los creadores. Nuestros socios pueden guardar o acceder a cookies en la aplicación para personalizar anuncios y medir su rendimiento. Puedes rechazar esto o administrar tus preferencias abajo."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Mostrar la aplicación de Modrinth como tu actividad actual en Discord. Esto no afecta a cualquier Rich Presence añadida a instancias con mods. Necesita reiniciar la app."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth recolecta datos analíticos anónimos y datos de uso para mejorar la experiencia de nuestros usuarios y para personalizar tu experiencia. Al desactivar esta opción, tus datos dejarán de ser recolectados."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Telemetría"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Muestra la opción 'Copiar detalles' mientras haya una instalación en cola o instalando. Siempre está disponible para las instalaciones fallidas o interrumpidas."
   },
@@ -3116,9 +3077,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "Hooks de inicio"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Privacidad"
-  },
   "app.settings.tabs.resources": {
     "message": "Recursos"
   },
@@ -3136,24 +3094,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "¿Eliminar la caché?"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "Copiado"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "Copiar detalles del anuncio"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "¿Has detectado un anuncio inapropiado u ofensivo? Copia sus detalles mientras se muestran, y envíalos al <support>soporte de Modrinth</support>. Lo revisaremos y lo eliminaremos."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "Espere a que se cargue el anuncio y vuelva a intentarlo."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "No se encontró el anuncio"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "Reportar un anuncio"
   },
   "app.shared-instance-publish.preparing": {
     "message": "Preparando actualización..."
@@ -3338,21 +3278,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "Activar"
   },
-  "app.survey.body": {
-    "message": "¿Te importaría responder unas cuantas preguntas sobre tu experiencia con la aplicación de Modrinth?"
-  },
-  "app.survey.footer": {
-    "message": "¡Tus comentarios llegarán directamente al equipo de Modrinth, y los ayudará a hacer mejores actualizaciones!"
-  },
-  "app.survey.no-thanks": {
-    "message": "No, gracias"
-  },
-  "app.survey.take-survey": {
-    "message": "Aceptar encuesta"
-  },
-  "app.survey.title": {
-    "message": "¡Hola, usuario de Modrinth!"
-  },
   "app.sync-instances-update.badge": {
     "message": "Nuevo en esta actualización"
   },
@@ -3483,13 +3408,13 @@
     "message": "Paquetes de recursos sincronizados"
   },
   "app.update-popup.body.download-complete": {
-    "message": "La descarga de la Modrinth App v{version} ha finalizado. Actualiza ahora o automáticamente al cerrar la Modrinth App."
+    "message": "La descarga de la Pawrinth v{version} ha finalizado. Actualiza ahora o automáticamente al cerrar la Pawrinth."
   },
   "app.update-popup.body.linux": {
-    "message": "La Modrinth App v{version} está disponible. ¡Usa tu gestor de paquetes para actualizarla y tener las últimas funciones y corrección de errores!"
+    "message": "La Pawrinth v{version} está disponible. ¡Usa tu gestor de paquetes para actualizarla y tener las últimas funciones y corrección de errores!"
   },
   "app.update-popup.body.metered": {
-    "message": "¡La Modrinth App v{version} ya está disponible! Al estar usando una red de datos límitada, no la hemos descargado automáticamente."
+    "message": "¡La Pawrinth v{version} ya está disponible! Al estar usando una red de datos límitada, no la hemos descargado automáticamente."
   },
   "app.update-popup.changelog": {
     "message": "Registro de cambios"
@@ -4330,9 +4255,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "Compra Minecraft"
-  },
-  "minecraft-required.get-support": {
-    "message": "Conseguir soporte"
   },
   "minecraft-required.header": {
     "message": "Minecraft requerido"

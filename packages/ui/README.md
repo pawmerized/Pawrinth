@@ -1,8 +1,3 @@
-<picture>
-	<source media="(prefers-color-scheme: light)" srcset="../../.github/assets/ui_cover_light.png">
-	<img alt="Modrinth UI Cover" src="../../.github/assets/ui_cover.png">
-</picture>
-
 # @modrinth/ui
 
 The shared Vue 3 component library used by both the [Modrinth Website](../../apps/frontend) and the [Modrinth App](../../apps/app-frontend). Components are platform-agnostic, with platform-specific behavior provided through dependency injection.

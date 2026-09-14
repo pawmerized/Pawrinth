@@ -11,6 +11,7 @@ export interface SettingsActions {
 	openFeatureFlags: () => void
 	openSyncedOptions: () => void
 	openInstanceDefaults: (tab: InstanceDefaultsTab) => void
+	openApiConfiguration: () => void
 }
 
 export const [injectSettingsActions, provideSettingsActions] = createContext<SettingsActions>(

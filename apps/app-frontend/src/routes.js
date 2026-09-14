@@ -14,43 +14,6 @@ export default new createRouter({
 			},
 		},
 		{
-			path: '/hosting/manage/',
-			name: 'Servers',
-			component: () => import('@/platform/adapters/hosting/servers-page.vue'),
-		},
-		{
-			path: '/hosting/manage/:id',
-			name: 'ServerManage',
-			component: () => import('@/platform/adapters/hosting/manage/layout.vue'),
-			children: [
-				{
-					path: '',
-					name: 'ServerManageOverview',
-					component: () => import('@/platform/adapters/hosting/manage/overview-page.vue'),
-				},
-				{
-					path: 'content',
-					name: 'ServerManageContent',
-					component: () => import('@/platform/adapters/hosting/manage/content-page.vue'),
-				},
-				{
-					path: 'files',
-					name: 'ServerManageFiles',
-					component: () => import('@/platform/adapters/hosting/manage/files-page.vue'),
-				},
-				{
-					path: 'backups',
-					name: 'ServerManageBackups',
-					component: () => import('@/platform/adapters/hosting/manage/backups-page.vue'),
-				},
-				{
-					path: 'access',
-					name: 'ServerManageAccess',
-					component: () => import('@/platform/adapters/hosting/manage/access-page.vue'),
-				},
-			],
-		},
-		{
 			path: '/browse/:projectType',
 			name: 'Discover content',
 			component: () => import('@/platform/adapters/browse/browse-page.vue'),
@@ -108,6 +71,35 @@ export default new createRouter({
 					component: () => import('@/pages/project/Gallery.vue'),
 				},
 			],
+		},
+		{
+			path: '/organization/:id',
+			name: 'Organization',
+			component: () => import('@/pages/Organization.vue'),
+		},
+		{
+			path: '/curseforge/project/:id/:tab?',
+			name: 'CurseForge project',
+			component: () => import('@/features/plus-curseforge/project-page.vue'),
+			meta: {
+				saveScroll: true,
+			},
+		},
+		{
+			path: '/curseforge/author/:authorId/:classSlug?',
+			name: 'CurseForge author',
+			component: () => import('@/features/plus-curseforge/author-page.vue'),
+			meta: {
+				saveScroll: true,
+			},
+		},
+		{
+			path: '/curseforge/:classSlug',
+			name: 'Discover on CurseForge',
+			component: () => import('@/features/plus-curseforge/browse-page.vue'),
+			meta: {
+				saveScroll: true,
+			},
 		},
 		{
 			path: '/instance/:id',

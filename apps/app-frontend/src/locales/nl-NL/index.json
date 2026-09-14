@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Bekijk logs"
   },
-  "app.ads-consent.accept": {
-    "message": "Alles accepteren"
-  },
-  "app.ads-consent.body": {
-    "message": "Advertenties maken Modrinth mogelijk en financieren de uitbetalingen aan makers. Onze partners kunnen cookies in de app opslaan of gebruiken om advertenties te personaliseren en de prestaties te meten."
-  },
-  "app.ads-consent.manage": {
-    "message": "Voorkeuren beheren"
-  },
-  "app.ads-consent.reject": {
-    "message": "Alles afwijzen"
-  },
-  "app.ads-consent.title": {
-    "message": "Je privacy en hoe advertenties Modrinth ondersteunen"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Toon bibliotheek instanties in een compacte row lay-out."
   },
@@ -207,7 +192,7 @@
     "message": "Startpagina en content"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "Breng de Modrinth App naar de voorgrond als Minecraft sluit."
+    "message": "Breng de Pawrinth naar de voorgrond als Minecraft sluit."
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "App opnieuw focussen bij sluiten van Minecraft"
@@ -513,7 +498,7 @@
     "message": "Bekijk instantie"
   },
   "app.hosting.update-required.description": {
-    "message": "Je moet bijwerken om Modrinth Hosting te gebruiken via de Modrinth App"
+    "message": "Je moet bijwerken om Modrinth Hosting te gebruiken via de Pawrinth"
   },
   "app.hosting.update-required.download": {
     "message": "Update aan het downloaden"
@@ -1403,9 +1388,6 @@
   "app.nav.switch-account": {
     "message": "Van account wisselen"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Upgrade naar Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "Profiel bekijken"
   },
@@ -1420,12 +1402,6 @@
   },
   "app.navigation.next-image": {
     "message": "Volgende afbeelding"
-  },
-  "app.news.title": {
-    "message": "Nieuws"
-  },
-  "app.news.view-all": {
-    "message": "Bekijk al het nieuws"
   },
   "app.notification.warning": {
     "message": "Waarschuwing"
@@ -2750,21 +2726,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Advertenties maken Modrinth mogelijk en financieren de uitbetalingen aan makers. Onze partners kunnen cookies in de app opslaan of gebruiken om advertenties te personaliseren en de prestaties te meten. Je kunt je hieronder afmelden of je voorkeuren beheren."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Laat Modrinth als jouw activiteit op Discord. Dit verandert niet activiteiten toegevoegd door mods."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth verzamelt geanonimiseerde analyse- en gebruiksdata om de gebruikerservaring te verbeteren en je ervaring te personaliseren. Door deze optie uit te schakelen, meld je je af en worden je gegevens niet meer verzameld."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Telemetrie"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Geef de knop 'Details kopiëren' weer terwijl een installatie in de wachtrij staat of wordt uitgevoerd. Deze actie is altijd beschikbaar voor mislukte of onderbroken installaties."
   },
@@ -3116,9 +3077,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "Opstart-hooks"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Privacy"
-  },
   "app.settings.tabs.resources": {
     "message": "Bronnen"
   },
@@ -3136,24 +3094,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "Wis app cache?"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "Gekopieerd"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "Kopieer advertentiedetails"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "Heb je een ongepaste of aanstootgevende advertentie gezien? Kopieer de details van de advertentie terwijl hij afspeelt en stuur ze naar <support>Modrinth Support</support>. We zullen de advertentie beoordelen en verwijderen als nodig."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "Wacht totdat de advertentie geladen is en probeer het dan opnieuw."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "Geen advertentie gevonden"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "Meld een reclame"
   },
   "app.shared-instance-publish.preparing": {
     "message": "Update voorbereiden..."
@@ -3338,21 +3278,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "Inschakelen"
   },
-  "app.survey.body": {
-    "message": "Zou je een paar vragen willen beantwoorden over je ervaringen met de Modrinth-app?"
-  },
-  "app.survey.footer": {
-    "message": "Deze feedback wordt rechtstreeks doorgestuurd naar het Modrinth-team en zal als leidraad dienen voor toekomstige updates!"
-  },
-  "app.survey.no-thanks": {
-    "message": "Nee, bedankt"
-  },
-  "app.survey.take-survey": {
-    "message": "Aan enquête meedoen"
-  },
-  "app.survey.title": {
-    "message": "Hoi, Modrinth-gebruiker!"
-  },
   "app.sync-instances-update.badge": {
     "message": "Nieuw deze update"
   },
@@ -3483,13 +3408,13 @@
     "message": "Gesyncte bronpakketten"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} is klaar met downloaden. Herlaad om nu te updaten, of automatisch wanneer je de Modrinth App afsluit."
+    "message": "Pawrinth v{version} is klaar met downloaden. Herlaad om nu te updaten, of automatisch wanneer je de Pawrinth afsluit."
   },
   "app.update-popup.body.linux": {
     "message": "De Modrinth-app v{version} is beschikbaar. Gebruik je pakketbeheerder om bij te werken en zo de nieuwste functies en verbeteringen te krijgen!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} is nu beschikbaar! Omdat je nu op een netwerk met datalimiet zit, is de download niet automatisch gestart."
+    "message": "Pawrinth v{version} is nu beschikbaar! Omdat je nu op een netwerk met datalimiet zit, is de download niet automatisch gestart."
   },
   "app.update-popup.changelog": {
     "message": "Wijzigingen"
@@ -4333,9 +4258,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "Minecraft kopen"
-  },
-  "minecraft-required.get-support": {
-    "message": "Hulp krijgen"
   },
   "minecraft-required.header": {
     "message": "Minecraft vereist"

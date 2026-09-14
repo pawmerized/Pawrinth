@@ -6,6 +6,7 @@
 				:project="data"
 				:tags="{ loaders: allLoaders, gameVersions: allGameVersions }"
 				:project-v3="projectV3"
+				:loader-action="(loader) => router.push(`${projectSearchUrl}?g=categories:${loader}`)"
 				class="project-sidebar-section"
 			/>
 			<ProjectSidebarServerInfo
@@ -26,13 +27,17 @@
 				:project-v3="projectV3"
 				class="project-sidebar-section"
 			/>
-			<ProjectSidebarTags :project="data" class="project-sidebar-section" />
+			<ProjectSidebarTags
+				:project="data"
+				:tag-action="(tag) => router.push(`${projectSearchUrl}?f=categories:${tag}`)"
+				class="project-sidebar-section"
+			/>
 			<ProjectSidebarCreators
 				:organization="organization"
 				:members="members"
-				:org-link="(slug) => `https://modrinth.com/organization/${slug}`"
+				:org-link="(slug) => `/organization/${encodeURIComponent(slug)}`"
 				:user-link="(username) => `/user/${encodeURIComponent(username)}`"
-				link-target="_blank"
+				:link-target="null"
 				:user-link-target="null"
 				class="project-sidebar-section"
 			/>
@@ -171,6 +176,13 @@
 						</template>
 					</template>
 				</ProjectPageHeader>
+				<Admonition
+					v-if="showPlannedVersion && !plannedVersion"
+					type="warning"
+					:header="formatMessage(messages.noCompatibleHeader)"
+				>
+					{{ formatMessage(messages.noCompatibleText, { target: plannedTargetLabel }) }}
+				</Admonition>
 				<NavTabs
 					:links="[
 						{
@@ -251,6 +263,7 @@ import {
 	StopCircleIcon,
 } from '@modrinth/assets'
 import {
+	Admonition,
 	BrowseInstallHeader,
 	Button,
 	commonMessages,
@@ -309,7 +322,7 @@ import { get_by_instance_id } from '@/helpers/process'
 import { get_categories, get_game_versions, get_loaders } from '@/helpers/tags'
 import { getServerAddress } from '@/helpers/worlds'
 import { createServerInstallContent } from '@/platform/adapters/browse/server-install-content'
-import { injectContentInstall } from '@/providers/content-install'
+import { findPreferredVersion, injectContentInstall } from '@/providers/content-install'
 import { injectServerInstall } from '@/providers/server-install'
 import { provideBreadcrumbParent, useBreadcrumb } from '@/shared/breadcrumbs'
 
@@ -372,6 +385,14 @@ const messages = defineMessages({
 		id: 'app.project.install-button.switch-version',
 		defaultMessage: 'Switch version',
 	},
+	noCompatibleHeader: {
+		id: 'plus.project.no-compatible.header',
+		defaultMessage: 'No compatible version',
+	},
+	noCompatibleText: {
+		id: 'plus.project.no-compatible.text',
+		defaultMessage: 'This project has no version for {target}.',
+	},
 })
 
 const { installingServerProjects, playServerProject, showAddServerToInstanceModal } =
@@ -421,6 +442,38 @@ const instanceProjects = ref(null)
 
 const installed = ref(false)
 const installedVersion = ref(null)
+
+const versionsNewestFirst = computed(() =>
+	[...versions.value].sort(
+		(a, b) => dayjs(b.date_published).valueOf() - dayjs(a.date_published).valueOf(),
+	),
+)
+const plannedVersion = computed(() =>
+	instance.value && data.value
+		? findPreferredVersion(versionsNewestFirst.value, data.value, instance.value)
+		: null,
+)
+const showPlannedVersion = computed(
+	() =>
+		!!instance.value &&
+		!!data.value &&
+		!isServerProject.value &&
+		data.value.project_type !== 'modpack' &&
+		!installed.value &&
+		versions.value.length > 0,
+)
+const plannedTargetLabel = computed(() => {
+	if (!instance.value) return ''
+	const needsLoader = data.value?.project_type === 'mod' && instance.value.loader !== 'vanilla'
+	return [
+		needsLoader
+			? instance.value.loader.charAt(0).toUpperCase() + instance.value.loader.slice(1)
+			: '',
+		`Minecraft ${instance.value.game_version}`,
+	]
+		.filter(Boolean)
+		.join(' ')
+})
 const isServerProject = ref(false)
 const projectV3 = shallowRef(null)
 const serverRequiredContent = shallowRef(null)

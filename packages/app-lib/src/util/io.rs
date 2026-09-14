@@ -3,10 +3,11 @@
 
 use anyhow::{Context, Result};
 use std::{
-    io::{ErrorKind, Write},
+    io::{BufRead, BufReader, ErrorKind, Write},
     path::Path,
+    time::Duration,
 };
-use tempfile::NamedTempFile;
+use tempfile::{NamedTempFile, TempPath};
 use tokio::task::spawn_blocking;
 
 #[derive(Debug, thiserror::Error)]
@@ -178,10 +179,61 @@ fn sync_write(
             )
         })?)?;
     tempfile.write_all(data.as_ref())?;
-    let tmp_path = tempfile.into_temp_path();
-    let path = path.as_ref();
-    tmp_path.persist(path)?;
-    std::io::Result::Ok(())
+    persist_replacing(tempfile.into_temp_path(), path.as_ref())
+}
+
+const REPLACE_ATTEMPTS: u32 = 6;
+
+/// Moves a finished temporary file over `path`. Windows refuses with "access denied" while
+/// anything else has the destination open, which is normal when several installs download
+/// the same shared file or an antivirus is scanning it. This retries briefly, and a
+/// destination that already holds the same bytes counts as done.
+pub(crate) fn persist_replacing(
+    mut temporary: TempPath,
+    path: &Path,
+) -> std::io::Result<()> {
+    let mut attempt = 1;
+    loop {
+        let error = match temporary.persist(path) {
+            Ok(()) => return Ok(()),
+            Err(error) => error,
+        };
+        if error.error.kind() != ErrorKind::PermissionDenied {
+            return Err(error.error);
+        }
+        temporary = error.path;
+        if same_contents(&temporary, path).unwrap_or(false) {
+            return Ok(());
+        }
+        if attempt == REPLACE_ATTEMPTS {
+            return Err(error.error);
+        }
+        std::thread::sleep(Duration::from_millis(25 << attempt));
+        attempt += 1;
+    }
+}
+
+fn same_contents(left: &Path, right: &Path) -> std::io::Result<bool> {
+    let left = std::fs::File::open(left)?;
+    let right = std::fs::File::open(right)?;
+    if left.metadata()?.len() != right.metadata()?.len() {
+        return Ok(false);
+    }
+    let mut left = BufReader::new(left);
+    let mut right = BufReader::new(right);
+    loop {
+        let left_chunk = left.fill_buf()?;
+        let right_chunk = right.fill_buf()?;
+        let shared = left_chunk.len().min(right_chunk.len());
+        if shared == 0 {
+            return Ok(left_chunk.len() == right_chunk.len());
+        }
+        if left_chunk[..shared] != right_chunk[..shared] {
+            return Ok(false);
+        }
+        left.consume(shared);
+        right.consume(shared);
+    }
 }
 
 pub fn is_same_disk(old_dir: &Path, new_dir: &Path) -> Result<bool> {
@@ -395,5 +447,110 @@ pub fn format_bytes(bytes: u64) -> String {
         format!("{bytes} B")
     } else {
         format!("{value:.1} {unit}")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn temporary_with(dir: &Path, contents: &[u8]) -> TempPath {
+        let mut file = NamedTempFile::new_in(dir).unwrap();
+        file.write_all(contents).unwrap();
+        file.into_temp_path()
+    }
+
+    #[test]
+    fn replaces_a_file_nothing_is_using() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("shared");
+        std::fs::write(&path, b"old").unwrap();
+
+        persist_replacing(temporary_with(dir.path(), b"new"), &path).unwrap();
+
+        assert_eq!(std::fs::read(&path).unwrap(), b"new");
+    }
+
+    #[test]
+    fn many_installs_writing_one_file_all_succeed() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("shared");
+
+        std::thread::scope(|scope| {
+            for _ in 0..16 {
+                scope.spawn(|| {
+                    for _ in 0..25 {
+                        sync_write(b"same contents", &path).unwrap();
+                    }
+                });
+            }
+        });
+
+        assert_eq!(std::fs::read(&path).unwrap(), b"same contents");
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+    }
+
+    #[cfg(windows)]
+    mod while_the_destination_is_open {
+        use super::*;
+        use std::os::windows::fs::OpenOptionsExt;
+
+        const FILE_SHARE_READ: u32 = 1;
+
+        fn open_blocking_replacement(path: &Path) -> std::fs::File {
+            std::fs::OpenOptions::new()
+                .read(true)
+                .share_mode(FILE_SHARE_READ)
+                .open(path)
+                .unwrap()
+        }
+
+        #[test]
+        fn the_same_bytes_count_as_done() {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("shared");
+            std::fs::write(&path, b"same").unwrap();
+            let _open = open_blocking_replacement(&path);
+
+            persist_replacing(temporary_with(dir.path(), b"same"), &path)
+                .unwrap();
+
+            assert_eq!(std::fs::read(&path).unwrap(), b"same");
+            assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+        }
+
+        #[test]
+        fn different_bytes_go_in_once_it_closes() {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("shared");
+            std::fs::write(&path, b"old").unwrap();
+            let open = open_blocking_replacement(&path);
+
+            std::thread::scope(|scope| {
+                scope.spawn(move || {
+                    std::thread::sleep(Duration::from_millis(120));
+                    drop(open);
+                });
+                persist_replacing(temporary_with(dir.path(), b"new"), &path)
+                    .unwrap();
+            });
+
+            assert_eq!(std::fs::read(&path).unwrap(), b"new");
+        }
+
+        #[test]
+        fn different_bytes_fail_if_it_stays_open() {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("shared");
+            std::fs::write(&path, b"old").unwrap();
+            let _open = open_blocking_replacement(&path);
+
+            let error =
+                persist_replacing(temporary_with(dir.path(), b"new"), &path)
+                    .unwrap_err();
+
+            assert_eq!(error.kind(), ErrorKind::PermissionDenied);
+            assert_eq!(std::fs::read(&path).unwrap(), b"old");
+        }
     }
 }

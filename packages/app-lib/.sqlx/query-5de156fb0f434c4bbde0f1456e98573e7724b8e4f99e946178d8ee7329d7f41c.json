@@ -1,0 +1,62 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT ordinal AS \"ordinal!: i64\", change, before_entry, after_entry\n        FROM plus_content_operation_items\n        WHERE operation_id = $1\n        ORDER BY ordinal\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "ordinal!: i64",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operation_items",
+            "name": "ordinal"
+          }
+        }
+      },
+      {
+        "name": "change",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operation_items",
+            "name": "change"
+          }
+        }
+      },
+      {
+        "name": "before_entry",
+        "ordinal": 2,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operation_items",
+            "name": "before_entry"
+          }
+        }
+      },
+      {
+        "name": "after_entry",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operation_items",
+            "name": "after_entry"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "5de156fb0f434c4bbde0f1456e98573e7724b8e4f99e946178d8ee7329d7f41c"
+}

@@ -6,7 +6,7 @@ const formatDate = useFormatDateTime({ dateStyle: 'long' })
 
 export interface Article {
 	path: string
-	thumbnail: string
+	thumbnail?: string
 	title: string
 	summary: string
 	date: string
@@ -24,6 +24,7 @@ defineProps<{
 	>
 		<article class="flex h-full grow flex-col gap-4">
 			<img
+				v-if="article.thumbnail"
 				:src="article.thumbnail"
 				class="aspect-video w-full rounded-xl border-[1px] border-solid border-button-border object-cover"
 			/>

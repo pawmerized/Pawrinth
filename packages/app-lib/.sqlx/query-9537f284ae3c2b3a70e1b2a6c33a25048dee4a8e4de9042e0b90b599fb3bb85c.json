@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT id, created_at AS \"created_at!: i64\"\n        FROM plus_content_operations\n        WHERE instance_id = $1\n          AND kind != 'snapshot'\n          AND state IN ('applied', 'partial')\n        ORDER BY created_at DESC, rowid DESC\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "name": "created_at!: i64",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "created_at"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "9537f284ae3c2b3a70e1b2a6c33a25048dee4a8e4de9042e0b90b599fb3bb85c"
+}

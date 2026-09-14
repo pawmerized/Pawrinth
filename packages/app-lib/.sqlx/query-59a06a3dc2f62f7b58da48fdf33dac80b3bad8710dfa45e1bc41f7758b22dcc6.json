@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM plus_curseforge_packs WHERE instance_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "59a06a3dc2f62f7b58da48fdf33dac80b3bad8710dfa45e1bc41f7758b22dcc6"
+}

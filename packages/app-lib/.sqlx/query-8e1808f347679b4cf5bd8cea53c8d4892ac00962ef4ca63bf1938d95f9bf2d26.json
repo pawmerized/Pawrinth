@@ -1,0 +1,98 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT instance_id, project_id, file_id, name, version, missing, kept FROM plus_curseforge_packs",
+  "describe": {
+    "columns": [
+      {
+        "name": "instance_id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "instance_id"
+          }
+        }
+      },
+      {
+        "name": "project_id",
+        "ordinal": 1,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "project_id"
+          }
+        }
+      },
+      {
+        "name": "file_id",
+        "ordinal": 2,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "file_id"
+          }
+        }
+      },
+      {
+        "name": "name",
+        "ordinal": 3,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "name"
+          }
+        }
+      },
+      {
+        "name": "version",
+        "ordinal": 4,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "version"
+          }
+        }
+      },
+      {
+        "name": "missing",
+        "ordinal": 5,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "missing"
+          }
+        }
+      },
+      {
+        "name": "kept",
+        "ordinal": 6,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "kept"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "8e1808f347679b4cf5bd8cea53c8d4892ac00962ef4ca63bf1938d95f9bf2d26"
+}

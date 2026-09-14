@@ -131,18 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Lihat catatan"
   },
-  "app.ads-consent.accept": {
-    "message": "Terima semua"
-  },
-  "app.ads-consent.manage": {
-    "message": "Kelola preferensi"
-  },
-  "app.ads-consent.reject": {
-    "message": "Tolak semua"
-  },
-  "app.ads-consent.title": {
-    "message": "Privasi Anda dan bagaimana iklan mendukung Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Tampilkan instans pustaka dalam tata letak baris ringkas."
   },
@@ -354,7 +342,7 @@
     "message": "Lihat instans"
   },
   "app.hosting.update-required.title": {
-    "message": "Modrinth App membutuhkan pembaruan"
+    "message": "Pawrinth membutuhkan pembaruan"
   },
   "app.install.phase.downloading_content": {
     "message": "Mengunduh konten"
@@ -557,9 +545,6 @@
   "app.settings.tabs.language": {
     "message": "Bahasa"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Privasi"
-  },
   "app.skins.add-button": {
     "message": "Tambah rupa"
   },
@@ -696,13 +681,13 @@
     "message": "Pemilih rupa"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} telah selesai mengunduh. Muat ulang untuk memperbarui sekarang, atau secara otomatis saat Anda menutup Modrinth App."
+    "message": "Pawrinth v{version} telah selesai mengunduh. Muat ulang untuk memperbarui sekarang, atau secara otomatis saat Anda menutup Pawrinth."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} tersedia. Gunakan pengelola paket Anda untuk memperbarui dan mendapatkan fitur-fitur dan perbaikan terbaru!"
+    "message": "Pawrinth v{version} tersedia. Gunakan pengelola paket Anda untuk memperbarui dan mendapatkan fitur-fitur dan perbaikan terbaru!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} sudah tersedia! Karena Anda saat ini sedang berada dalam jaringan terukur, kami tidak mengunduhnya secara otomatis."
+    "message": "Pawrinth v{version} sudah tersedia! Karena Anda saat ini sedang berada dalam jaringan terukur, kami tidak mengunduhnya secara otomatis."
   },
   "app.update-popup.changelog": {
     "message": "Catatan perubahan"

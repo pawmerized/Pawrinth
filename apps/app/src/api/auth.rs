@@ -48,7 +48,7 @@ pub async fn login<R: Runtime>(
                 .context("error parsing auth redirect URL")?,
         ),
     )
-    .title("Sign into Modrinth")
+    .title("Sign in to Minecraft")
     .always_on_top(true)
     .min_inner_size(500.0, 500.0)
     .inner_size(1000.0, 700.0)

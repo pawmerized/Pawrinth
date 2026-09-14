@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO plus_curseforge_packs\n            (instance_id, project_id, file_id, name, version, missing, kept, overrides)\n        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)\n        ON CONFLICT (instance_id) DO UPDATE SET\n            project_id = excluded.project_id,\n            file_id = excluded.file_id,\n            name = excluded.name,\n            version = excluded.version,\n            missing = excluded.missing,\n            kept = excluded.kept,\n            overrides = excluded.overrides\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 8
+    },
+    "nullable": []
+  },
+  "hash": "19be882be7f6547bfa418d9345fed769410589bead234c5b32c93faaecb38f69"
+}

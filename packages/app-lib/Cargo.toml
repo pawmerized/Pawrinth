@@ -63,6 +63,7 @@ quartz_nbt = { workspace = true, features = ["serde"] }
 quick-xml = { workspace = true, features = ["async-tokio"] }
 rand = { workspace = true }
 regex = { workspace = true }
+keyring = { workspace = true }
 reqwest = { workspace = true, features = [
   "brotli",
   "charset",
@@ -78,6 +79,7 @@ reqwest = { workspace = true, features = [
 rgb = { workspace = true }
 rustls = { workspace = true, features = ["logging", "ring", "std", "tls12"] }
 same-file = { workspace = true }
+secrecy = { workspace = true }
 serde = { workspace = true, features = ["derive", "rc"] }
 serde-binhum = { workspace = true }
 serde_ini = { workspace = true }
@@ -138,6 +140,7 @@ winreg = { workspace = true }
 
 [features]
 cli = ["dep:indicatif"]
+plus-fault-injection = []
 export-ts = ["dep:postcard-bindgen", "dep:ts-rs"]
 tauri = ["dep:postcard", "dep:tauri"]
 

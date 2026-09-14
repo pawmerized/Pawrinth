@@ -695,8 +695,10 @@ struct LegacySettings {
     pub loaded_config_dir: Option<PathBuf>,
 }
 
+/// Pawrinth never imports another install's data or sign-in tokens
+/// implicitly.
 fn default_settings_dir() -> Option<PathBuf> {
-    Some(dirs::config_dir()?.join("com.modrinth.theseus"))
+    None
 }
 
 #[derive(Debug, Clone, Copy, Deserialize)]

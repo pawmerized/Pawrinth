@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT plus FROM settings",
+  "describe": {
+    "columns": [
+      {
+        "name": "plus",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "settings",
+            "name": "plus"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "fe6701e15078da540e067e3fd2c9cbdd93e708ffd5fb4bbb6562bbd3effe61eb"
+}

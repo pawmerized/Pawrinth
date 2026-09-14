@@ -7,7 +7,7 @@
 				:disabled="props.disabled"
 				:model-value="props.modelValue ? props.modelValue.path : ''"
 				:placeholder="placeholder ?? formatMessage(messages.pathPlaceholder)"
-				wrapper-class="installation-input"
+				wrapper-class="plus-private-stream installation-input"
 				@update:model-value="
 					(val) => {
 						emit('update:modelValue', {

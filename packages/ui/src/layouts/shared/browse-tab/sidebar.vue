@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { InfoIcon, XIcon } from '@modrinth/assets'
+import { InfoIcon, LockOpenIcon, UpdatedIcon, XIcon } from '@modrinth/assets'
 import { computed, nextTick, toValue, useTemplateRef, watch } from 'vue'
 
-import { IconButton } from '#ui/components/base/buttons'
+import { Button, IconButton } from '#ui/components/base/buttons'
 import Toggle from '#ui/components/base/Toggle.vue'
 import PhotosensitivityWarningModal from '#ui/components/modal/PhotosensitivityWarningModal.vue'
 import SearchSidebarFilter from '#ui/components/search/SearchSidebarFilter.vue'
@@ -100,6 +100,15 @@ function hasProvidedFilter(filterId: string): boolean {
 	return (ctx.providedFilters?.value ?? []).some((filter) => filter.type === filterId)
 }
 
+/** The instance sync control speaks for these filters, so they don't get a lock of their own. */
+function isHeldByInstanceSync(filterId: string): boolean {
+	return (
+		!!ctx.instanceSync?.value &&
+		hasProvidedFilter(filterId) &&
+		!ctx.overriddenProvidedFilterTypes.value.includes(filterId)
+	)
+}
+
 function getFilterOpenByDefault(filterId: string): boolean {
 	if (filterId === 'advanced') {
 		return !advancedFiltersCollapsed.value
@@ -158,6 +167,26 @@ function getFilterOpenByDefault(filterId: string): boolean {
 			<IconButton label="Close" @click="closeFiltersMenu">
 				<XIcon />
 			</IconButton>
+		</div>
+
+		<div
+			v-if="ctx.instanceSync?.value"
+			:class="
+				isApp
+					? 'flex flex-col gap-1 border-0 border-b-[1px] p-4 last:border-b-0 border-[--brand-gradient-border] border-solid'
+					: 'card-shadow flex flex-col gap-1 rounded-2xl bg-bg-raised border-solid border-surface-4 border p-4'
+			"
+		>
+			<div class="flex flex-col gap-2 p-3 border-dashed border-2 rounded-2xl border-divider">
+				<p class="m-0 font-bold">{{ ctx.instanceSync.value.title }}</p>
+				<p class="m-0 text-sm font-semibold text-primary">{{ ctx.instanceSync.value.status }}</p>
+				<p class="m-0 text-secondary text-sm">{{ ctx.instanceSync.value.description }}</p>
+				<Button class="w-fit" @click="ctx.instanceSync?.value?.set(!ctx.instanceSync.value.enabled)">
+					<LockOpenIcon v-if="ctx.instanceSync.value.enabled" aria-hidden="true" />
+					<UpdatedIcon v-else aria-hidden="true" />
+					{{ ctx.instanceSync.value.actionLabel }}
+				</Button>
+			</div>
 		</div>
 
 		<div
@@ -244,13 +273,15 @@ function getFilterOpenByDefault(filterId: string): boolean {
 		<template v-else>
 			<SearchSidebarFilter
 				v-for="filter in ctx.filters.value.filter(
-					(f) => f.display !== 'none' && !hiddenFilterTypes.includes(f.id),
+					(f) =>
+						f.display !== 'none' && !hiddenFilterTypes.includes(f.id) && !isHeldByInstanceSync(f.id),
 				)"
 				:key="`filter-${filter.id}`"
 				v-model:selected-filters="ctx.currentFilters.value"
 				v-model:toggled-groups="ctx.toggledGroups.value"
 				v-model:overridden-provided-filter-types="ctx.overriddenProvidedFilterTypes.value"
 				:provided-filters="ctx.providedFilters?.value ?? []"
+				:hide-sync-button="!!ctx.instanceSync?.value"
 				:filter-type="filter"
 				:project-type="ctx.projectType.value"
 				:dropdown-direction="isApp ? 'up' : undefined"

@@ -1102,6 +1102,7 @@ const confirmUnlinkModal = ref<InstanceType<typeof ConfirmUnlinkModal>>()
 			</div>
 
 			<template v-else>
+				<slot name="notices" />
 				<ManagedContentCard
 					v-if="ctx.managedContent.value"
 					:data="ctx.managedContent.value.card"
@@ -1144,6 +1145,7 @@ const confirmUnlinkModal = ref<InstanceType<typeof ConfirmUnlinkModal>>()
 							/>
 
 							<div class="flex gap-2">
+								<slot name="page-actions" />
 								<Button
 									v-tooltip="
 										ctx.busyMessage?.value ??

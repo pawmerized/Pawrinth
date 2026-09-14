@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM plus_content_operation_items WHERE operation_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "7bdbd844f036f925fad54e0c559b7ff083cb8d570227b104c2f5f9b4e8e03bba"
+}

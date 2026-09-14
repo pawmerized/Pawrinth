@@ -16,6 +16,7 @@ mod event;
 pub mod install;
 mod launcher;
 mod logger;
+pub mod plus;
 mod state;
 
 pub use api::*;
@@ -40,10 +41,10 @@ pub fn install_crypto_provider() {
 
 pub fn launcher_user_agent() -> String {
     const LAUNCHER_BASE_USER_AGENT: &str =
-        concat!("modrinth/theseus/", env!("CARGO_PKG_VERSION"),);
+        concat!("pawmerized/pawrinth/", env!("CARGO_PKG_VERSION"),);
 
     format!(
-        "{} ({}; support@modrinth.com)",
+        "{} ({}; unofficial fork of Modrinth App)",
         LAUNCHER_BASE_USER_AGENT,
         std::env::consts::OS
     )
