@@ -129,7 +129,7 @@ Pawrinth uses the same updater as Modrinth App, Tauri's, pointed at Pawrinth's G
 
 **Publishing a release:**
 
-1. Add two repository secrets once, under Settings, Secrets and variables, Actions: `TAURI_SIGNING_PRIVATE_KEY`, the contents of the private key file, and `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, empty if the key has none.
+1. Add the repository secret `TAURI_SIGNING_PRIVATE_KEY` once, under Settings, Secrets and variables, Actions: the contents of the private key file. Add `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` too only if the key has a password. GitHub doesn't accept empty secrets, and none is needed.
 2. Push a tag such as `v0.2.0`. `.github/workflows/pawrinth-release.yml` builds the installer with that version, signs it, writes `latest.json` and publishes the release with `Pawrinth_<version>_x64-setup.exe`, its `.sig`, `Pawrinth-Setup.exe` and `latest.json`.
 
 Keep a backup of the private key. If it's lost, installed copies can't accept any later update, and everyone would have to install a new build by hand. Never commit it.
