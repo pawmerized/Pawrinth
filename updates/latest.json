@@ -1,0 +1,11 @@
+{
+  "version": "0.1.0",
+  "notes": "See https://github.com/pawmerized/Pawrinth/releases/tag/v0.1.0",
+  "pub_date": "2026-11-07T23:33:47.684Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTMlA2dzYzeEVPeUMvZ3YrUmRtaFp4OEc1SUJ1Z1ZlUlpKMGg0N1RGVkZiM1QzRWRMNkU3bzJ3dm1lUmdBVGNTT2NYSit6TWhhVVJFWXkyZjNoNVFLbTNBQlloMS9Sb2dvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0MDk0NDI3CWZpbGU6UGF3cmludGhfMC4xLjBfeDY0LXNldHVwLmV4ZQptNG1YcFhpQktiU3BLcnhZcHlrM0x5TUdob0tBa2pKcHlySEw5Q0VhTHh3alhtUHpFMThlcEZib1VNdVlDSTY1clIvcUVPaEhYRGdpZitBYnJKTk9Edz09Cg==",
+      "url": "https://github.com/pawmerized/Pawrinth/releases/download/v0.1.0/Pawrinth-Setup.exe"
+    }
+  }
+}
