@@ -1,6 +1,6 @@
-# Builds the Windows installer for a version tag such as v0.2.0 and publishes it as a
-# GitHub release with everything Pawrinth's updater reads: the signed installer and
-# latest.json. Installed copies of Pawrinth find the update on their own.
+# Builds the Windows installer for a version tag such as v0.2.0, publishes it as a GitHub
+# release with Pawrinth-Setup.exe as its only file, then writes updates/latest.json on
+# main, which installed copies of Pawrinth read to find the update on their own.
 #
 # Needs the repository secret TAURI_SIGNING_PRIVATE_KEY: the contents of the private
 # key whose public half is in apps/app/tauri-release.conf.json. Add
@@ -79,33 +79,47 @@ jobs:
           BUNDLE=target/release/bundle/nsis
           SETUP="Pawrinth_${VERSION}_x64-setup.exe"
           test -f "$BUNDLE/$SETUP.sig"
-          cp "$BUNDLE/$SETUP" "$BUNDLE/Pawrinth-Setup.exe"
+          mkdir -p target/publish
+          cp "$BUNDLE/$SETUP" "target/publish/Pawrinth-Setup.exe"
           node -e "
             const fs = require('fs')
-            const [bundle, setup, version, repo, tag] = process.argv.slice(1)
-            fs.writeFileSync(bundle + '/latest.json', JSON.stringify({
+            const [bundle, setup, version, repo, tag, out] = process.argv.slice(1)
+            fs.writeFileSync(out, JSON.stringify({
               version,
               notes: 'See https://github.com/' + repo + '/releases/tag/' + tag,
               pub_date: new Date().toISOString(),
               platforms: {
                 'windows-x86_64': {
                   signature: fs.readFileSync(bundle + '/' + setup + '.sig', 'utf8').trim(),
-                  url: 'https://github.com/' + repo + '/releases/download/' + tag + '/' + setup,
+                  url: 'https://github.com/' + repo + '/releases/download/' + tag + '/Pawrinth-Setup.exe',
                 },
               },
             }, null, 2))
-          " "$BUNDLE" "$SETUP" "$VERSION" "$GITHUB_REPOSITORY" "$TAG"
+          " "$BUNDLE" "$SETUP" "$VERSION" "$GITHUB_REPOSITORY" "$TAG" "target/publish/latest.json"
 
       - name: Publish the release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          BUNDLE=target/release/bundle/nsis
-          SETUP="Pawrinth_${VERSION}_x64-setup.exe"
-          FILES=("$BUNDLE/$SETUP" "$BUNDLE/$SETUP.sig" "$BUNDLE/Pawrinth-Setup.exe" "$BUNDLE/latest.json")
           if gh release view "$TAG" > /dev/null 2>&1; then
-            gh release upload "$TAG" "${FILES[@]}" --clobber
+            gh release upload "$TAG" "target/publish/Pawrinth-Setup.exe" --clobber
           else
-            gh release create "$TAG" "${FILES[@]}" --title "Pawrinth $VERSION" --generate-notes --latest
+            gh release create "$TAG" "target/publish/Pawrinth-Setup.exe" --title "Pawrinth $VERSION" --generate-notes --latest
+          fi
+
+      - name: Publish the update file
+        shell: bash
+        run: |
+          git reset --hard HEAD
+          git fetch --depth 1 origin main
+          git checkout -B main FETCH_HEAD
+          mkdir -p updates
+          cp "target/publish/latest.json" updates/latest.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add updates/latest.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Update file for Pawrinth $VERSION"
+            git push origin main
           fi

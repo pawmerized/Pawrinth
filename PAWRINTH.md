@@ -125,12 +125,12 @@ The Developer Portal's Rich Presence Visualizer writes sample C code, which is o
 
 ## Automatic updates
 
-Pawrinth uses the same updater as Modrinth App, Tauri's, pointed at Pawrinth's GitHub releases (`apps/app/tauri-release.conf.json`). When it starts, and every five minutes after, it reads `latest.json` from the newest release. When there's a newer version it downloads the installer in the background, or on a metered connection waits to be asked, and then shows **Reload to update** in the title bar. Closing Pawrinth installs a downloaded update too, without reopening it. The download is checked against the public key in that file before anything runs, so only installers signed with Pawrinth's private key are accepted. The installer runs without questions and keeps the install folder and all data.
+Pawrinth uses the same updater as Modrinth App, Tauri's, pointed at Pawrinth's GitHub releases (`apps/app/tauri-release.conf.json`). When it starts, and every five minutes after, it reads [`updates/latest.json`](updates/latest.json) from this repository's `main` branch. When there's a newer version it downloads the installer in the background, or on a metered connection waits to be asked, and then shows **Reload to update** in the title bar. Closing Pawrinth installs a downloaded update too, without reopening it. The download is checked against the public key in that file before anything runs, so only installers signed with Pawrinth's private key are accepted. The installer runs without questions and keeps the install folder and all data.
 
 **Publishing a release:**
 
 1. Add the repository secret `TAURI_SIGNING_PRIVATE_KEY` once, under Settings, Secrets and variables, Actions: the contents of the private key file. Add `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` too only if the key has a password. GitHub doesn't accept empty secrets, and none is needed.
-2. Push a tag such as `v0.2.0`. `.github/workflows/pawrinth-release.yml` builds the installer with that version, signs it, writes `latest.json` and publishes the release with `Pawrinth_<version>_x64-setup.exe`, its `.sig`, `Pawrinth-Setup.exe` and `latest.json`.
+2. Push a tag such as `v0.2.0`. `.github/workflows/pawrinth-release.yml` builds the installer with that version, signs it, publishes the release with `Pawrinth-Setup.exe` as its only file, then commits the matching `updates/latest.json` to `main`. Don't edit that file by hand.
 
 Keep a backup of the private key. If it's lost, installed copies can't accept any later update, and everyone would have to install a new build by hand. Never commit it.
 
