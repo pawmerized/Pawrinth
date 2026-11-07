@@ -1,7 +1,7 @@
 {
 	"name": "@modrinth/app-frontend",
 	"private": true,
-	"version": "1.0.0-local",
+	"version": "0.1.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
@@ -11,11 +11,12 @@
 		"fix": "eslint . --fix && prettier --write .",
 		"intl:extract": "formatjs extract \"src/**/*.{vue,ts,tsx,js,jsx,mts,cts,mjs,cjs}\" --ignore \"**/*.d.ts\" --ignore node_modules --out-file src/locales/en-US/index.json --format crowdin --preserve-whitespace",
 		"intl:prune-local": "pnpm -w scripts i18n-icu-contract prune-local --scope apps/app-frontend",
-		"test": "vue-tsc --noEmit"
+		"test": "vue-tsc --noEmit && vitest run"
 	},
 	"dependencies": {
 		"@dnd-kit/dom": "^0.5.0",
 		"@dnd-kit/vue": "^0.5.0",
+		"@floating-ui/vue": "^2.0.1",
 		"@modrinth/api-client": "workspace:^",
 		"@modrinth/assets": "workspace:*",
 		"@modrinth/ui": "workspace:*",
@@ -35,7 +36,6 @@
 		"@vueuse/core": "^11.1.0",
 		"ace-builds": "^1.43.5",
 		"dayjs": "^1.11.10",
-		"@floating-ui/vue": "^2.0.1",
 		"fuse.js": "^6.6.2",
 		"intl-messageformat": "^10.7.7",
 		"motion-v": "2.2.1",
@@ -66,6 +66,7 @@
 		"tailwindcss": "^3.4.4",
 		"typescript": "^5.5.4",
 		"vite": "^8.0.0",
+		"vitest": "^3.2.7",
 		"vue-component-type-helpers": "^3.1.8",
 		"vue-tsc": "^2.1.6"
 	},

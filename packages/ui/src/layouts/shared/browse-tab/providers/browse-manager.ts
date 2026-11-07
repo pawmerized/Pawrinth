@@ -53,8 +53,25 @@ export interface BrowseManagerContext {
 	getServerProjectLink: (
 		result: Labrinth.Search.v3.ResultSearchProject,
 	) => string | RouteLocationRaw
+	/** Lets a provider link authors somewhere other than Modrinth. */
+	getAuthorLink?: (result: Labrinth.Search.v3.ResultSearchProject) => string | undefined
+	/** Where an organization's name leads. Without this, it's the Modrinth website. */
+	getOrganizationLink?: (organizationId: string) => string
+	/** True when results couldn't be fetched, so an empty list isn't presented as "no results". */
+	loadFailed?: ComputedRef<boolean>
+	/** Only set while browsing from an instance. */
+	instanceSync?: ComputedRef<{
+		enabled: boolean
+		title: string
+		status: string
+		description: string
+		actionLabel: string
+		set: (enabled: boolean) => void
+	} | null>
 
-	selectableProjectTypes: ComputedRef<{ label: string; href: string; shown?: boolean }[]>
+	selectableProjectTypes: ComputedRef<
+		{ label: string; href: string; shown?: boolean; icon?: Component }[]
+	>
 	showProjectTypeTabs: ComputedRef<boolean>
 
 	variant: 'app' | 'web'

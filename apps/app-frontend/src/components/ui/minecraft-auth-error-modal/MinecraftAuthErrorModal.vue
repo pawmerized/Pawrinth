@@ -1,13 +1,6 @@
 <script setup lang="ts">
-import {
-	CheckIcon,
-	CopyIcon,
-	DropdownIcon,
-	LogInIcon,
-	MessagesSquareIcon,
-	WrenchIcon,
-} from '@modrinth/assets'
-import { Admonition, Button, ButtonLink, Collapsible, IconButton, NewModal } from '@modrinth/ui'
+import { CheckIcon, CopyIcon, DropdownIcon, LogInIcon, WrenchIcon } from '@modrinth/assets'
+import { Admonition, Button, Collapsible, IconButton, NewModal } from '@modrinth/ui'
 import { computed, ref } from 'vue'
 
 import { handleSevereError } from '@/composables/use-error.js'
@@ -121,8 +114,7 @@ async function copyToClipboard(text: string) {
 								href="https://www.minecraft.net/en-us/login"
 								>Minecraft Login</a
 							>
-							and signing in, as it may prompt you with the necessary steps. You can also contact
-							support and we can look into it further.
+							and signing in, as it may prompt you with the necessary steps.
 						</p>
 					</div>
 				</template>
@@ -130,9 +122,6 @@ async function copyToClipboard(text: string) {
 
 			<!-- Action buttons -->
 			<div class="flex items-center gap-1">
-				<ButtonLink href="https://support.modrinth.com" class="flex-1" @click="modal?.hide()">
-					<MessagesSquareIcon /> Contact support
-				</ButtonLink>
 				<Button
 					type="colored"
 					color="brand"

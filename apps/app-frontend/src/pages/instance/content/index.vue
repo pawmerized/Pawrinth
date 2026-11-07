@@ -1,7 +1,75 @@
 <template>
 	<ReadyTransition :pending="loading">
 		<ContentPageLayout :highlighted-item-id="highlightedItemId">
+			<template #page-actions>
+				<IconButton
+					v-tooltip="formatMessage(plusMessages.updateHistory)"
+					type="outlined"
+					size="lg"
+					:label="formatMessage(plusMessages.updateHistory)"
+					@click="updateHistoryModal?.show($event)"
+				>
+					<HistoryIcon aria-hidden="true" />
+				</IconButton>
+				<IconButton
+					v-if="curseforgeReady"
+					v-tooltip="formatMessage(plusMessages.curseforgeUpdates)"
+					type="outlined"
+					size="lg"
+					:label="formatMessage(plusMessages.curseforgeUpdates)"
+					@click="curseforgeUpdatesModal?.show($event)"
+				>
+					<PackageOpenIcon aria-hidden="true" />
+				</IconButton>
+				<IconButton
+					v-tooltip="formatMessage(plusMessages.compare)"
+					type="outlined"
+					size="lg"
+					:label="formatMessage(plusMessages.compare)"
+					@click="compareModal?.show($event)"
+				>
+					<ArrowLeftRightIcon aria-hidden="true" />
+				</IconButton>
+			</template>
+			<template #notices>
+				<Admonition
+					v-if="curseforgePack && curseforgePack.missing.length > 0"
+					type="warning"
+					:header="formatMessage(plusMessages.packMissingHeader)"
+					inline-actions
+				>
+					{{
+						formatMessage(plusMessages.packMissingText, {
+							count: curseforgePack.missing.length,
+						})
+					}}
+					<template #actions>
+						<Button @click="packMissingModal?.show()">
+							{{ formatMessage(plusMessages.packMissingShow) }}
+						</Button>
+					</template>
+				</Admonition>
+			</template>
 			<template #modals>
+				<NewModal
+					ref="packMissingModal"
+					:header="formatMessage(plusMessages.packMissingHeader)"
+					max-width="560px"
+				>
+					<div v-if="curseforgePack" class="flex flex-col gap-3">
+						<p class="m-0 text-secondary">
+							{{ formatMessage(plusMessages.packMissingModalText) }}
+						</p>
+						<MissingFilesList :files="curseforgePack.missing" />
+					</div>
+				</NewModal>
+				<UpdateHistoryModal
+					ref="updateHistoryModal"
+					:instance-id="instance.id"
+					:instance-busy="isInstanceBusy"
+				/>
+				<InstanceCompareModal ref="compareModal" :instance-id="instance.id" />
+				<CurseforgeUpdatesModal ref="curseforgeUpdatesModal" :instance-id="instance.id" />
 				<SyncedContentModal ref="syncedContentModal" />
 				<UnknownFileWarningModal
 					ref="unknownFileWarningModal"
@@ -63,7 +131,9 @@
 					:current-loader="instance.loader"
 					:current-version-id="
 						updatingModpack
-							? (instance.link?.version_id ?? '')
+							? curseforgePack
+								? String(curseforgePack.file_id)
+								: (instance.link?.version_id ?? '')
 							: (updatingProject?.version?.id ?? '')
 					"
 					:is-app="true"
@@ -90,8 +160,18 @@
 
 <script setup lang="ts">
 import type { Labrinth } from '@modrinth/api-client'
-import { ClipboardCopyIcon, FolderOpenIcon, LockIcon, LockOpenIcon } from '@modrinth/assets'
 import {
+	ArrowLeftRightIcon,
+	ClipboardCopyIcon,
+	FolderOpenIcon,
+	HistoryIcon,
+	LockIcon,
+	LockOpenIcon,
+	PackageOpenIcon,
+} from '@modrinth/assets'
+import {
+	Admonition,
+	Button,
 	type ButtonMenuOption,
 	commonMessages,
 	ConfirmDisableModal,
@@ -102,18 +182,22 @@ import {
 	ContentUpdaterModal,
 	dedupeManagedContentItems,
 	defineMessages,
+	IconButton,
 	injectNotificationManager,
+	injectPopupNotificationManager,
 	type ManagedContentData,
 	ManagedContentModal,
 	type ManagedContentModalState,
 	type ManagedContentProject,
 	type ManagedContentVersion,
+	NewModal,
 	provideContentManager,
 	ReadyTransition,
 	summarizeManagedContent,
 	UnknownFileWarningModal,
 	type UpdateAllSelection,
 	useDebugLogger,
+	useFormatBytes,
 	useVIntl,
 	versionChangesGameVersion,
 } from '@modrinth/ui'
@@ -131,6 +215,13 @@ import { useManagedContentPolicy } from '@/composables/instances/use-managed-con
 import { useSyncedPackActions } from '@/composables/instances/use-synced-pack-actions'
 import { useAppEvent } from '@/composables/use-app-event'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
+import { curseforgeKeyRevision } from '@/features/plus-curseforge/key-state'
+import MissingFilesList from '@/features/plus-curseforge/missing-files-list.vue'
+import { injectModpackInstall } from '@/features/plus-curseforge/modpack-install-context'
+import { installedRowView, toVersionView } from '@/features/plus-curseforge/project-adapter'
+import CurseforgeUpdatesModal from '@/features/plus-curseforge/updates-modal.vue'
+import InstanceCompareModal from '@/features/plus-updates/instance-compare-modal.vue'
+import UpdateHistoryModal from '@/features/plus-updates/update-history-modal.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project_versions, get_version, get_version_many } from '@/helpers/cache.js'
 import { install_bulk_update_content } from '@/helpers/install'
@@ -148,6 +239,19 @@ import {
 	update_managed_modrinth_version,
 } from '@/helpers/instance'
 import { type InstanceContentData, loadInstanceContentData } from '@/helpers/instance-content'
+import {
+	type CfInstalledFile,
+	type CfPackInfo,
+	plus_cf_apply_updates,
+	plus_cf_changelog,
+	plus_cf_data_mode,
+	plus_cf_files,
+	plus_cf_install_options,
+	plus_cf_installed,
+	plus_cf_pack_list,
+	plus_operations_list,
+	plus_update_preflight,
+} from '@/helpers/plus'
 import { get as getSettings, set as setSettings } from '@/helpers/settings'
 import { set_synced_pack_enabled, syncedPackKeys } from '@/helpers/synced-packs'
 import type { CacheBehaviour } from '@/helpers/types'
@@ -263,7 +367,16 @@ watch(
 watch(projects, (newProjects) => {
 	if (installingBuffer.value.length === 0) return
 	const realProjectIds = new Set(newProjects.map((p) => p.project?.id).filter(Boolean))
-	if (installingBuffer.value.every((item) => realProjectIds.has(item.project?.id))) {
+	const active = new Set(
+		(installingItems.value.get(instance.value.id) ?? []).map((item) => item.file_name),
+	)
+	const finishedElsewhere = (item: ContentItem) =>
+		!!item.project?.id?.startsWith('curseforge:') && !active.has(item.file_name)
+	if (
+		installingBuffer.value.every(
+			(item) => realProjectIds.has(item.project?.id) || finishedElsewhere(item),
+		)
+	) {
 		installingBuffer.value = []
 	}
 })
@@ -335,6 +448,120 @@ watch(
 
 const isModpackUpdating = ref(false)
 const isBulkOperating = ref(false)
+const updateHistoryModal = ref<InstanceType<typeof UpdateHistoryModal> | null>(null)
+const compareModal = ref<InstanceType<typeof InstanceCompareModal> | null>(null)
+const curseforgeUpdatesModal = ref<InstanceType<typeof CurseforgeUpdatesModal> | null>(null)
+const curseforgeReady = ref(false)
+watch(
+	curseforgeKeyRevision,
+	() => {
+		plus_cf_data_mode()
+			.then((mode) => {
+				curseforgeReady.value = mode === 'live'
+			})
+			.catch(() => {})
+	},
+	{ immediate: true },
+)
+const formatBytes = useFormatBytes()
+const awaitingUpdateSummary = ref<number | null>(null)
+const { addPopupNotification } = injectPopupNotificationManager()
+const plusMessages = defineMessages({
+	summaryDone: { id: 'plus.content.summary.done', defaultMessage: 'Update finished' },
+	summaryPartial: { id: 'plus.content.summary.partial', defaultMessage: 'Update partly finished' },
+	summaryText: {
+		id: 'plus.content.summary.text',
+		defaultMessage:
+			'{count, plural, one {# file changed} other {# files changed}}. Recovery data was saved, so you can go back.',
+	},
+	summaryRestore: {
+		id: 'plus.content.summary.restore',
+		defaultMessage: 'Restore previous versions',
+	},
+	updateHistory: { id: 'plus.content.update-history', defaultMessage: 'Update history' },
+	curseforgeUpdates: {
+		id: 'plus.content.curseforge-updates',
+		defaultMessage: 'CurseForge updates',
+	},
+	curseforgeSource: { id: 'plus.content.curseforge-source', defaultMessage: 'CurseForge' },
+	packMissingHeader: {
+		id: 'plus.content.curseforge-pack.missing.header',
+		defaultMessage: 'Some modpack files are missing',
+	},
+	packMissingText: {
+		id: 'plus.content.curseforge-pack.missing.text',
+		defaultMessage:
+			"{count, plural, one {# file} other {# files}} from this CurseForge modpack couldn't be downloaded through Pawrinth, so the pack may not work properly.",
+	},
+	packMissingShow: {
+		id: 'plus.content.curseforge-pack.missing.show',
+		defaultMessage: 'Show files',
+	},
+	packMissingModalText: {
+		id: 'plus.content.curseforge-pack.missing.modal',
+		defaultMessage:
+			'You can download these from CurseForge and add them to this instance yourself.',
+	},
+	compare: { id: 'plus.content.compare', defaultMessage: 'Compare' },
+	noSpaceTitle: { id: 'plus.content.no-space', defaultMessage: 'Not enough disk space' },
+	noSpaceText: {
+		id: 'plus.content.no-space.text',
+		defaultMessage:
+			'Updating with recovery data needs about {required}, but {available} is free. Nothing was changed. Free up space, or turn off recovery data in settings to update without it.',
+	},
+	overBudgetTitle: {
+		id: 'plus.content.over-budget',
+		defaultMessage: 'Recovery data is over your allowance',
+	},
+	overBudgetText: {
+		id: 'plus.content.over-budget.text',
+		defaultMessage:
+			'This update still saves recovery data. Remove old entries in Update history to free space.',
+	},
+})
+const curseforgeFiles = ref(new Map<string, CfInstalledFile>())
+const curseforgePack = ref<CfPackInfo | null>(null)
+const modpackInstall = injectModpackInstall()
+const packMissingModal = ref<InstanceType<typeof NewModal> | null>(null)
+
+async function loadCurseforgePack() {
+	if (instance.value.link?.type !== 'imported_modpack') {
+		curseforgePack.value = null
+		return
+	}
+	const packs = await plus_cf_pack_list().catch(() => [])
+	curseforgePack.value = packs.find((pack) => pack.instance_id === instance.value.id) ?? null
+}
+
+watch(
+	() => [instance.value.id, instance.value.link?.type, instance.value.link?.version_number],
+	() => void loadCurseforgePack(),
+	{ immediate: true },
+)
+const curseforgeUpdating = ref<CfInstalledFile | null>(null)
+
+function withoutDisabledSuffix(path: string): string {
+	return path.replace(/\.disabled$/, '')
+}
+
+function curseforgeFileOf(item: ContentItem): CfInstalledFile | undefined {
+	if (item.project || !item.file_path) return undefined
+	return curseforgeFiles.value.get(withoutDisabledSuffix(item.file_path))
+}
+
+async function refreshCurseforgeFiles(): Promise<void> {
+	const instanceId = instance.value.id
+	try {
+		const files = await plus_cf_installed(instanceId)
+		if (instanceId !== instance.value.id) return
+		curseforgeFiles.value = new Map(
+			files.map((file) => [withoutDisabledSuffix(file.relative_path), file]),
+		)
+	} catch (error) {
+		debug('Could not read CurseForge files', error)
+	}
+}
+
 const isInstanceBusy = computed(() => instance.value?.install_stage !== 'installed')
 const showSharedContentFilter = computed(() => instance.value.shared_instance?.role === 'member')
 const isPackLocked = computed(
@@ -477,6 +704,7 @@ const managedContent = computed<ManagedContentData | null>(() => {
 
 	const project = displayedModpackProject.value
 	if (!project) return null
+	const pack = curseforgePack.value
 
 	return {
 		card: {
@@ -490,10 +718,15 @@ const managedContent = computed<ManagedContentData | null>(() => {
 							path: `/project/${project.slug ?? project.id}`,
 							query: { i: instancePage.instanceId.value },
 						}
-					: undefined,
+					: pack
+						? {
+								path: `/curseforge/project/${pack.project_id}`,
+								query: { i: instancePage.instanceId.value },
+							}
+						: undefined,
 			},
 			summary: managedContentSummary.value,
-			versionNumber: linkedModpackVersion.value?.version_number,
+			versionNumber: linkedModpackVersion.value?.version_number ?? pack?.version,
 			versionLink:
 				linkedModpackProject.value && linkedModpackVersion.value
 					? {
@@ -983,8 +1216,55 @@ async function bulkUpdateSelections(selections: UpdateAllSelection[]) {
 		return [{ project_path: item.file_path, version_id: selection.version.id }]
 	})
 	if (!updates.length) return
+	const preflight = await plus_update_preflight(instanceId)
+	if (preflight.rollback_enabled && !preflight.enough_space) {
+		addNotification({
+			type: 'error',
+			title: formatMessage(plusMessages.noSpaceTitle),
+			text: formatMessage(plusMessages.noSpaceText, {
+				required: formatBytes(preflight.required_bytes, 1),
+				available: formatBytes(preflight.available_bytes, 1),
+			}),
+		})
+		return
+	}
+	if (preflight.over_budget) {
+		addNotification({
+			type: 'warning',
+			title: formatMessage(plusMessages.overBudgetTitle),
+			text: formatMessage(plusMessages.overBudgetText),
+		})
+	}
 	await bulkUpdateMutation.mutateAsync({ instanceId, updates })
+	awaitingUpdateSummary.value = Date.now() / 1000 - 5
 }
+
+async function showUpdateSummary(startedAt: number) {
+	const [latest] = await plus_operations_list(instance.value.id)
+	if (!latest || latest.kind !== 'update_all' || latest.created_at < startedAt) return
+	addPopupNotification({
+		contentType: 'standard',
+		type: latest.state === 'applied' ? 'success' : 'warning',
+		title: formatMessage(
+			latest.state === 'applied' ? plusMessages.summaryDone : plusMessages.summaryPartial,
+		),
+		text: formatMessage(plusMessages.summaryText, { count: latest.items.length }),
+		buttons: [
+			{
+				label: formatMessage(plusMessages.summaryRestore),
+				action: () => updateHistoryModal.value?.show(),
+				color: 'standard',
+			},
+		],
+	})
+}
+
+watch(isInstanceBusy, (busy) => {
+	if (busy || awaitingUpdateSummary.value === null) return
+	const startedAt = awaitingUpdateSummary.value
+	awaitingUpdateSummary.value = null
+	showUpdateSummary(startedAt).catch(handleError)
+})
 
 async function updateProject(mod: ContentItem) {
 	if (!canUpdateProject(mod) || mod.locked) return
@@ -1041,8 +1321,107 @@ async function switchProjectVersion(mod: ContentItem, version: Labrinth.Versions
 	}
 }
 
+async function showCurseforgeVersions(
+	item: ContentItem,
+	installed: CfInstalledFile,
+	switchMode: boolean,
+) {
+	const requestId = beginUpdateRequest()
+	const itemId = getContentItemId(item)
+	const view = installedRowView(
+		installed,
+		instance.value.id,
+		formatMessage(plusMessages.curseforgeSource),
+	)
+
+	curseforgeUpdating.value = installed
+	updatingModpack.value = false
+	updatingProject.value = {
+		...item,
+		project: {
+			id: String(installed.project_id),
+			slug: null,
+			title: view.title ?? item.embedded_metadata?.name ?? item.file_name,
+			icon_url: view.iconUrl ?? item.embedded_metadata?.icon_url ?? null,
+		},
+		version: { id: String(installed.file_id), version_number: '', file_name: item.file_name },
+	} as ContentItem
+	updatingProjectVersions.value = []
+	loadingVersions.value = true
+	loadingChangelog.value = false
+
+	await nextTick()
+
+	contentUpdaterModal.value?.show(
+		String(switchMode ? installed.file_id : (installed.update?.id ?? installed.file_id)),
+		{ switchMode },
+	)
+
+	try {
+		const options = await plus_cf_install_options(
+			instance.value.id,
+			installed.project_id,
+			true,
+			null,
+		)
+		if (!isActiveUpdateRequest(requestId) || getContentItemId(updatingProject.value) !== itemId)
+			return
+		const files = options.files.map((option) => option.file)
+		if (installed.current_file && !files.some((file) => file.id === installed.file_id)) {
+			files.push(installed.current_file)
+		}
+		updatingProjectVersions.value = sortVersionsByPublishedDate(
+			files.map((file) => toVersionView(file) as unknown as Labrinth.Versions.v2.Version),
+		)
+	} catch (error) {
+		handleError(error as Error)
+	} finally {
+		if (isActiveUpdateRequest(requestId)) loadingVersions.value = false
+	}
+}
+
+async function loadCurseforgeChangelog(version: Labrinth.Versions.v2.Version) {
+	const projectId =
+		curseforgeUpdating.value?.project_id ??
+		(updatingModpack.value ? curseforgePack.value?.project_id : undefined)
+	if (projectId === undefined || version.changelog != null) return
+	const requestId = activeUpdateRequestId.value
+	const changelog = await plus_cf_changelog(projectId, Number(version.id)).catch(() => '')
+	if (!isActiveUpdateRequest(requestId)) return
+	updatingProjectVersions.value = mergeVersionIntoList(updatingProjectVersions.value, {
+		...version,
+		changelog,
+	})
+}
+
+async function applyCurseforgeVersion(
+	installed: CfInstalledFile,
+	version: Labrinth.Versions.v2.Version,
+) {
+	try {
+		await plus_cf_apply_updates(instance.value.id, [
+			{
+				relative_path: installed.relative_path,
+				project_id: installed.project_id,
+				file_id: Number(version.id),
+			},
+		])
+		await refreshContentState('must_revalidate')
+		await refreshCurseforgeFiles()
+	} catch (error) {
+		handleError(error as Error)
+	}
+}
+
 async function handleUpdate(id: string) {
 	const item = projects.value.find((p) => getContentItemId(p) === id)
+	const curseforgeFile = item && curseforgeFileOf(item)
+	if (item && curseforgeFile) {
+		if (curseforgeFile.update && canChangeContentVersion(item)) {
+			await showCurseforgeVersions(item, curseforgeFile, false)
+		}
+		return
+	}
 	if (!item || item.locked || !canUpdateProject(item) || !item.project?.id || !item.version?.id)
 		return
 
@@ -1155,6 +1534,11 @@ async function handleUpdate(id: string) {
 
 async function handleSwitchVersion(item: ContentItem) {
 	if (!canChangeContentVersion(item)) return
+	const curseforgeFile = curseforgeFileOf(item)
+	if (curseforgeFile) {
+		await showCurseforgeVersions(item, curseforgeFile, true)
+		return
+	}
 	if (!item.project?.id || !item.version?.id) return
 
 	const requestId = beginUpdateRequest()
@@ -1348,8 +1732,43 @@ async function fetchAndSpliceVersion(
 	updatingProjectVersions.value = mergeVersionIntoList(updatingProjectVersions.value, fullVersion)
 }
 
+async function handleCurseforgePackVersions() {
+	const pack = curseforgePack.value
+	if (!pack) return
+	const requestId = beginUpdateRequest()
+	curseforgeUpdating.value = null
+	updatingModpack.value = true
+	updatingProject.value = null
+	updatingProjectVersions.value = []
+	loadingVersions.value = true
+	loadingChangelog.value = false
+
+	await nextTick()
+	contentUpdaterModal.value?.show(String(pack.file_id))
+
+	try {
+		const files = await plus_cf_files(pack.project_id, null, null)
+		if (!isActiveUpdateRequest(requestId) || !updatingModpack.value) return
+		updatingProjectVersions.value = sortVersionsByPublishedDate(
+			files
+				.filter((file) => file.downloadUrl || file.id === pack.file_id)
+				.map((file) => toVersionView(file) as unknown as Labrinth.Versions.v2.Version),
+		)
+	} catch (error) {
+		handleError(error as Error)
+	} finally {
+		if (isActiveUpdateRequest(requestId)) loadingVersions.value = false
+	}
+}
+
 async function handleVersionSelect(version: Labrinth.Versions.v2.Version) {
 	if (version.changelog != null) return
+	if (curseforgeUpdating.value || (updatingModpack.value && curseforgePack.value)) {
+		loadingChangelog.value = true
+		await loadCurseforgeChangelog(version)
+		loadingChangelog.value = false
+		return
+	}
 	const requestId = activeUpdateRequestId.value
 	loadingChangelog.value = true
 	await fetchAndSpliceVersion(
@@ -1365,11 +1784,16 @@ async function handleVersionSelect(version: Labrinth.Versions.v2.Version) {
 
 async function handleVersionHover(version: Labrinth.Versions.v2.Version) {
 	if (version.changelog != null) return
+	if (curseforgeUpdating.value || (updatingModpack.value && curseforgePack.value)) {
+		await loadCurseforgeChangelog(version)
+		return
+	}
 	await fetchAndSpliceVersion(version.id, undefined, undefined, activeUpdateRequestId.value)
 }
 
 function resetUpdateState() {
 	activeUpdateRequestId.value = 0
+	curseforgeUpdating.value = null
 	updatingModpack.value = false
 	updatingProject.value = null
 	updatingProjectVersions.value = []
@@ -1380,7 +1804,9 @@ function resetUpdateState() {
 async function handleModpackUpdateRequest(selectedVersion: Labrinth.Versions.v2.Version) {
 	pendingModpackUpdateVersion.value = selectedVersion
 
-	const currentVersionId = instance.value?.link?.version_id
+	const currentVersionId = curseforgePack.value
+		? String(curseforgePack.value.file_id)
+		: instance.value?.link?.version_id
 	const currentVersion = updatingProjectVersions.value.find((v) => v.id === currentVersionId)
 	isModpackUpdateDowngrade.value = currentVersion
 		? new Date(selectedVersion.date_published) < new Date(currentVersion.date_published)
@@ -1403,6 +1829,18 @@ async function handleModpackUpdateConfirm() {
 	const version = pendingModpackUpdateVersion.value
 	pendingModpackUpdateVersion.value = null
 	const requestId = activeUpdateRequestId.value
+
+	const pack = curseforgePack.value
+	if (pack) {
+		contentUpdaterModal.value?.hide()
+		await modpackInstall.value?.update(
+			instance.value.id,
+			{ id: pack.project_id, name: pack.name },
+			Number(version.id),
+		)
+		if (isActiveUpdateRequest(requestId)) resetUpdateState()
+		return
+	}
 
 	contentUpdaterModal.value?.hide()
 	isModpackUpdating.value = true
@@ -1431,6 +1869,12 @@ async function handleModalUpdate(
 			await handleModpackUpdateConfirm()
 		} else {
 			await handleModpackUpdateRequest(selectedVersion)
+		}
+	} else if (curseforgeUpdating.value) {
+		const requestId = activeUpdateRequestId.value
+		await applyCurseforgeVersion(curseforgeUpdating.value, selectedVersion)
+		if (isActiveUpdateRequest(requestId)) {
+			resetUpdateState()
 		}
 	} else if (updatingProject.value) {
 		const mod = updatingProject.value
@@ -1509,6 +1953,16 @@ function getOverflowOptions(item: ContentItem): ButtonMenuOption[] {
 		icon: FolderOpenIcon,
 		action: () => highlightModInInstance(instance.value.id, item.file_path),
 	})
+
+	const curseforgeUrl = curseforgeFileOf(item)?.project?.links?.websiteUrl
+	if (curseforgeUrl) {
+		options.push({
+			id: 'copy-link',
+			label: formatMessage(commonMessages.copyLinkButton),
+			icon: ClipboardCopyIcon,
+			action: () => navigator.clipboard.writeText(curseforgeUrl),
+		})
+	}
 
 	if (item.project?.slug) {
 		options.push({
@@ -1603,6 +2057,16 @@ function contentVersionLabel(item: ContentItem): string {
 	return formatMessage(commonMessages.unknownLabel)
 }
 
+const managedContentPrimaryAction = computed(() =>
+	instance.value.shared_instance?.role === 'member'
+		? instancePage.reviewSharedInstanceUpdate
+		: instance.value.link?.type === 'modrinth_modpack' && !isQuarantined.value
+			? handleModpackUpdate
+			: curseforgePack.value && !isQuarantined.value
+				? handleCurseforgePackVersions
+				: undefined,
+)
+
 provideContentManager({
 	items: mergedProjects,
 	loading,
@@ -1651,12 +2115,9 @@ provideContentManager({
 	bulkUpdatesInBackground: true,
 	currentGameVersion: computed(() => instance.value.game_version),
 	currentLoader: computed(() => instance.value.loader),
-	runManagedContentPrimaryAction:
-		instance.value.shared_instance?.role === 'member'
-			? instancePage.reviewSharedInstanceUpdate
-			: instance.value.link?.type === 'modrinth_modpack' && !isQuarantined.value
-				? handleModpackUpdate
-				: undefined,
+	get runManagedContentPrimaryAction() {
+		return managedContentPrimaryAction.value
+	},
 	viewManagedContent: handleManagedContent,
 	unlinkModpack: unpairInstance,
 	openManagedContentSettings: openSettings,
@@ -1664,45 +2125,61 @@ provideContentManager({
 	getOverflowOptions,
 	shareItems: handleShareItems,
 	getItemId: getContentItemId,
-	mapToTableItem: (item: ContentItem) => ({
-		id: getContentItemId(item),
-		project: item.project ?? {
-			id: item.file_name,
-			slug: null,
-			title: item.embedded_metadata?.name ?? item.file_name.replace('.disabled', ''),
-			icon_url: item.embedded_metadata?.icon_url ?? null,
-		},
-		projectLink: item.project?.id
-			? { path: `/project/${item.project.id}`, query: { i: instancePage.instanceId.value } }
-			: undefined,
-		version: item.version ?? {
-			id: item.file_name,
-			version_number: contentVersionLabel(item),
-			file_name: item.file_name,
-		},
-		versionLink:
-			item.project?.id && item.version?.id
+	mapToTableItem: (item: ContentItem) => {
+		const curseforgeFile = curseforgeFileOf(item)
+		const curseforge =
+			curseforgeFile &&
+			installedRowView(
+				curseforgeFile,
+				instancePage.instanceId.value,
+				formatMessage(plusMessages.curseforgeSource),
+			)
+		return {
+			id: getContentItemId(item),
+			project: item.project ?? {
+				id: item.file_name,
+				slug: null,
+				title:
+					curseforge?.title ??
+					item.embedded_metadata?.name ??
+					item.file_name.replace('.disabled', ''),
+				icon_url: curseforge?.iconUrl ?? item.embedded_metadata?.icon_url ?? null,
+			},
+			projectLink: item.project?.id
+				? { path: `/project/${item.project.id}`, query: { i: instancePage.instanceId.value } }
+				: curseforge?.projectLink,
+			version: item.version ?? {
+				id: item.file_name,
+				version_number: curseforge?.versionNumber ?? contentVersionLabel(item),
+				file_name: item.file_name,
+			},
+			versionLink:
+				item.project?.id && item.version?.id
+					? {
+							path: `/project/${item.project.id}/version/${item.version.id}`,
+							query: { i: instancePage.instanceId.value },
+						}
+					: undefined,
+			owner: item.owner
 				? {
-						path: `/project/${item.project.id}/version/${item.version.id}`,
-						query: { i: instancePage.instanceId.value },
+						...item.owner,
+						link: contentOwnerLink(item.owner),
 					}
-				: undefined,
-		owner: item.owner
-			? {
-					...item.owner,
-					link: contentOwnerLink(item.owner),
-				}
-			: undefined,
-		external: item.external ?? !item.project,
-		enabled: canMutateContent(item) ? item.enabled : undefined,
-		synced: !!item.synced_pack,
-		syncUpdatePending: item.synced_pack?.update_pending,
-		locked: item.locked,
-		installing: item.installing,
-		hideDelete: !canDeleteContent(item),
-		hideSwitchVersion: !canChangeContentVersion(item) || !item.project?.id || !item.version?.id,
-		hasUpdate: canUpdateProject(item) && !item.locked,
-	}),
+				: curseforge?.owner,
+			external: curseforge ? false : (item.external ?? !item.project),
+			enabled: canMutateContent(item) ? item.enabled : undefined,
+			synced: !!item.synced_pack,
+			syncUpdatePending: item.synced_pack?.update_pending,
+			locked: item.locked,
+			installing: item.installing,
+			hideDelete: !canDeleteContent(item),
+			hideSwitchVersion:
+				!canChangeContentVersion(item) || (!curseforge && (!item.project?.id || !item.version?.id)),
+			hasUpdate:
+				(canUpdateProject(item) || (!!curseforgeFile?.update && canChangeContentVersion(item))) &&
+				!item.locked,
+		}
+	},
 	showSharedContentFilter,
 	filterPersistKey: instance.value.id,
 	searchQueryParam: 'q',
@@ -1732,6 +2209,15 @@ watch(
 	(data) => {
 		if (data) applyContentData(data)
 	},
+	{ immediate: true },
+)
+watch(
+	[
+		() => instance.value.id,
+		() => projects.value.map((item) => item.file_path).join('|'),
+		curseforgeKeyRevision,
+	],
+	() => void refreshCurseforgeFiles(),
 	{ immediate: true },
 )
 watch(contentQuery.error, (error) => {

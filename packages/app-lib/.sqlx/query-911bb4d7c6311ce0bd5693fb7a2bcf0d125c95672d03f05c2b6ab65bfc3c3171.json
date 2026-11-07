@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT id FROM plus_content_operations\n        WHERE instance_id = $1 AND state = 'reverted'\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "911bb4d7c6311ce0bd5693fb7a2bcf0d125c95672d03f05c2b6ab65bfc3c3171"
+}

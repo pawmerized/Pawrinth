@@ -3,7 +3,15 @@ import {
 	type NotificationPanelLocation,
 	type WebNotification,
 } from '@modrinth/ui'
-import { type Ref, ref } from 'vue'
+import { type Ref, ref, watch } from 'vue'
+
+import { redactForStream, usePrivacy } from '@/features/plus-privacy/use-privacy'
+
+function withoutPrivateDetails<T extends Partial<WebNotification>>(notification: T): T {
+	if (typeof notification.title === 'string') notification.title = redactForStream(notification.title)
+	if (typeof notification.text === 'string') notification.text = redactForStream(notification.text)
+	return notification
+}
 
 export class AppNotificationManager extends AbstractWebNotificationManager {
 	private readonly state: Ref<WebNotification[]>
@@ -13,6 +21,12 @@ export class AppNotificationManager extends AbstractWebNotificationManager {
 		super()
 		this.state = ref<WebNotification[]>([])
 		this.locationState = ref<NotificationPanelLocation>('right')
+
+		const addNotification = this.addNotification
+		this.addNotification = (notification) => addNotification(withoutPrivateDetails(notification))
+		watch(usePrivacy().streamerMode, (enabled) => {
+			if (enabled) this.state.value.forEach(withoutPrivateDetails)
+		})
 	}
 
 	public getNotificationLocation(): NotificationPanelLocation {

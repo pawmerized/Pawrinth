@@ -458,9 +458,8 @@ impl DownloadedFile {
             .await?;
         let path = path.to_path_buf();
         tokio::task::spawn_blocking(move || {
-            temporary
-                .persist(&path)
-                .map_err(|error| IOError::with_path(error.error, &path))
+            io::persist_replacing(temporary, &path)
+                .map_err(|error| IOError::with_path(error, &path))
         })
         .await??;
         Ok(())
@@ -503,6 +502,41 @@ pub async fn fetch_file(
         semaphore,
         exec,
         &INSECURE_REQWEST_CLIENT,
+        progress,
+        true,
+        Some(staging),
+    )
+    .await?;
+    match body {
+        FetchBody::File(file) => Ok(file),
+        FetchBody::Memory(_) => unreachable!("requested a file download"),
+    }
+}
+
+/// Downloads a temporary file checked against its SHA-1, with a client the caller
+/// chooses. No download analytics are sent, since the host isn't Modrinth's.
+pub(crate) async fn fetch_file_with_client(
+    url: &str,
+    sha1: &str,
+    semaphore: &FetchSemaphore,
+    exec: impl sqlx::Executor<'_, Database = sqlx::Sqlite>,
+    client: &reqwest::Client,
+    progress: Option<&mut FetchProgressFn<'_>>,
+    staging: &Path,
+) -> crate::Result<DownloadedFile> {
+    let body = fetch_advanced_with_target(
+        Method::GET,
+        url,
+        Some(sha1),
+        None,
+        None,
+        None,
+        None,
+        None,
+        None,
+        semaphore,
+        exec,
+        client,
         progress,
         true,
         Some(staging),
@@ -1156,12 +1190,7 @@ pub async fn write(
         io::create_dir_all(parent).await?;
     }
 
-    let mut file = File::create(path)
-        .await
-        .map_err(|e| IOError::with_path(e, path))?;
-    file.write_all(bytes)
-        .await
-        .map_err(|e| IOError::with_path(e, path))?;
+    io::write(path, bytes).await?;
     tracing::trace!("Done writing file {}", path.display());
     Ok(())
 }

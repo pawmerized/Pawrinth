@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "ดู Log"
   },
-  "app.ads-consent.accept": {
-    "message": "ยอมรับทั้งหมด"
-  },
-  "app.ads-consent.body": {
-    "message": "โฆษณาทำให้ Modrinth ดำเนินต่อไปได้และเป็นแหล่งเงินทุนสำหรับการจ่ายเงินให้ครีเอเตอร์ พาร์ทเนอร์ของเราอาจจัดเก็บหรือเข้าถึงคุกกี้ในแอปเพื่อปรับแต่งโฆษณาให้เหมาะกับแต่ละบุคคลและวัดประสิทธิภาพ."
-  },
-  "app.ads-consent.manage": {
-    "message": "จัดการการตั้งค่า"
-  },
-  "app.ads-consent.reject": {
-    "message": "ปฏิเสธทั้งหมด"
-  },
-  "app.ads-consent.title": {
-    "message": "ความเป็นส่วนตัวของคุณและวิธีที่โฆษณาช่วยสนับสนุน Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "แสดงชุดเซิร์ฟเวอร์ในไลบรารีในรูปแบบแถวที่กะทัดรัด"
   },
@@ -165,7 +150,7 @@
     "message": "ซ่อนป้ายชื่อ"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "ย่อ Modrinth App เมื่อ Minecraft เริ่มทำงาน"
+    "message": "ย่อ Pawrinth เมื่อ Minecraft เริ่มทำงาน"
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "ย่อแอปให้เล็กสุด"
@@ -695,11 +680,8 @@
   "app.settings.game-options.validation.no-compatible-instances": {
     "message": "ชุดเซิร์ฟเวอร์บางรายการไม่รองรับการตั้งค่านี้"
   },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "แสดงแอป Modrinth เป็นกิจกรรมปัจจุบันของคุณบน Discord การดำเนินการนี้จะไม่ส่งผลต่อสถานะ Rich Presence ที่เพิ่มโดยม็อดในชุดเซิร์ฟเวอร์ จำเป็นต้องรีสตาร์ทแอปพลิเคชัน"
-  },
   "app.settings.resource-management.app-directory.description": {
-    "message": "ที่เก็บข้อมูลของ Modrinth App สำหรับชุดเซิร์ฟเวอร์และไฟล์อื่น ๆ การเปลี่ยนแปลงจะมีผลหลังจากรีสตาร์ทแอปพลิเคชัน"
+    "message": "ที่เก็บข้อมูลของ Pawrinth สำหรับชุดเซิร์ฟเวอร์และไฟล์อื่น ๆ การเปลี่ยนแปลงจะมีผลหลังจากรีสตาร์ทแอปพลิเคชัน"
   },
   "app.settings.resource-management.store.description": {
     "message": "ประหยัดพื้นที่ด้วยการนำชุดติดตั้งเกม ม็อด และแพ็กที่เคยใช้แล้วมาใช้ซ้ำกับหลายๆ โลกม็อดแพ็คของคุณ"
@@ -751,9 +733,6 @@
   },
   "app.settings.tabs.language": {
     "message": "ภาษา"
-  },
-  "app.settings.tabs.privacy": {
-    "message": "ความเป็นส่วนตัว"
   },
   "app.skins.add-button": {
     "message": "เพิ่มสกิน"

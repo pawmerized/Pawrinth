@@ -21,6 +21,7 @@ import type { SortType } from '#ui/utils/search'
 import SelectedProjectsFloatingBar from './components/SelectedProjectsFloatingBar.vue'
 import BrowseInstallHeader from './header.vue'
 import { injectBrowseManager } from './providers/browse-manager'
+import { findTagFilter, type TagFilterType, toggleTagFilter } from './tag-filters'
 import type { CardAction } from './types'
 
 const ctx = injectBrowseManager()
@@ -76,6 +77,35 @@ const messages = defineMessages({
 		defaultMessage: 'Apply saved preferences',
 	},
 })
+
+function isLockedByProvider(type: string): boolean {
+	return (
+		(ctx.providedFilters?.value ?? []).some((filter) => filter.type === type) &&
+		!ctx.overriddenProvidedFilterTypes.value.includes(type)
+	)
+}
+
+function tagAction(tag: string) {
+	if (ctx.variant !== 'app' || ctx.isServerType.value) return undefined
+	const match = findTagFilter(tag, ctx.filters.value as unknown as TagFilterType[])
+	if (!match || isLockedByProvider(match.type)) return undefined
+	return (event: MouseEvent) => {
+		event.preventDefault()
+		event.stopPropagation()
+		ctx.currentFilters.value = toggleTagFilter(ctx.currentFilters.value, match)
+		ctx.onFilterChange()
+	}
+}
+
+function isTagSelected(tag: string): boolean {
+	const match = findTagFilter(tag, ctx.filters.value as unknown as TagFilterType[])
+	return (
+		!!match &&
+		ctx.currentFilters.value.some(
+			(filter) => filter.type === match.type && filter.option === match.option,
+		)
+	)
+}
 
 function cardActionType(action: CardAction) {
 	if (action.type === 'transparent') return 'quiet'
@@ -138,10 +168,13 @@ function getProjectCardTags(result: Labrinth.Search.v3.ResultSearchProject, disp
 	</template>
 	<SelectedProjectsFloatingBar v-if="ctx.installContext?.value && ctx.variant !== 'web'" />
 
+	<slot name="before-tabs" />
+
 	<NavTabs
 		v-if="ctx.showProjectTypeTabs.value"
 		:links="ctx.selectableProjectTypes.value"
 		:replace="ctx.variant === 'app'"
+		class="max-w-full shrink-0 flex-wrap !rounded-[1.75rem]"
 	/>
 
 	<Input
@@ -264,9 +297,10 @@ function getProjectCardTags(result: Labrinth.Search.v3.ResultSearchProject, disp
 		</section>
 		<section
 			v-else-if="
-				ctx.isServerType.value
+				!ctx.loadFailed?.value &&
+				(ctx.isServerType.value
 					? ctx.serverHits.value.length === 0
-					: ctx.projectHits.value.length === 0
+					: ctx.projectHits.value.length === 0)
 			"
 			class="offline text-center"
 		>
@@ -346,11 +380,12 @@ function getProjectCardTags(result: Labrinth.Search.v3.ResultSearchProject, disp
 					:author="{
 						name: result.organization == null ? result.author : result.organization,
 						link:
-							result.organization_id == null
+							ctx.getAuthorLink?.(result) ??
+							(result.organization_id == null
 								? `/user/${encodeURIComponent(result.author_id ?? result.author)}`
 								: ctx.variant === 'web'
 									? `/organization/${result.organization_id}`
-									: `https://modrinth.com/organization/${result.organization_id}`,
+									: (ctx.getOrganizationLink?.(result.organization_id) ?? `https://modrinth.com/organization/${result.organization_id}`)),
 					}"
 					:date-updated="result.date_modified"
 					:date-published="result.date_created"
@@ -361,8 +396,10 @@ function getProjectCardTags(result: Labrinth.Search.v3.ResultSearchProject, disp
 					:summary="result.summary"
 					:tags="getProjectCardTags(result, true)"
 					:all-tags="getProjectCardTags(result, false)"
-					:deprioritized-tags="ctx.deprioritizedTags.value"
-					:exclude-loaders="ctx.excludeLoaders.value"
+					:deprioritized-tags="ctx.deprioritizedTags.value.filter((tag) => !isTagSelected(tag))"
+											:exclude-loaders="ctx.excludeLoaders.value"
+											:tag-action="tagAction"
+					:is-tag-selected="isTagSelected"
 					:followers="result.follows"
 					:banner="result.featured_gallery ?? undefined"
 					:color="result.color ?? undefined"

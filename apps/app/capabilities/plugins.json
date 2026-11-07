@@ -98,11 +98,11 @@
 		"cache:default",
 		"files:default",
 		"settings:default",
+		"plus:default",
 		"shortcuts:default",
 		"tags:default",
 		"users:default",
 		"utils:default",
-		"ads:default",
 		"friends:default",
 		"worlds:default"
 	]

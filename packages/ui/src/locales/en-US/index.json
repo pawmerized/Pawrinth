@@ -2576,9 +2576,6 @@
   "instance.icon-editor.symbol.tnt": {
     "defaultMessage": "TNT"
   },
-  "instance.icon-editor.symbol.wrenth-rinth": {
-    "defaultMessage": "Modrinth Wrench"
-  },
   "instance.icon-editor.symbol.zombie": {
     "defaultMessage": "Zombie"
   },
@@ -3664,6 +3661,9 @@
   },
   "profile.label.restricted": {
     "defaultMessage": "Restricted"
+  },
+  "profile.no-projects-match": {
+    "defaultMessage": "No projects match these filters"
   },
   "profile.official-account": {
     "defaultMessage": "Official Modrinth account"
@@ -5979,7 +5979,7 @@
     "defaultMessage": "New server"
   },
   "servers.list-empty.no-servers-description": {
-    "defaultMessage": "Install mods, invite friends, and play together all from the Modrinth App."
+    "defaultMessage": "Install mods, invite friends, and play together all from Pawrinth."
   },
   "servers.list-empty.one-click-mod-installs-description": {
     "defaultMessage": "Pick your favorite mods and we handle the rest."
@@ -5988,7 +5988,7 @@
     "defaultMessage": "One-click mod installs"
   },
   "servers.list-empty.play-with-friends-description": {
-    "defaultMessage": "Invite friends to play your server with one-click play from the Modrinth App."
+    "defaultMessage": "Invite friends to play your server with one-click play from Pawrinth."
   },
   "servers.list-empty.play-with-friends-title": {
     "defaultMessage": "Play with friends"
@@ -6666,7 +6666,7 @@
     "defaultMessage": "Advanced rendering"
   },
   "settings.display.sidebar.external-links-new-tab.description": {
-    "defaultMessage": "Make links which go outside of Modrinth open in a new tab. No matter this setting, links on the same domain and in Markdown descriptions will open in the same tab, and links on ads and edit pages will open in a new tab."
+    "defaultMessage": "Make links which go outside of Pawrinth open in a new tab. No matter this setting, links on the same domain and in Markdown descriptions will open in the same tab, and links on ads and edit pages will open in a new tab."
   },
   "settings.display.sidebar.external-links-new-tab.title": {
     "defaultMessage": "Open external links in new tab"
@@ -6687,7 +6687,7 @@
     "defaultMessage": "Dark"
   },
   "settings.display.theme.description": {
-    "defaultMessage": "Select your preferred color theme across Modrinth."
+    "defaultMessage": "Select your preferred color theme across Pawrinth."
   },
   "settings.display.theme.light": {
     "defaultMessage": "Light"
@@ -6732,7 +6732,7 @@
     "defaultMessage": "Search results"
   },
   "settings.language.coverage.app-tooltip": {
-    "defaultMessage": "About {percentage}% of the Modrinth App is available in this language."
+    "defaultMessage": "About {percentage}% of Pawrinth is available in this language."
   },
   "settings.language.coverage.label": {
     "defaultMessage": "{percentage}% supported"
@@ -7666,6 +7666,30 @@
   },
   "update-all-modal.warning-server": {
     "defaultMessage": "We can’t guarantee updates will be safe for your server. Review the changelogs and consider a backup."
+  },
+  "user-profile.project-tools.all-categories": {
+    "defaultMessage": "All categories"
+  },
+  "user-profile.project-tools.all-loaders": {
+    "defaultMessage": "All loaders"
+  },
+  "user-profile.project-tools.all-versions": {
+    "defaultMessage": "All versions"
+  },
+  "user-profile.project-tools.search": {
+    "defaultMessage": "Search projects..."
+  },
+  "user-profile.project-tools.sort.downloads": {
+    "defaultMessage": "Most downloads"
+  },
+  "user-profile.project-tools.sort.followers": {
+    "defaultMessage": "Most popular"
+  },
+  "user-profile.project-tools.sort.name": {
+    "defaultMessage": "Name"
+  },
+  "user-profile.project-tools.sort.updated": {
+    "defaultMessage": "Recently updated"
   },
   "user-restrictions.group.collections": {
     "defaultMessage": "Collections"

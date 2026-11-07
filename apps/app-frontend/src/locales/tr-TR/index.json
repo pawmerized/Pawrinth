@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Günlükleri görüntüle"
   },
-  "app.ads-consent.accept": {
-    "message": "Tümünü kabul et"
-  },
-  "app.ads-consent.body": {
-    "message": "Reklamlar, Modrinth'i mümkün kılıyor ve içerik üreticilerine yapılan ödemeleri finanse ediyor. Partnerlerimiz, reklamları kişiselleştirmek ve performansı ölçmek amacıyla uygulama içinde çerez depolayabilir veya bunlara erişebilir."
-  },
-  "app.ads-consent.manage": {
-    "message": "Tercihleri yönet"
-  },
-  "app.ads-consent.reject": {
-    "message": "Tümünü reddet"
-  },
-  "app.ads-consent.title": {
-    "message": "Sizin mahremiyetiniz ve reklamlar Modrinth'i nasıl destekler"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Kütüphane kurulumlarını kompakt satır düzeninde göster."
   },
@@ -207,7 +192,7 @@
     "message": "Ana sayfa ve içerik"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "Minecraft'tan çıkıldığında Modrinth App'i ön plana getirir."
+    "message": "Minecraft'tan çıkıldığında Pawrinth'i ön plana getirir."
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "Minecraft kapandığında uygulamaya yeniden odaklan"
@@ -513,7 +498,7 @@
     "message": "Kurulumu göster"
   },
   "app.hosting.update-required.description": {
-    "message": "Modrinth Hosting'i Modrinth App'ten kullanmak için güncellemeniz gerekiyor"
+    "message": "Modrinth Hosting'i Pawrinth'ten kullanmak için güncellemeniz gerekiyor"
   },
   "app.hosting.update-required.download": {
     "message": "Güncellemeyi indir"
@@ -522,7 +507,7 @@
     "message": "Heyecanlı Modrinth Botu"
   },
   "app.hosting.update-required.title": {
-    "message": "Modrinth App güncellemesi gerekli"
+    "message": "Pawrinth güncellemesi gerekli"
   },
   "app.install.phase.downloading_content": {
     "message": "İçerik indiriliyor"
@@ -1403,9 +1388,6 @@
   "app.nav.switch-account": {
     "message": "Hesap değiştir"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Modrinth+'a yükselt"
-  },
   "app.nav.view-profile": {
     "message": "Profili görüntüle"
   },
@@ -1420,12 +1402,6 @@
   },
   "app.navigation.next-image": {
     "message": "Sonraki görsel"
-  },
-  "app.news.title": {
-    "message": "Haberler"
-  },
-  "app.news.view-all": {
-    "message": "Tüm haberleri göster"
   },
   "app.notification.warning": {
     "message": "Uyarı"
@@ -2537,21 +2513,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Reklamlar, Modrinth'i mümkün kılıyor ve içerik üreticilerine yapılan ödemeleri finanse ediyor. Partnerlerimiz, reklamları kişiselleştirmek ve performansı ölçmek amacıyla uygulama içinde çerez depolayabilir veya bunlara erişebilir. Aşağıdan tercihinizi yönetebilir veya vazgeçebilirsiniz."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Şu anki Discord aktiviteniz olarak, Modrinth App'i gösterin. Bu, örneğe modlar tarafından eklenen Rich Presence'ı etkilemez. Uygulamayı yeniden başlatmayı gerektirir."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth kullanıcı deneyimimizi geliştirmek için ve deneyiminizi kişiselleştirmek için anonimleştirilmiş analiz ve kullanım verilerini toplar. Bu seçeneği devre dışı bırakarak, bundan vazgeçmiş olursunuz ve verileriniz artık toplanmayacaktır."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Telemetri"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Bir yükleme işlemi kuyrukta beklerken veya devam ederken Ayrıntıları Kopyala eylemini gösterir. Bu eylem, başarısız olan veya kesintiye uğrayan yüklemeler için her zaman kullanılabilir."
   },
@@ -2580,7 +2541,7 @@
     "message": "Bir uygulama dizinine göz atın"
   },
   "app.settings.resource-management.app-directory.description": {
-    "message": "Modrinth App'in örnekleri ve diğer dosyaları depoladığı yer. Değişiklikler uygulamayı yeniden başlattıktan sonra etki eder."
+    "message": "Pawrinth'in örnekleri ve diğer dosyaları depoladığı yer. Değişiklikler uygulamayı yeniden başlattıktan sonra etki eder."
   },
   "app.settings.resource-management.app-directory.select": {
     "message": "Yeni bir uygulama dizini seçin"
@@ -2659,9 +2620,6 @@
   },
   "app.settings.tabs.language": {
     "message": "Dil"
-  },
-  "app.settings.tabs.privacy": {
-    "message": "Gizlilik"
   },
   "app.sidebar.playing-as": {
     "message": "Şu olarak oynuyor"
@@ -2828,32 +2786,17 @@
   "app.skins.toggle-ears-features-on": {
     "message": "Aç"
   },
-  "app.survey.body": {
-    "message": "Modrinth App deneyiminiz hakkında birkaç soruyu cevaplamak ister misiniz?"
-  },
-  "app.survey.footer": {
-    "message": "Bu geri bildirim doğrudan Modrinth ekibine gidecek ve gelecek güncellemeleri şekillendirecek!"
-  },
-  "app.survey.no-thanks": {
-    "message": "Hayır teşekkürler"
-  },
-  "app.survey.take-survey": {
-    "message": "Ankete katıl"
-  },
-  "app.survey.title": {
-    "message": "Merhaba Modrinth kullanıcısı!"
-  },
   "app.sync-instances-update.skip": {
     "message": "Atla"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} indirildi. Güncellemek için yeniden başlatın veya Modrinth App’i kapattığınızda otomatik olarak güncellenecektir."
+    "message": "Pawrinth v{version} indirildi. Güncellemek için yeniden başlatın veya Pawrinth’i kapattığınızda otomatik olarak güncellenecektir."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} yayımlandı. En yeni özellikler ve hata düzeltmeleri için paket yöneticin üzerinden güncelle!"
+    "message": "Pawrinth v{version} yayımlandı. En yeni özellikler ve hata düzeltmeleri için paket yöneticin üzerinden güncelle!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} mevcut! Kısıtlı bağlantıda olduğunuzdan otomatik olarak indirmedik."
+    "message": "Pawrinth v{version} mevcut! Kısıtlı bağlantıda olduğunuzdan otomatik olarak indirmedik."
   },
   "app.update-popup.changelog": {
     "message": "Yama Notları"
@@ -3051,7 +2994,7 @@
     "message": "Paylaşımlı örneğin bağlantısını kaldır"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-body": {
-    "message": "Bu paylaşımlı örneği Modrinth'in sunucularından kaldırır. Modrinth App'i kullanan kişiler güncelleme almayı bırakır fakat yerel örneğiniz ve içeriği bu cihazda kalacak."
+    "message": "Bu paylaşımlı örneği Modrinth'in sunucularından kaldırır. Pawrinth'i kullanan kişiler güncelleme almayı bırakır fakat yerel örneğiniz ve içeriği bu cihazda kalacak."
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-header": {
     "message": "Paylaşımlı örnek yayından kaldırılıyor"
@@ -3595,9 +3538,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "Minecraft al"
-  },
-  "minecraft-required.get-support": {
-    "message": "Destek al"
   },
   "minecraft-required.header": {
     "message": "Minecraft gereklidir"

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        INSERT INTO plus_content_origins\n            (instance_id, relative_path, provider, project_ref, file_ref)\n        VALUES ($1, $2, 'curseforge', $3, $4)\n        ON CONFLICT (instance_id, relative_path) DO UPDATE SET\n            project_ref = excluded.project_ref,\n            file_ref = excluded.file_ref\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "0d903605d7a2ba22a9ef3a6a4edf5804908aea2e68782795c4b2d03f21fdb6fc"
+}

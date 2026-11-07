@@ -874,23 +874,37 @@ async fn install_zipped_mrpack_files_with_reporter_inner(
                 };
                 let progress =
                     &mut report_download_progress as &mut FetchProgressFn<'_>;
-                let file = match fetch_content_file(
-                    state,
-                    &project
-                        .downloads
-                        .iter()
-                        .map(|x| &**x)
-                        .collect::<Vec<&str>>(),
-                    project
-                        .hashes
-                        .get(&PackFileHash::Sha512)
-                        .map(String::as_str),
-                    Some(project_size),
-                    Some(&content_context.download_meta),
-                    Some(progress),
-                )
-                .await
-                {
+                let mirrors = project
+                    .downloads
+                    .iter()
+                    .map(|x| &**x)
+                    .collect::<Vec<&str>>();
+                let fetched = match (
+                    project.hashes.get(&PackFileHash::Sha512),
+                    project.hashes.get(&PackFileHash::Sha1),
+                ) {
+                    (None, Some(sha1)) => {
+                        crate::plus::curseforge_pack::fetch_pack_file(
+                            state,
+                            &mirrors,
+                            sha1,
+                            Some(progress),
+                        )
+                        .await
+                    }
+                    (sha512, _) => {
+                        fetch_content_file(
+                            state,
+                            &mirrors,
+                            sha512.map(String::as_str),
+                            Some(project_size),
+                            Some(&content_context.download_meta),
+                            Some(progress),
+                        )
+                        .await
+                    }
+                };
+                let file = match fetched {
                     Ok(file) => {
                         content_context
                             .remove_active_download(&project_path)

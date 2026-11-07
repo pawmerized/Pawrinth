@@ -17,6 +17,8 @@ import { computed, ref } from 'vue'
 
 import { useManagedContentPolicy } from '@/composables/instances/use-managed-content-policy'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
+import { injectModpackInstall } from '@/features/plus-curseforge/modpack-install-context'
+import { toVersionView } from '@/features/plus-curseforge/project-adapter'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project_versions, get_version } from '@/helpers/cache'
 import {
@@ -27,11 +29,13 @@ import {
 import {
 	edit,
 	get_linked_modpack_info,
+	getInstanceIconUrl,
 	unlink_shared_instance,
 	update_managed_modrinth_version,
 	update_repair_modrinth,
 } from '@/helpers/instance'
 import { get_loader_versions } from '@/helpers/metadata'
+import { plus_cf_changelog, plus_cf_files, plus_cf_pack_list } from '@/helpers/plus'
 import { get_game_versions, get_loaders } from '@/helpers/tags'
 import type { Manifest } from '@/helpers/types'
 import { instanceKeys } from '@/pages/instance/query-options'
@@ -119,6 +123,20 @@ const isModrinthLinkedModpack = computed(
 			!!instance.value.link.modpack_version_id),
 )
 const isImportedModpack = computed(() => instance.value.link?.type === 'imported_modpack')
+const curseforgeModpackInstall = injectModpackInstall()
+const curseforgePackQuery = useQuery({
+	queryKey: computed(() => [
+		'curseforgePack',
+		instance.value.id,
+		instance.value.link?.version_number,
+	]),
+	queryFn: async () =>
+		(await plus_cf_pack_list()).find((pack) => pack.instance_id === instance.value.id) ?? null,
+	enabled: isImportedModpack,
+})
+const curseforgePack = computed(() =>
+	isImportedModpack.value ? (curseforgePackQuery.data.value ?? null) : null,
+)
 const isSharedInstanceManagedModpack = managedContentPolicy.isManagedModpack
 const canUnlinkSharedInstance = managedContentPolicy.canUnlink
 
@@ -434,6 +452,13 @@ provideInstallationSettings({
 
 	getCachedModpackVersions: () => null,
 	async fetchModpackVersions() {
+		const pack = curseforgePack.value
+		if (pack) {
+			const files = await plus_cf_files(pack.project_id, null, null).catch(handleError)
+			return (files ?? [])
+				.filter((file) => file.downloadUrl || file.id === pack.file_id)
+				.map((file) => toVersionView(file) as unknown as Labrinth.Versions.v2.Version)
+		}
 		debug('fetchModpackVersions: called', {
 			projectId: instance.value.link?.project_id,
 		})
@@ -444,6 +469,17 @@ provideInstallationSettings({
 
 	async getVersionChangelog(versionId: string) {
 		debug('getVersionChangelog: called', { versionId })
+		const pack = curseforgePack.value
+		if (pack) {
+			const version = (await plus_cf_files(pack.project_id, null, null).catch(() => []))
+				.map((file) => toVersionView(file) as unknown as Labrinth.Versions.v2.Version)
+				.find((item) => item.id === versionId)
+			if (!version) return null
+			return {
+				...version,
+				changelog: await plus_cf_changelog(pack.project_id, Number(versionId)).catch(() => ''),
+			}
+		}
 		return (await get_version(versionId, 'must_revalidate').catch(
 			() => null,
 		)) as Labrinth.Versions.v2.Version | null
@@ -454,6 +490,15 @@ provideInstallationSettings({
 			versionId: version.id,
 			instanceId: instance.value.id,
 		})
+		const pack = curseforgePack.value
+		if (pack) {
+			await curseforgeModpackInstall.value?.update(
+				instance.value.id,
+				{ id: pack.project_id, name: pack.name },
+				Number(version.id),
+			)
+			return
+		}
 		await update_managed_modrinth_version(instance.value.id, version.id)
 		await queryClient.invalidateQueries({
 			queryKey: ['linkedModpackInfo', instance.value.id],
@@ -463,9 +508,13 @@ provideInstallationSettings({
 
 	updaterModalProps: computed(() => ({
 		isApp: true,
-		currentVersionId: instance.value.link?.version_id ?? '',
-		projectIconUrl: modpackInfo.value?.project?.icon_url,
-		projectName: modpackInfo.value?.project?.title ?? 'Modpack',
+		currentVersionId: curseforgePack.value
+			? String(curseforgePack.value.file_id)
+			: (instance.value.link?.version_id ?? ''),
+		projectIconUrl: curseforgePack.value
+			? (getInstanceIconUrl(instance.value.icon_path) ?? undefined)
+			: modpackInfo.value?.project?.icon_url,
+		projectName: curseforgePack.value?.name ?? modpackInfo.value?.project?.title ?? 'Modpack',
 		currentGameVersion: instance.value.game_version,
 		currentLoader: instance.value.loader,
 	})),
@@ -474,11 +523,11 @@ provideInstallationSettings({
 	isApp: true,
 	showModpackVersionActions: computed(
 		() =>
-			isModrinthLinkedModpack.value &&
+			(isModrinthLinkedModpack.value || !!curseforgePack.value) &&
 			!isMinecraftServer.value &&
 			!isSharedInstanceManagedModpack.value,
 	),
-	isLocalFile: isImportedModpack,
+	isLocalFile: computed(() => isImportedModpack.value && !curseforgePack.value),
 	isManagedModpack: isSharedInstanceManagedModpack,
 	managedModpackWarning: managedContentPolicy.managedModpackWarning,
 	repairing,

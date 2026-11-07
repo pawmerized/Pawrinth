@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT project_id, overrides FROM plus_curseforge_packs WHERE instance_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "project_id",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "project_id"
+          }
+        }
+      },
+      {
+        "name": "overrides",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_curseforge_packs",
+            "name": "overrides"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "aa6e4b38046de94eab96cbc0b450bccea4b8c84d4a1ef19e04829114dac83f97"
+}

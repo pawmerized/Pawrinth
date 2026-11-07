@@ -1,4 +1,4 @@
-import { type ComputedRef, type Ref, ref } from 'vue'
+import { type ComputedRef, type Ref, ref, watch } from 'vue'
 
 type MaybeReadonlyRef<T> = Ref<T> | ComputedRef<T>
 
@@ -10,6 +10,9 @@ export function useSkinPreviewControls({
 	onClickWithoutDrag: () => void
 }) {
 	const modelRotation = ref((initialRotation.value ?? 15.75) + Math.PI)
+	watch(initialRotation, (rotation) => {
+		modelRotation.value = (rotation ?? 15.75) + Math.PI
+	})
 	const isDragging = ref(false)
 	const previousX = ref(0)
 	const hasDragged = ref(false)

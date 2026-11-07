@@ -4,7 +4,6 @@ import { OverlayScrollbars } from 'overlayscrollbars'
 import { computed, onMounted, onScopeDispose, ref } from 'vue'
 
 import { useTheme } from '@/composables/use-theme'
-import PrideFundraiserBanner from '@/features/campaigns/pride-fundraiser-banner.vue'
 import FriendsList from '@/features/friends/friends-list/index.vue'
 import AccountsCard from '@/features/minecraft-accounts/accounts-card.vue'
 import type { MinecraftAccountsActions } from '@/features/minecraft-accounts/context'
@@ -13,12 +12,8 @@ import OnboardingChecklist from '@/features/onboarding/checklist.vue'
 import type { ModrinthCredentials } from '@/helpers/mr_auth'
 import { injectOnboardingChecklist } from '@/providers/onboarding-checklist'
 
-import Promotion from './promotion.vue'
-
-const props = defineProps<{
+defineProps<{
 	credentials: ModrinthCredentials | null | undefined
-	hasPlus: boolean
-	showAd: boolean
 	visible: boolean
 	requestSignIn: () => void
 }>()
@@ -36,10 +31,6 @@ const accounts = ref<InstanceType<typeof AccountsCard> | null>(null)
 const friends = ref<InstanceType<typeof FriendsList> | null>(null)
 const scrollContainer = ref<HTMLElement | null>(null)
 const scrollViewport = ref<HTMLElement | null>(null)
-const upgradeHeight = ref(0)
-const promotionPaddingStyle = computed(() =>
-	props.showAd ? { paddingBottom: `calc(1rem + ${upgradeHeight.value}px)` } : undefined,
-)
 const { showTopFade, showBottomFade, checkScrollState } = useScrollIndicator(scrollViewport)
 
 let removeScrollbarListener: (() => void) | undefined
@@ -106,11 +97,7 @@ const messages = defineMessages({
 					@login-minecraft="accounts?.login()"
 					@login-modrinth="emit('login-modrinth')"
 				/>
-				<div
-					id="sidebar-teleport-target"
-					class="sidebar-teleport-content empty:hidden"
-					:style="promotionPaddingStyle"
-				></div>
+				<div id="sidebar-teleport-target" class="sidebar-teleport-content empty:hidden"></div>
 				<div class="sidebar-default-content hidden" :class="{ 'sidebar-enabled': visible }">
 					<div
 						v-show="hasLoggedIntoMinecraft"
@@ -135,10 +122,7 @@ const messages = defineMessages({
 							/>
 						</Suspense>
 					</div>
-					<PrideFundraiserBanner
-						class="p-4 border-0 border-b-[1px] border-[--brand-gradient-border] border-solid"
-					/>
-					<NewsSidebar :style="promotionPaddingStyle" />
+					<NewsSidebar />
 				</div>
 			</div>
 			<div
@@ -148,11 +132,10 @@ const messages = defineMessages({
 			/>
 			<div
 				class="sidebar-scroll-fade pointer-events-none absolute inset-x-0 bottom-0 z-10 h-8 transition-opacity duration-200 motion-reduce:transition-none"
-				:class="showAd || showBottomFade ? 'opacity-100' : 'opacity-0'"
+				:class="showBottomFade ? 'opacity-100' : 'opacity-0'"
 				aria-hidden="true"
 			/>
 		</div>
-		<Promotion v-if="showAd" @upgrade-height="upgradeHeight = $event" />
 	</div>
 </template>
 

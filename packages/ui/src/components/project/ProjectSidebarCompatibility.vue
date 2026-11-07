@@ -28,7 +28,11 @@
 					<TagItem
 						v-for="platform in project.loaders"
 						:key="`platform-tag-${platform}`"
-						:action="() => router.push(`/${project.project_type}s?g=categories:${platform}`)"
+						:action="
+							loaderAction
+								? () => loaderAction?.(platform)
+								: () => router.push(`/${project.project_type}s?g=categories:${platform}`)
+						"
 						:style="`--_color: var(--color-platform-${platform})`"
 					>
 						<component :is="getLoaderIcon(platform)" v-if="getLoaderIcon(platform)" />
@@ -122,6 +126,8 @@ type EnvironmentValue = 'optional' | 'required' | 'unsupported' | 'unknown'
 const TYPES_WITH_ENVS = ['mod', 'modpack'] as const
 
 const props = defineProps<{
+	/** Where a loader tag leads, for apps whose routes differ from the website's. */
+	loaderAction?: (loader: string) => void
 	project: {
 		actualProjectType: string
 		project_type: string

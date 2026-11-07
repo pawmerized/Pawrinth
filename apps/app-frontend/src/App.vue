@@ -1,7 +1,6 @@
 <script setup>
 import { ModrinthApiError } from '@modrinth/api-client'
 import {
-	ArrowBigUpDashIcon,
 	ArrowLeftRightIcon,
 	CompassIcon,
 	ImageIcon,
@@ -10,7 +9,6 @@ import {
 	PlayIcon,
 	PlusIcon,
 	RefreshCwIcon,
-	ServerStackIcon,
 	SettingsIcon,
 	ShirtIcon,
 	SpinnerIcon,
@@ -45,11 +43,9 @@ import {
 	TooltipDirective,
 	useDebugLogger,
 	useFormatBytes,
-	useHostingIntercom,
 	UserRoleIcon,
 	useVIntl,
 } from '@modrinth/ui'
-import { renderString } from '@modrinth/utils/parse'
 import { useQueries, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { getVersion } from '@tauri-apps/api/app'
 import { convertFileSrc, invoke } from '@tauri-apps/api/core'
@@ -67,7 +63,6 @@ import AppSidebar from '@/app/shell/sidebar/index.vue'
 import AppTitleBar from '@/app/shell/title-bar/index.vue'
 import { trackExternalFileDownload } from '@/components/ui/download-manager/external-file-downloads'
 import ErrorModal from '@/components/ui/ErrorModal.vue'
-import HostingUpdateRequired from '@/components/ui/HostingUpdateRequired.vue'
 import AddServerToInstanceModal from '@/components/ui/install_flow/AddServerToInstanceModal.vue'
 import UnknownPackWarningModal from '@/components/ui/install_flow/UnknownPackWarningModal.vue'
 import IconEditorModal from '@/components/ui/instance_settings/InstanceIconEditorModal.vue'
@@ -81,7 +76,6 @@ import NavButton from '@/components/ui/NavButton.vue'
 import QuickInstanceSwitcher from '@/components/ui/QuickInstanceSwitcher.vue'
 import SharedInstanceInviteHandler from '@/components/ui/shared-instances/shared-instance-invite-handler/index.vue'
 import SplashScreen from '@/components/ui/SplashScreen.vue'
-import SurveyPopup from '@/components/ui/SurveyPopup.vue'
 import { useCheckDisableMouseover } from '@/composables/macCssFix.js'
 import { useAppEvent } from '@/composables/use-app-event'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
@@ -91,18 +85,17 @@ import { useQuickInstanceLimit } from '@/composables/use-quick-instance-limit.ts
 import { isDarkTheme, useTheme } from '@/composables/use-theme.ts'
 import { config } from '@/config'
 import { provideMinecraftAccounts } from '@/features/minecraft-accounts/context'
+import CurseforgeModpackInstall from '@/features/plus-curseforge/modpack-install.vue'
+import { provideModpackInstall } from '@/features/plus-curseforge/modpack-install-context'
+import { rememberPrivateNames, usePrivacy } from '@/features/plus-privacy/use-privacy'
+import { restoreLastPage } from '@/features/plus-settings/last-page'
+import { initPlusSettings } from '@/features/plus-settings/use-plus-settings'
+import PlusBackgroundLayer from '@/features/plus-themes/background-layer.vue'
+import SetupWizard from '@/features/plus-wizard/setup-wizard.vue'
 import AppSettingsModal from '@/features/settings/app-settings-modal/index.vue'
 import { provideSettingsActions } from '@/features/settings/settings-actions'
 import NewUpdateModal from '@/features/updates/new-update-modal/index.vue'
 import { getAccountAppearance, rememberAccountAppearance } from '@/helpers/account-appearance.ts'
-import {
-	hide_ads_window,
-	init_ads_window,
-	perform_ads_consent_action,
-	release_ads_window_hold,
-	should_show_ads_consent_popup,
-	take_ads_window_hold,
-} from '@/helpers/ads.js'
 import { debugAnalytics, initAnalytics, trackEvent } from '@/helpers/analytics'
 import { check_reachable } from '@/helpers/auth.js'
 import { get_user, get_user_many, get_version } from '@/helpers/cache.js'
@@ -140,7 +133,6 @@ import {
 	syncedServersQueryOptions,
 } from '@/helpers/synced-options'
 import { syncedPackQueryOptions } from '@/helpers/synced-packs'
-import { hasActivePride26Midas, hasMidasBadge } from '@/helpers/user-campaigns.ts'
 import { get_user_preferences } from '@/helpers/user-preferences.ts'
 import { parse_modrinth_user_link } from '@/helpers/users'
 import {
@@ -197,28 +189,11 @@ const { channel: appEventChannel, events: appEvents } = setupAppEventsProvider()
 useInstanceMetadataRefresh(appEvents)
 const breadcrumbManager = createBreadcrumbManager()
 provideBreadcrumbManager(breadcrumbManager)
-let fullscreenAdsWindowHold = false
 
-async function handleFullscreenChange() {
-	const fullscreen = document.fullscreenElement !== null
-	if (fullscreen === fullscreenAdsWindowHold) return
-
-	fullscreenAdsWindowHold = fullscreen
-	try {
-		if (fullscreen) {
-			await take_ads_window_hold()
-		} else {
-			await release_ads_window_hold()
-		}
-	} catch (error) {
-		fullscreenAdsWindowHold = !fullscreen
-		handleError(error)
-	}
-}
-
+const PAWRINTH_RELEASES_URL = 'https://github.com/pawmerized/Pawrinth/releases'
+const PAWRINTH_UPDATES_URL = `${PAWRINTH_RELEASES_URL}/latest/download/latest.json`
 const APP_LEFT_NAV_WIDTH = '4rem'
 const APP_SIDEBAR_WIDTH = 300
-const INTERCOM_BUBBLE_DEFAULT_PADDING = 20
 const credentials = ref()
 const storedModrinthAccounts = ref([])
 let credentialsRefreshId = 0
@@ -232,36 +207,11 @@ watch(
 const forceSidebar = computed(
 	() =>
 		route.path.startsWith('/browse') ||
+		route.path.startsWith('/curseforge') ||
 		route.path.startsWith('/project') ||
 		route.path.startsWith('/user'),
 )
 const sidebarVisible = computed(() => sidebarToggled.value || forceSidebar.value)
-const hostingRouteActive = computed(() => route.path.startsWith('/hosting'))
-const hostingUpdateRequired = computed(
-	() =>
-		hostingRouteActive.value &&
-		!!appUpdateState.availableUpdate.value &&
-		appUpdateState.updatesEnabled.value,
-)
-const hostingIntercomIdentityKey = computed(() => {
-	const rawServerId = route.params.id
-	const serverId = Array.isArray(rawServerId) ? rawServerId[0] : rawServerId
-	const userId = credentials.value?.user_id ?? credentials.value?.user?.id ?? 'anonymous'
-	return `${userId}:${serverId ?? 'hosting'}`
-})
-const hostingIntercom = useHostingIntercom({
-	enabled: computed(
-		() => hostingRouteActive.value && !hostingUpdateRequired.value && !!credentials.value?.session,
-	),
-	appId: 'ykeritl9',
-	fetchToken: fetchIntercomToken,
-	identityKey: hostingIntercomIdentityKey,
-	horizontalPadding: computed(() =>
-		sidebarVisible.value
-			? APP_SIDEBAR_WIDTH + INTERCOM_BUBBLE_DEFAULT_PADDING
-			: INTERCOM_BUBBLE_DEFAULT_PADDING,
-	),
-})
 
 const notificationManager = new AppNotificationManager()
 provideNotificationManager(notificationManager)
@@ -281,18 +231,10 @@ useAppEvent(
 const popupNotificationManager = new AppPopupNotificationManager()
 providePopupNotificationManager(popupNotificationManager)
 const { addPopupNotification } = popupNotificationManager
-let adsConsentPopupId = null
-useAppEvent('ads_consent_required', handleAdsConsentRequired, appEvents)
 
 const tauriApiClient = createAppClient()
 provideModrinthClient(tauriApiClient)
 provideFileDownload(createFileDownload(tauriApiClient, trackExternalFileDownload))
-const { data: authenticatedModrinthUser } = useQuery({
-	queryKey: computed(() => ['authenticated-user', 'campaigns', credentials.value?.user?.id]),
-	queryFn: () => tauriApiClient.labrinth.users_v3.getAuthenticated(),
-	enabled: () => !!credentials.value?.session,
-	retry: false,
-})
 useQuery({
 	queryKey: computed(() => instanceKeys.sharedEligibility(credentials.value?.user?.id)),
 	queryFn: can_current_user_use_shared_instances,
@@ -303,25 +245,14 @@ useQuery({
 	refetchOnWindowFocus: false,
 	refetchOnReconnect: false,
 })
-const hasPlus = computed(
-	() =>
-		!!credentials.value?.user &&
-		(hasMidasBadge(credentials.value.user) ||
-			hasActivePride26Midas(authenticatedModrinthUser.value?.campaigns?.pride_26)),
-)
-const showAd = computed(
-	() => sidebarVisible.value && !hasPlus.value && credentials.value !== undefined,
-)
-const adConsentAvailable = computed(() => credentials.value !== undefined && !hasPlus.value)
 providePageContext({
 	hierarchicalSidebarAvailable: ref(true),
-	showAds: showAd,
-	adConsentAvailable,
+	showAds: ref(false),
+	adConsentAvailable: ref(false),
 	floatingActionBarOffsets: {
 		left: ref(APP_LEFT_NAV_WIDTH),
 		right: computed(() => (sidebarVisible.value ? `${APP_SIDEBAR_WIDTH}px` : '0px')),
 	},
-	intercomBubble: hostingIntercom.intercomBubble,
 	featureFlags: {
 		serverRamAsBytesAlwaysOn: computed(() =>
 			appSettings.getFeatureFlag('server_ram_as_bytes_always_on'),
@@ -331,8 +262,6 @@ providePageContext({
 })
 provideModalBehavior({
 	noblur: computed(() => !appTheme.advancedRendering),
-	onShow: () => take_ads_window_hold(),
-	onHide: () => release_ads_window_hold(),
 })
 
 const creationIconEditorModal = ref(null)
@@ -397,9 +326,6 @@ function onCreationIconSaved(iconPath, config) {
 	context.instanceIconPath.value = iconPath
 }
 
-const displayedServerInviteNotifications = new Set()
-const serverInvitePopupNotificationIds = new Set()
-let liveNotificationGeneration = 0
 let liveNotificationsEnabled = true
 
 const offline = ref(!navigator.onLine)
@@ -436,8 +362,6 @@ useQueries({
 		})),
 	),
 })
-
-const criticalErrorMessage = ref()
 
 const isMaximized = ref(false)
 const isFullscreen = ref(false)
@@ -486,16 +410,10 @@ onMounted(async () => {
 	}
 
 	await useCheckDisableMouseover()
-	try {
-		handleAdsConsentRequired(await should_show_ads_consent_popup())
-	} catch (error) {
-		handleError(error)
-	}
 
 	document.querySelector('body').addEventListener('click', handleClick)
 	document.querySelector('body').addEventListener('auxclick', handleAuxClick)
 	document.querySelector('body').addEventListener('contextmenu', handleContextMenu)
-	document.addEventListener('fullscreenchange', handleFullscreenChange)
 
 	checkUpdates()
 })
@@ -504,14 +422,9 @@ onUnmounted(async () => {
 	document.querySelector('body').removeEventListener('click', handleClick)
 	document.querySelector('body').removeEventListener('auxclick', handleAuxClick)
 	document.querySelector('body').removeEventListener('contextmenu', handleContextMenu)
-	document.removeEventListener('fullscreenchange', handleFullscreenChange)
 	unlistenEditMenu?.()
 	clearDelayedUpdatePopup()
 
-	if (fullscreenAdsWindowHold) {
-		fullscreenAdsWindowHold = false
-		await release_ads_window_hold().catch(handleError)
-	}
 	await unlistenUpdateDownload?.()
 })
 
@@ -541,34 +454,9 @@ const messages = defineMessages({
 		defaultMessage:
 			'Minecraft authentication servers may be down right now. Check your internet connection and try again later.',
 	},
-	adsConsentTitle: {
-		id: 'app.ads-consent.title',
-		defaultMessage: 'Your privacy and how ads support Modrinth',
-	},
-	adsConsentBody: {
-		id: 'app.ads-consent.body',
-		defaultMessage:
-			'Ads make Modrinth possible and fund creator payouts. Our partners may store or access cookies in the app to personalize ads and measure performance.',
-	},
-	adsConsentManage: {
-		id: 'app.ads-consent.manage',
-		defaultMessage: 'Manage preferences',
-	},
-	adsConsentReject: {
-		id: 'app.ads-consent.reject',
-		defaultMessage: 'Reject all',
-	},
-	adsConsentAccept: {
-		id: 'app.ads-consent.accept',
-		defaultMessage: 'Accept all',
-	},
 	home: {
 		id: 'app.nav.home',
 		defaultMessage: 'Home',
-	},
-	modrinthHosting: {
-		id: 'app.nav.modrinth-hosting',
-		defaultMessage: 'Modrinth Hosting',
 	},
 	screenshots: {
 		id: 'app.nav.screenshots',
@@ -614,60 +502,7 @@ const messages = defineMessages({
 		id: 'app.restarting',
 		defaultMessage: 'Restarting...',
 	},
-	upgradeToModrinthPlus: {
-		id: 'app.nav.upgrade-to-modrinth-plus',
-		defaultMessage: 'Upgrade to Modrinth+',
-	},
 })
-
-function handleAdsConsentRequired(required) {
-	if (!required) {
-		if (adsConsentPopupId !== null) {
-			popupNotificationManager.removeNotification(adsConsentPopupId)
-			adsConsentPopupId = null
-		}
-		return
-	}
-
-	if (
-		adsConsentPopupId !== null &&
-		popupNotificationManager.getNotifications().some((item) => item.id === adsConsentPopupId)
-	) {
-		return
-	}
-
-	const notification = addPopupNotification({
-		contentType: 'standard',
-		title: formatMessage(messages.adsConsentTitle),
-		text: formatMessage(messages.adsConsentBody),
-		type: 'info',
-		hideIcon: true,
-		autoCloseMs: null,
-		dismissible: false,
-		buttons: [
-			{
-				label: formatMessage(messages.adsConsentManage),
-				action: () => perform_ads_consent_action('manage').catch(handleError),
-				color: 'standard',
-				keepOpen: true,
-			},
-			{
-				label: formatMessage(messages.adsConsentReject),
-				action: () => perform_ads_consent_action('reject').catch(handleError),
-				color: 'brand',
-				keepOpen: true,
-			},
-			{
-				label: formatMessage(messages.adsConsentAccept),
-				action: () => perform_ads_consent_action('accept').catch(handleError),
-				color: 'brand',
-				keepOpen: true,
-			},
-		],
-	})
-
-	adsConsentPopupId = notification.id
-}
 
 async function setupApp() {
 	tags.initialize()
@@ -756,6 +591,8 @@ async function setupApp() {
 	appSettings.friendsOfflineCollapsed = friends_offline_collapsed
 	appSettings.friendsPendingCollapsed = friends_pending_collapsed
 	appSettings.devMode = developer_mode
+	await initPlusSettings()
+	restoreLastPage(router)
 	stateInitialized.value = true
 	debugStartup('App state initialized')
 	await traceStartupStep('Render initialized app', nextTick)
@@ -780,19 +617,6 @@ async function setupApp() {
 	} else {
 		document.getElementsByTagName('html')[0].classList.add('windows')
 	}
-
-	fetch(`https://api.modrinth.com/appCriticalAnnouncement.json?version=${version}`)
-		.then((response) => response.json())
-		.then((res) => {
-			if (res && res.header && res.body) {
-				criticalErrorMessage.value = res
-			}
-		})
-		.catch(() => {
-			console.log(
-				`No critical announcement found at https://api.modrinth.com/appCriticalAnnouncement.json?version=${version}`,
-			)
-		})
 
 	traceStartupStep('Read opening command', get_opening_command).then(handleCommand)
 	traceStartupStep('Refresh startup credentials', fetchCredentials)
@@ -832,43 +656,6 @@ const handleClose = async () => {
 }
 
 const queryClient = useQueryClient()
-
-watch(stateInitialized, (ready) => {
-	if (ready) {
-		queryClient.prefetchQuery({
-			queryKey: ['servers'],
-			queryFn: async () => {
-				const response = await tauriApiClient.archon.servers_v0.list({ limit: 100 })
-				const hasMedalServers = response.servers.some((s) => s.is_medal)
-				if (hasMedalServers) {
-					const subscriptions = await tauriApiClient.labrinth.billing_internal.getSubscriptions()
-					for (const server of response.servers) {
-						if (server.is_medal) {
-							const sub = subscriptions.find((s) => s.metadata?.id === server.server_id)
-							if (sub) {
-								server.medal_expires = new Date(
-									new Date(sub.created).getTime() + 5 * 86400000,
-								).toISOString()
-							}
-						}
-					}
-				}
-				return response
-			},
-			staleTime: 30_000,
-		})
-		queryClient.prefetchQuery({
-			queryKey: ['billing', 'subscriptions'],
-			queryFn: () => tauriApiClient.labrinth.billing_internal.getSubscriptions(),
-			staleTime: 30_000,
-		})
-		queryClient.prefetchQuery({
-			queryKey: ['billing', 'payments'],
-			queryFn: () => tauriApiClient.labrinth.billing_internal.getPayments(),
-			staleTime: 30_000,
-		})
-	}
-})
 
 const error = useError()
 const errorModal = ref()
@@ -964,6 +751,10 @@ const updateToPlayModal = ref()
 const modrinthLoginModal = ref()
 const appSettingsModal = ref()
 const newUpdateModal = ref()
+const curseforgeModpackInstall = ref(null)
+provideModpackInstall(curseforgeModpackInstall)
+
+const { namesReplaced, shownName } = usePrivacy()
 
 const settingsActions = provideSettingsActions({
 	openSettings: () => appSettingsModal.value?.show(),
@@ -971,6 +762,7 @@ const settingsActions = provideSettingsActions({
 	openFeatureFlags: () => appSettingsModal.value?.showFeatureFlags(),
 	openSyncedOptions: () => appSettingsModal.value?.showSyncedOptions(),
 	openInstanceDefaults: (tab) => appSettingsModal.value?.showInstanceDefaults(tab),
+	openApiConfiguration: () => appSettingsModal.value?.showApiConfiguration(),
 })
 
 watch(incompatibilityWarningModal, (modal) => {
@@ -1149,6 +941,7 @@ async function fetchCredentials() {
 		).catch(handleError)
 		if (refreshId !== credentialsRefreshId) return
 	}
+	rememberPrivateNames([creds?.user?.username, creds?.user?.email])
 	credentials.value = creds ?? null
 	liveNotificationsEnabled = !!creds?.session
 	await traceStartupStep('Load stored account profiles', fetchStoredModrinthAccounts)
@@ -1187,6 +980,7 @@ async function fetchStoredModrinthAccounts() {
 	const users = ids.length ? ((await get_user_many(ids).catch(handleError)) ?? []) : []
 	const usersById = new Map(users.map((user) => [user.id, user]))
 
+	rememberPrivateNames(users.map((user) => user.username))
 	storedModrinthAccounts.value = all.map((account) => ({
 		...account,
 		user: usersById.get(account.user_id) ?? {
@@ -1217,7 +1011,7 @@ const profileButtonTooltip = computed(() => {
 const accountSwitcherOptions = computed(() => [
 	...accountSwitcherAccounts.value.map((account) => ({
 		id: account.optionId,
-		label: account.user.username,
+		label: shownName(account.user.username, accountSwitcherAccounts.value.indexOf(account)),
 		selected: account.current,
 		action: () => switchModrinthAccount(account),
 		trailingAction: {
@@ -1303,16 +1097,6 @@ const modrinthAccountMenuOptions = computed(() => [
 		action: () => router.push(`/user/${encodeURIComponent(credentials.value.user.username)}`),
 	},
 	{
-		id: 'plus',
-		label: formatMessage(messages.upgradeToModrinthPlus),
-		icon: ArrowBigUpDashIcon,
-		type: 'link',
-		href: 'https://modrinth.plus?app',
-		target: '_blank',
-		tone: 'purple',
-		shown: !hasPlus.value,
-	},
-	{
 		id: 'add-friend',
 		label: formatMessage(messages.addFriend),
 		icon: UserPlusIcon,
@@ -1344,50 +1128,6 @@ const modrinthAccountMenuOptions = computed(() => [
 	},
 ])
 
-async function fetchIntercomToken() {
-	const creds = await getCreds()
-	if (!creds?.session) {
-		throw new Error('Not authenticated')
-	}
-
-	const params = new URLSearchParams()
-	const rawServerId = route.params.id
-	const serverId = Array.isArray(rawServerId) ? rawServerId[0] : rawServerId
-	if (route.path.startsWith('/hosting/manage/') && typeof serverId === 'string') {
-		params.set('server_id', serverId)
-	}
-	const query = params.size > 0 ? `?${params.toString()}` : ''
-
-	const response = await tauriFetch(`${config.siteUrl}/api/intercom/messenger-jwt${query}`, {
-		method: 'GET',
-		headers: {
-			Authorization: `Bearer ${creds.session}`,
-		},
-	})
-	if (!response.ok) {
-		throw new Error(`Failed to fetch Intercom token: ${response.status}`)
-	}
-	return await response.json()
-}
-
-watch(
-	[stateInitialized, showAd, adConsentAvailable],
-	async ([ready, showAds, canManageConsent]) => {
-		if (!ready) return
-
-		if (showAds) {
-			await init_ads_window(true)
-			return
-		}
-
-		await hide_ads_window(true)
-		if (canManageConsent) {
-			await init_ads_window()
-		}
-	},
-	{ immediate: true },
-)
-
 onMounted(() => {
 	invoke('show_window')
 
@@ -1410,98 +1150,13 @@ provideMinecraftAccounts(computed(() => sidebar.value?.minecraftAccounts ?? null
 useAppEvent('command', handleCommand, appEvents)
 useAppEvent('notification', handleLiveNotification, appEvents)
 
-async function markLiveNotificationRead(notification) {
-	try {
-		await tauriApiClient.labrinth.notifications_v2.markAsRead(notification.id)
-	} catch (error) {
-		if (error instanceof ModrinthApiError && error.statusCode === 404) {
-			console.warn(`notification ${notification.id} could not be marked as read`, error)
-			return
-		}
-		throw error
-	}
-}
-
-async function respondToServerInvite(notification, action) {
-	const serverId = notification.body?.server_id
-	if (typeof serverId !== 'string') {
-		throw new Error('Missing server ID for invite notification.')
-	}
-
-	await tauriApiClient.request(`/servers/${serverId}/invites/${action}`, {
-		api: 'archon',
-		version: 1,
-		method: 'POST',
-	})
-	await markLiveNotificationRead(notification)
-
-	return serverId
-}
-
-async function acceptServerInviteNotification(notification) {
-	try {
-		const serverId = await respondToServerInvite(notification, 'accept')
-		await router.push(`/hosting/manage/${encodeURIComponent(serverId)}`)
-		queryClient.invalidateQueries({ queryKey: ['servers'] })
-	} catch (error) {
-		handleError(error)
-	}
-}
-
-async function declineServerInviteNotification(notification) {
-	try {
-		await respondToServerInvite(notification, 'decline')
-	} catch (error) {
-		handleError(error)
-	}
-}
-
-function openServerInviteInviterProfile(inviterName) {
-	if (!inviterName) return
-	void router.push(`/user/${encodeURIComponent(inviterName)}`)
-}
-
 async function handleLiveNotification(notification) {
 	if (!liveNotificationsEnabled || !notification?.body || notification.read) return
-	if (await sharedInstanceInviteHandler.value?.handleNotification(notification)) return
-
-	if (notification.body.type === 'server_invite') {
-		if (displayedServerInviteNotifications.has(notification.id)) return
-
-		const generation = liveNotificationGeneration
-		displayedServerInviteNotifications.add(notification.id)
-
-		const serverName =
-			typeof notification.body.server_name === 'string' ? notification.body.server_name : 'a server'
-		const inviterId = notification.body.invited_by
-		const invitedBy =
-			typeof inviterId === 'string' ? await get_user(inviterId, 'bypass').catch(() => null) : null
-		if (generation !== liveNotificationGeneration) return
-
-		const popupNotification = addPopupNotification({
-			contentType: 'toast',
-			title: serverName,
-			type: 'server-invite',
-			actorName: invitedBy?.username ?? null,
-			actorAvatarUrl: invitedBy?.avatar_url ?? null,
-			entityName: serverName,
-			autoCloseMs: null,
-			onAccept: () => acceptServerInviteNotification(notification),
-			onDecline: () => declineServerInviteNotification(notification),
-			onOpenActor: () => openServerInviteInviterProfile(invitedBy?.username ?? null),
-		})
-		serverInvitePopupNotificationIds.add(popupNotification.id)
-	}
+	await sharedInstanceInviteHandler.value?.handleNotification(notification)
 }
 
 function clearLiveNotifications() {
-	liveNotificationGeneration++
 	liveNotificationsEnabled = false
-	for (const id of serverInvitePopupNotificationIds) {
-		popupNotificationManager.removeNotification(id)
-	}
-	displayedServerInviteNotifications.clear()
-	serverInvitePopupNotificationIds.clear()
 	sharedInstanceInviteHandler.value?.clearNotifications()
 }
 
@@ -1588,16 +1243,16 @@ const updatePopupMessages = defineMessages({
 	},
 	meteredBody: {
 		id: 'app.update-popup.body.metered',
-		defaultMessage: `Modrinth App v{version} is available now! Since you're on a metered network, we didn't automatically download it.`,
+		defaultMessage: `Pawrinth v{version} is available now! Since you're on a metered network, we didn't automatically download it.`,
 	},
 	downloadedBody: {
 		id: 'app.update-popup.body.download-complete',
-		defaultMessage: `Modrinth App v{version} has finished downloading. Reload to update now, or automatically when you close Modrinth App.`,
+		defaultMessage: `Pawrinth v{version} has finished downloading. Reload to update now, or automatically when you close Pawrinth.`,
 	},
 	linuxBody: {
 		id: 'app.update-popup.body.linux',
 		defaultMessage:
-			'Modrinth App v{version} is available. Use your package manager to update for the latest features and fixes!',
+			'Pawrinth v{version} is available. Use your package manager to update for the latest features and fixes!',
 	},
 	reload: {
 		id: 'app.update-popup.reload',
@@ -1775,7 +1430,7 @@ async function checkUpdates() {
 async function checkLinuxUpdates() {
 	try {
 		const [response, currentVersion] = await Promise.all([
-			fetch('https://launcher-files.modrinth.com/updates.json'),
+			fetch(PAWRINTH_UPDATES_URL),
 			getVersion(),
 		])
 		const updates = await response.json()
@@ -1864,7 +1519,7 @@ async function installUpdate() {
 setAppUpdateActions({
 	download: downloadAvailableUpdate,
 	install: installUpdate,
-	changelog: () => openUrl('https://modrinth.com/news/changelog?filter=app'),
+	changelog: () => openUrl(PAWRINTH_RELEASES_URL),
 })
 
 async function openModrinthProjectLinkInApp(parsed) {
@@ -1988,6 +1643,7 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		</Transition>
 		<AppSettingsModal ref="appSettingsModal" />
 		<NewUpdateModal ref="newUpdateModal" />
+		<CurseforgeModpackInstall ref="curseforgeModpackInstall" />
 		<Suspense>
 			<ModrinthAccountRequiredModal ref="modrinthLoginModal" :request-auth="requestModrinthAuth" />
 		</Suspense>
@@ -2049,18 +1705,6 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			>
 				<ImageIcon />
 			</NavButton>
-			<NavButton
-				v-tooltip.right="formatMessage(messages.modrinthHosting)"
-				to="/hosting/manage"
-				:is-primary="(r) => r.path === '/hosting/manage' || r.path === '/hosting/manage/'"
-				:is-subpage="
-					(r) =>
-						(r.path.startsWith('/hosting/manage/') && r.path !== '/hosting/manage/') ||
-						((r.path.startsWith('/browse') || r.path.startsWith('/project')) && r.query.sid)
-				"
-			>
-				<ServerStackIcon />
-			</NavButton>
 			<suspense>
 				<QuickInstanceSwitcher>
 					<NavButton
@@ -2106,15 +1750,23 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 					size="32px"
 					circle
 					no-shadow
-					class="pointer-events-none !size-8"
+					class="plus-private pointer-events-none !size-8"
 				/>
 				<template
 					v-for="account in accountSwitcherAccounts"
 					:key="account.user_id"
 					#[account.optionId]
 				>
-					<Avatar :src="account.user.avatar_url" size="1.25rem" aria-hidden="true" circle />
-					{{ account.user.username }}
+					<Avatar
+						:src="account.user.avatar_url"
+						size="1.25rem"
+						aria-hidden="true"
+						circle
+						class="plus-private"
+					/>
+					<span :class="{ 'plus-private': !namesReplaced }">{{
+						shownName(account.user.username, accountSwitcherAccounts.indexOf(account))
+					}}</span>
 					<UserRoleIcon :role="account.user.role" />
 				</template>
 			</TeleportOverflowMenu>
@@ -2134,8 +1786,16 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 					:key="account.user_id"
 					#[account.optionId]
 				>
-					<Avatar :src="account.user.avatar_url" size="1.25rem" aria-hidden="true" circle />
-					{{ account.user.username }}
+					<Avatar
+						:src="account.user.avatar_url"
+						size="1.25rem"
+						aria-hidden="true"
+						circle
+						class="plus-private"
+					/>
+					<span :class="{ 'plus-private': !namesReplaced }">{{
+						shownName(account.user.username, accountSwitcherAccounts.indexOf(account))
+					}}</span>
 					<UserRoleIcon :role="account.user.role" />
 				</template>
 			</TeleportOverflowMenu>
@@ -2160,7 +1820,6 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		}"
 	>
 		<div class="app-viewport flex-grow router-view">
-			<SurveyPopup />
 			<div
 				class="loading-indicator-container h-8 fixed z-50 pointer-events-none"
 				:style="{
@@ -2185,17 +1844,6 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 				}"
 			></div>
 			<Admonition
-				v-if="criticalErrorMessage"
-				type="critical"
-				:header="criticalErrorMessage.header"
-				class="m-6 mb-0"
-			>
-				<div
-					class="markdown-body text-primary"
-					v-html="renderString(criticalErrorMessage.body ?? '')"
-				></div>
-			</Admonition>
-			<Admonition
 				v-if="authUnreachable"
 				type="warning"
 				:header="formatMessage(messages.authUnreachableHeader)"
@@ -2203,8 +1851,7 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			>
 				{{ formatMessage(messages.authUnreachableBody) }}
 			</Admonition>
-			<HostingUpdateRequired v-if="hostingUpdateRequired" />
-			<RouterView v-else v-slot="{ Component }">
+			<RouterView v-slot="{ Component }">
 				<template v-if="Component">
 					<Suspense @pending="onSuspensePending" @resolve="onSuspenseResolve">
 						<component :is="Component"></component>
@@ -2215,14 +1862,14 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		<AppSidebar
 			ref="sidebar"
 			:credentials="credentials"
-			:has-plus="hasPlus"
-			:show-ad="showAd"
 			:visible="sidebarVisible"
 			:request-sign-in="() => requestSignIn()"
 			@create-instance="installationModal?.show()"
 			@login-modrinth="signIn"
 		/>
 	</div>
+	<PlusBackgroundLayer />
+	<SetupWizard v-if="stateInitialized" />
 	<I18nDebugPanel />
 	<NotificationPanel :has-sidebar="sidebarVisible" />
 	<PopupNotificationPanel :has-sidebar="sidebarVisible" />

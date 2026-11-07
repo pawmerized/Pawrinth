@@ -128,21 +128,6 @@
   "app.action-bar.view-logs": {
     "message": "Pregledaj dnevnike"
   },
-  "app.ads-consent.accept": {
-    "message": "Prihvati sve"
-  },
-  "app.ads-consent.body": {
-    "message": "Reklame omogućavaju da Modrinth radi i finansiraju isplate kreatorima. Naši partneri mogu da čuvaju i koriste kolačiće u aplikaciji da bi personalizovali reklame i merili performanse."
-  },
-  "app.ads-consent.manage": {
-    "message": "Upravljaj podešavanjima"
-  },
-  "app.ads-consent.reject": {
-    "message": "Odbij sve"
-  },
-  "app.ads-consent.title": {
-    "message": "Tvoja bezbednost i kako reklame pomažu Modrinth-u"
-  },
   "app.appearance-settings.compact-mode.title": {
     "message": "Kompaktni mod"
   },
@@ -159,7 +144,7 @@
     "message": "Sakrij ime"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "Smanji Modrinth App kada se Minecraft pokrene."
+    "message": "Smanji Pawrinth kada se Minecraft pokrene."
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "Smanji aplikaciju"
@@ -616,9 +601,6 @@
   },
   "app.settings.tabs.language": {
     "message": "Jezik"
-  },
-  "app.settings.tabs.privacy": {
-    "message": "Privatnost"
   },
   "app.skins.add-button": {
     "message": "Dodaj skin"

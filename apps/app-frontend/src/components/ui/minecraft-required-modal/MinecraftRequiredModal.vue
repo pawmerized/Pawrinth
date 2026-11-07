@@ -20,11 +20,7 @@
 		</div>
 
 		<div class="flex flex-col gap-6 px-6 pb-6">
-			<div class="grid grid-cols-2 gap-2">
-				<ButtonLink href="https://support.modrinth.com" @click="modal?.hide()">
-					<MessagesSquareIcon />
-					{{ formatMessage(messages.getSupport) }}
-				</ButtonLink>
+			<div class="grid grid-cols-1 gap-2">
 				<Button type="colored" color="brand" :disabled="loadingSignIn" @click="signIn">
 					<SpinnerIcon v-if="loadingSignIn" class="animate-spin" />
 					<svg
@@ -57,8 +53,8 @@
 </template>
 
 <script setup lang="ts">
-import { MessagesSquareIcon, SpinnerIcon } from '@modrinth/assets'
-import { Button, ButtonLink, defineMessages, NewModal, useVIntl } from '@modrinth/ui'
+import { SpinnerIcon } from '@modrinth/assets'
+import { Button, defineMessages, NewModal, useVIntl } from '@modrinth/ui'
 import { ref } from 'vue'
 
 import steveImage from '@/assets/steve-look-up-left.webp'
@@ -83,10 +79,6 @@ const messages = defineMessages({
 		id: 'minecraft-required.description',
 		defaultMessage:
 			'You need a Microsoft account that owns Minecraft before you can launch and play.',
-	},
-	getSupport: {
-		id: 'minecraft-required.get-support',
-		defaultMessage: 'Get support',
 	},
 	signIn: {
 		id: 'minecraft-required.sign-in',

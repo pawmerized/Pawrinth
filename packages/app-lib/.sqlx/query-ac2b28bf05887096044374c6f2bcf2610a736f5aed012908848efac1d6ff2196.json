@@ -1,0 +1,26 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT DISTINCT id FROM plus_content_operations\n        WHERE instance_id NOT IN (SELECT id FROM instances)\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_operations",
+            "name": "id"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "ac2b28bf05887096044374c6f2bcf2610a736f5aed012908848efac1d6ff2196"
+}

@@ -16,7 +16,7 @@ export function createAppClient(): TauriModrinthClient {
 	const appVersion = getVersion()
 
 	return new TauriModrinthClient({
-		userAgent: async () => `modrinth/theseus/${await appVersion} (support@modrinth.com)`,
+		userAgent: async () => `pawmerized/pawrinth/${await appVersion} (unofficial fork of Modrinth App)`,
 		labrinthBaseUrl: config.labrinthBaseUrl,
 		archonBaseUrl: config.archonBaseUrl,
 		sharedInstancesBaseUrl: config.sharedInstancesBaseUrl,

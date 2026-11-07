@@ -95,21 +95,8 @@ pub async fn import_curseforge(
     if let Some(instance_mod_loader) = minecraft_instance.base_mod_loader {
         let game_version = minecraft_instance.game_version;
 
-        // CF allows Forge, Fabric, and Vanilla
-        let mut mod_loader = None;
-        let mut loader_version = None;
-
-        match instance_mod_loader.name.split('-').collect::<Vec<&str>>()[..] {
-            ["forge", version] => {
-                mod_loader = Some(ModLoader::Forge);
-                loader_version = Some(version.to_string());
-            }
-            ["fabric", version, _game_version] => {
-                mod_loader = Some(ModLoader::Fabric);
-                loader_version = Some(version.to_string());
-            }
-            _ => {}
-        }
+        let (mod_loader, loader_version) =
+            parse_loader_name(&instance_mod_loader.name);
 
         let mod_loader = mod_loader.unwrap_or(ModLoader::Vanilla);
 
@@ -184,4 +171,54 @@ pub async fn import_curseforge(
     .await?;
 
     Ok(())
+}
+
+/// Reads names such as `forge-47.4.10`, `fabric-0.19.5-1.21.1`, `quilt-0.26.4-1.21.1`
+/// and `neoforge-21.1.90`. Unknown names import as vanilla.
+fn parse_loader_name(name: &str) -> (Option<ModLoader>, Option<String>) {
+    match name.split('-').collect::<Vec<&str>>()[..] {
+        ["forge", version] => {
+            (Some(ModLoader::Forge), Some(version.to_string()))
+        }
+        ["fabric", version, _game_version] => {
+            (Some(ModLoader::Fabric), Some(version.to_string()))
+        }
+        ["quilt", version, _game_version] => {
+            (Some(ModLoader::Quilt), Some(version.to_string()))
+        }
+        ["neoforge", version] | ["neoforge", _, version] => {
+            (Some(ModLoader::NeoForge), Some(version.to_string()))
+        }
+        _ => (None, None),
+    }
+}
+
+#[cfg(test)]
+mod loader_name_tests {
+    use super::*;
+
+    #[test]
+    fn reads_each_loader() {
+        assert_eq!(
+            parse_loader_name("forge-47.4.10"),
+            (Some(ModLoader::Forge), Some("47.4.10".to_string()))
+        );
+        assert_eq!(
+            parse_loader_name("fabric-0.19.5-1.21.1"),
+            (Some(ModLoader::Fabric), Some("0.19.5".to_string()))
+        );
+        assert_eq!(
+            parse_loader_name("quilt-0.26.4-1.21.1"),
+            (Some(ModLoader::Quilt), Some("0.26.4".to_string()))
+        );
+        assert_eq!(
+            parse_loader_name("neoforge-21.1.90"),
+            (Some(ModLoader::NeoForge), Some("21.1.90".to_string()))
+        );
+    }
+
+    #[test]
+    fn unknown_names_fall_back_to_vanilla() {
+        assert_eq!(parse_loader_name("mystery"), (None, None));
+    }
 }

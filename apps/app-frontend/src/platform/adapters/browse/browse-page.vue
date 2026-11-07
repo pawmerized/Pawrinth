@@ -17,8 +17,10 @@ import {
 	ContextMenu,
 	CreationFlowModal,
 	defineMessages,
+	formatLoaderLabel,
 	formatProjectTypeSentence,
 	getLatestMatchingInstallVersion,
+	getProjectTypeIcon,
 	getSelectedInstallPreferences,
 	getTargetInstallPreferences,
 	injectNotificationManager,
@@ -40,6 +42,9 @@ import { useRoute, useRouter } from 'vue-router'
 
 import { useAppEvent } from '@/composables/use-app-event'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
+import ProviderSwitch from '@/features/plus-curseforge/provider-switch.vue'
+import { hasSyncedFilter, useInstanceFilterSync } from '@/features/plus-install/instance-filter-sync'
+import { readInstanceTarget } from '@/features/plus-install/instance-target'
 import { get_project, get_search_results_v3, get_version_many } from '@/helpers/cache.js'
 import {
 	get_installed_project_ids as getInstalledProjectIds,
@@ -400,7 +405,7 @@ const hideInstalledModpacks = computed({
 const instanceFilters = computed(() => {
 	const filters = []
 
-	if (instance.value && projectType.value !== 'resourcepack') {
+	if (instance.value) {
 		const isVanillaShader = projectType.value === 'shader' && instance.value.loader === 'vanilla'
 		const gameVersion = instance.value.game_version
 		if (gameVersion && !isVanillaShader) {
@@ -507,6 +512,12 @@ const serverContextFilters = computed(() => {
 const combinedProvidedFilters = computed(() =>
 	isServerContext.value ? serverContextFilters.value : instanceFilters.value,
 )
+const instanceTarget = computed(() => readInstanceTarget(instance.value))
+const instanceSyncTarget = computed(() => {
+	const { loader, gameVersion } = instanceTarget.value
+	const loaderName = loader && projectType.value === 'mod' ? formatLoaderLabel(loader) : ''
+	return [loaderName, gameVersion ? `Minecraft ${gameVersion}` : ''].filter(Boolean).join(' ')
+})
 
 const {
 	serverPings,
@@ -581,6 +592,26 @@ const messages = defineMessages({
 		id: 'app.browse.back-to-instance',
 		defaultMessage: 'Back to instance',
 	},
+	syncOnTitle: {
+		id: 'plus.browse.sync.on.title',
+		defaultMessage: 'Filters are provided by the instance',
+	},
+	syncOffTitle: { id: 'plus.browse.sync.off.title', defaultMessage: 'Filters are unlocked' },
+	syncOn: { id: 'plus.browse.sync.on.status', defaultMessage: 'Showing {target}' },
+	syncOff: {
+		id: 'plus.browse.sync.off.status',
+		defaultMessage: 'Browsing every version and loader',
+	},
+	syncOnText: {
+		id: 'plus.browse.sync.on.text',
+		defaultMessage: 'Unlocking these filters may allow you to install incompatible content.',
+	},
+	syncOffText: {
+		id: 'plus.browse.sync.off.text',
+		defaultMessage: "Results can include content that doesn't work with this instance.",
+	},
+	syncUnlock: { id: 'plus.browse.sync.unlock', defaultMessage: 'Unlock filters' },
+	syncRelock: { id: 'plus.browse.sync.relock', defaultMessage: 'Sync with instance' },
 	serverInstanceContentWarning: {
 		id: 'app.browse.server-instance-content-warning',
 		defaultMessage:
@@ -624,8 +655,7 @@ function resetInstanceContext() {
 	newlyInstalled.value = []
 	hiddenInstanceProjectIds.value = new Set()
 	hiddenInstanceProjectIdsInitialized.value = false
-	isServerInstance.value = false
-	browseBreadcrumb.reset()
+	syncBreadcrumbs()
 	void refreshInstalledProjectIds()
 }
 
@@ -702,12 +732,22 @@ const selectableProjectTypes = computed(() => {
 
 	if (isSetupServerContext.value) {
 		return [
-			{ label: formatMessage(messages.modpacksProjectType), href: `/browse/modpack${suffix}` },
+			{
+				label: formatMessage(messages.modpacksProjectType),
+				href: `/browse/modpack${suffix}`,
+				icon: getProjectTypeIcon('modpack'),
+			},
 		]
 	}
 
 	if (isFromWorlds.value) {
-		return [{ label: formatMessage(messages.serversProjectType), href: `/browse/server${suffix}` }]
+		return [
+			{
+				label: formatMessage(messages.serversProjectType),
+				href: `/browse/server${suffix}`,
+				icon: getProjectTypeIcon('minecraft_java_server'),
+			},
+		]
 	}
 
 	return [
@@ -715,22 +755,35 @@ const selectableProjectTypes = computed(() => {
 			label: formatMessage(messages.modpacksProjectType),
 			href: `/browse/modpack${suffix}`,
 			shown: modpacks,
+			icon: getProjectTypeIcon('modpack'),
 		},
-		{ label: formatMessage(messages.modsProjectType), href: `/browse/mod${suffix}`, shown: mods },
+		{
+			label: formatMessage(messages.modsProjectType),
+			href: `/browse/mod${suffix}`,
+			shown: mods,
+			icon: getProjectTypeIcon('mod'),
+		},
 		{
 			label: formatMessage(messages.resourcePacksProjectType),
 			href: `/browse/resourcepack${suffix}`,
+			icon: getProjectTypeIcon('resourcepack'),
 		},
 		{
 			label: formatMessage(messages.dataPacksProjectType),
 			href: `/browse/datapack${suffix}`,
 			shown: dataPacks,
+			icon: getProjectTypeIcon('datapack'),
 		},
-		{ label: formatMessage(messages.shadersProjectType), href: `/browse/shader${suffix}` },
+		{
+			label: formatMessage(messages.shadersProjectType),
+			href: `/browse/shader${suffix}`,
+			icon: getProjectTypeIcon('shader'),
+		},
 		{
 			label: formatMessage(messages.serversProjectType),
 			href: `/browse/server${suffix}`,
 			shown: !instance.value,
+			icon: getProjectTypeIcon('minecraft_java_server'),
 		},
 	]
 })
@@ -1162,6 +1215,11 @@ const searchState = useBrowseSearch({
 		shi: serverHideInstalled.value ? 'true' : undefined,
 	}),
 })
+const filterSync = useInstanceFilterSync(
+	initialInstanceId,
+	searchState.overriddenProvidedFilterTypes,
+	computed(() => combinedProvidedFilters.value.map((filter) => filter.type)),
+)
 
 watch(
 	[
@@ -1276,6 +1334,23 @@ provideBrowseManager({
 	getCardActions,
 	installContext,
 	providedFilters: combinedProvidedFilters,
+	getOrganizationLink: (organizationId: string) =>
+		`/organization/${encodeURIComponent(organizationId)}`,
+	instanceSync: computed(() => {
+		if (!instance.value || isServerContext.value || isFromWorlds.value) return null
+		if (!hasSyncedFilter(combinedProvidedFilters.value.map((filter) => filter.type))) return null
+		const enabled = filterSync.enabled.value
+		return {
+			enabled,
+			title: formatMessage(enabled ? messages.syncOnTitle : messages.syncOffTitle),
+			status: formatMessage(enabled ? messages.syncOn : messages.syncOff, {
+				target: instanceSyncTarget.value,
+			}),
+			description: formatMessage(enabled ? messages.syncOnText : messages.syncOffText),
+			actionLabel: formatMessage(enabled ? messages.syncUnlock : messages.syncRelock),
+			set: filterSync.set,
+		}
+	}),
 	hideInstalled: computed({
 		get: () => {
 			if (projectType.value === 'modpack') return hideInstalledModpacks.value
@@ -1332,6 +1407,9 @@ provideBrowseManager({
 <template>
 	<div class="flex flex-col gap-2 p-6">
 		<BrowsePageLayout>
+			<template #before-tabs>
+				<ProviderSwitch v-if="!isServerContext && !isFromWorlds && projectType !== 'server'" />
+			</template>
 			<template #after>
 				<ContextMenu ref="contextMenuRef" :label="formatMessage(messages.projectActionsLabel)">
 					<template #open_link="{ option }">

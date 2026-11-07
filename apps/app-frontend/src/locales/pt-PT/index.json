@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Ver registos"
   },
-  "app.ads-consent.accept": {
-    "message": "Aceitar tudo"
-  },
-  "app.ads-consent.body": {
-    "message": "Os anúncios tornam o Modrinth possível e financiam os pagamentos aos criadores. Os nossos parceiros podem armazenar ou aceder a cookies na aplicação para personalizar anúncios e medir o desempenho."
-  },
-  "app.ads-consent.manage": {
-    "message": "Gerir preferências"
-  },
-  "app.ads-consent.reject": {
-    "message": "Rejeitar tudo"
-  },
-  "app.ads-consent.title": {
-    "message": "A sua privacidade e como os anúncios são financiados pela Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Exibir instâncias da biblioteca numa disposição de linhas compacta."
   },
@@ -165,7 +150,7 @@
     "message": "Ocultar crachá"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimizar a Modrinth App quando o Minecraft iniciar."
+    "message": "Minimizar a Pawrinth quando o Minecraft iniciar."
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "Minimizar app"
@@ -1028,14 +1013,8 @@
   "app.nav.sign-in-to-modrinth-account": {
     "message": "Inicie sessão no Modrinth"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Atualizar para o Modrinth+"
-  },
   "app.navigation.home": {
     "message": "Página inicial"
-  },
-  "app.news.title": {
-    "message": "Novidades"
   },
   "app.project.install-button.already-installed": {
     "message": "Este projeto já está instalado."
@@ -1171,21 +1150,6 @@
   },
   "app.settings.operating-system.macos": {
     "message": "macOS"
-  },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Os anúncios tornam o Modrinth possível e financiam os pagamentos aos criadores. Os nossos parceiros podem armazenar ou aceder a cookies na aplicação para personalizar anúncios e medir o desempenho."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Mostrar a aplicação Modrinth como a sua atividade atual no Discord. Isto não afeta o Rich Presence adicionado às instâncias pelos mods. É necessário reiniciar a aplicação."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Presença avançada no Discord"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "A Modrinth recolhe dados analíticos e de utilização anonimizados para melhorar a experiência dos nossos utilizadores e personalizar a sua experiência. Ao desativar esta opção, está a optar por não participar e os seus dados deixarão de ser recolhidos."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Telemetria"
   },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Mostrar a ação «Copiar detalhes» enquanto uma instalação estiver na fila ou em execução. Esta ação está sempre disponível para instalações que tenham falhado ou sido interrompidas."
@@ -1337,9 +1301,6 @@
   "app.settings.tabs.language": {
     "message": "Linguagem"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Privacidade"
-  },
   "app.sidebar.playing-as": {
     "message": "Jogar na pele de"
   },
@@ -1410,13 +1371,13 @@
     "message": "Pode removê-lo apenas desta instância ou de todas as instâncias sincronizadas. Se o remover apenas desta instância, as substituições serão ativadas e esta instância deixará de receber as alterações sincronizadas para estes tipos de conteúdo."
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} acabou de ser transferida. Recarrega para atualizar agora, ou automaticamente quando fechares a Modrinth App."
+    "message": "Pawrinth v{version} acabou de ser transferida. Recarrega para atualizar agora, ou automaticamente quando fechares a Pawrinth."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} está disponível. Usa o teu gestor de pacotes para atualizar e receber as correções e recursos mais recentes!"
+    "message": "Pawrinth v{version} está disponível. Usa o teu gestor de pacotes para atualizar e receber as correções e recursos mais recentes!"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} está disponível! Como estás numa rede com tráfego limitado, não a transferimos automaticamente."
+    "message": "Pawrinth v{version} está disponível! Como estás numa rede com tráfego limitado, não a transferimos automaticamente."
   },
   "app.update-popup.changelog": {
     "message": "Lista de alterações"

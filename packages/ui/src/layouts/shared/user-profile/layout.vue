@@ -290,9 +290,14 @@
 			<NavTabs v-if="navLinks.length > 2" :links="navLinks" replace page-nav />
 
 			<div class="flex flex-col gap-3">
-				<ProjectList
-					v-if="selectedProjectType !== 'collection' && filteredProjects.length > 0"
+				<ProjectToolsBar
+					v-if="projectTools && selectedProjectType !== 'collection' && filteredProjects.length > 1"
+					v-model="tools"
 					:projects="filteredProjects"
+				/>
+				<ProjectList
+					v-if="selectedProjectType !== 'collection' && visibleProjects.length > 0"
+					:projects="visibleProjects"
 					:layout="displayMode"
 					:link-mode="projectLinkMode"
 					:show-status="canSeeProjectStatus"
@@ -301,6 +306,20 @@
 						<slot name="project-actions" :project="project" />
 					</template>
 				</ProjectList>
+
+				<Pagination
+					v-if="projectTools && toolsPageCount > 1"
+					class="ml-auto"
+					:page="tools.page"
+					:count="toolsPageCount"
+					@switch-page="tools = { ...tools, page: $event }"
+				/>
+
+				<EmptyState
+					v-if="projectTools && filteredProjects.length > 0 && visibleProjects.length === 0"
+					type="empty"
+					:heading="formatMessage(messages.profileNoProjectsMatchLabel)"
+				/>
 
 				<EmptyState
 					v-if="showProjectsEmptyState"
@@ -486,6 +505,7 @@ import { Button } from '#ui/components/base/buttons'
 import EmptyState from '#ui/components/base/EmptyState.vue'
 import IntlFormatted from '#ui/components/base/IntlFormatted.vue'
 import NavTabs from '#ui/components/base/NavTabs.vue'
+import Pagination from '#ui/components/base/Pagination.vue'
 import SmartClickable from '#ui/components/base/SmartClickable.vue'
 import NewModal from '#ui/components/modal/NewModal.vue'
 import NormalPage from '#ui/components/page/NormalPage.vue'
@@ -510,11 +530,19 @@ import {
 } from '#ui/utils'
 
 import EditUserModal from './components/edit-user-modal.vue'
+import ProjectToolsBar from './components/project-tools-bar.vue'
 import ForcePasswordResetModal from './components/force-password-reset-modal.vue'
 import LockUserModal from './components/lock-user-modal.vue'
 import Reset2faModal from './components/reset-2fa-modal.vue'
 import RestrictUserModal from './components/restrict-user-modal.vue'
 import { blockedUsersQueryKey, injectUserProfile } from './providers'
+import {
+	filterProjects,
+	pageCountOf,
+	pageOf,
+	rememberedProjectTools,
+	rememberProjectTools,
+} from './project-tools'
 import { hasActivePride26Midas, hasPride26Badge, projectUserSorting } from './utils'
 
 type DisplayMode = 'list' | 'grid' | 'gallery'
@@ -543,6 +571,8 @@ const props = withDefaults(
 		editProfileLink?: string | (() => void)
 		onCreateProject?: (event?: MouseEvent) => void
 		onCreateCollection?: (event?: MouseEvent) => void
+		/** Search, sorting, filters and pages for this creator's projects. */
+		projectTools?: boolean
 	}>(),
 	{
 		projectType: undefined,
@@ -574,6 +604,10 @@ const sidebarSectionClass = computed(() =>
 )
 
 const messages = defineMessages({
+	profileNoProjectsMatchLabel: {
+		id: 'profile.no-projects-match',
+		defaultMessage: 'No projects match these filters',
+	},
 	collectionProjectsCount: {
 		id: 'profile.collection.projects-count',
 		defaultMessage: '{count, plural, one {# project} other {# projects}}',
@@ -861,6 +895,15 @@ const isBlocked = computed(() =>
 
 const selectedProjectType = computed(() => parseProjectTypeRouteParam(props.projectType))
 
+const tools = ref(rememberedProjectTools(`user:${props.userId}`))
+watch(tools, (value) => rememberProjectTools(`user:${props.userId}`, value), { deep: true })
+const toolFilteredProjects = computed(() =>
+	props.projectTools ? filterProjects(filteredProjects.value, tools.value) : filteredProjects.value,
+)
+const toolsPageCount = computed(() => pageCountOf(toolFilteredProjects.value.length))
+const visibleProjects = computed(() =>
+	props.projectTools ? pageOf(toolFilteredProjects.value, tools.value.page) : filteredProjects.value,
+)
 const filteredProjects = computed(() =>
 	filterProjectsByType(projects.value, selectedProjectType.value).slice().sort(projectUserSorting),
 )

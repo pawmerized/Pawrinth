@@ -131,6 +131,7 @@ const messages = defineMessages({
 						class="grid min-w-0 grid-cols-[auto_1fr] items-center gap-2 text-inherit no-underline group no-click-animation"
 					>
 						<UserAvatar
+							class="plus-private-stream"
 							:src="friend.avatar"
 							size="32px"
 							:badge="friend.online"
@@ -138,7 +139,7 @@ const messages = defineMessages({
 						/>
 						<div class="flex flex-col">
 							<span
-								class="text-sm m-0 group-hover:underline"
+								class="plus-private-stream text-sm m-0 group-hover:underline"
 								:class="friend.online || !friend.accepted ? 'text-contrast' : 'text-primary'"
 							>
 								{{ friend.username }}

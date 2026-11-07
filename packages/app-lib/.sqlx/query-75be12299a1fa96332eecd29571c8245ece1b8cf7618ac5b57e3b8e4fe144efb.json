@@ -1,0 +1,21 @@
+{
+  "db_name": "SQLite",
+  "query": "\n        SELECT COALESCE(SUM(size), 0) AS \"used!: i64\" FROM store_blobs\n        WHERE sha512 IN (\n            SELECT blob_sha512 FROM store_retained_refs WHERE owner_kind = 'plus-op'\n        )\n        ",
+  "describe": {
+    "columns": [
+      {
+        "name": "used!: i64",
+        "ordinal": 0,
+        "type_info": "Integer",
+        "origin": "Expression"
+      }
+    ],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "75be12299a1fa96332eecd29571c8245ece1b8cf7618ac5b57e3b8e4fe144efb"
+}

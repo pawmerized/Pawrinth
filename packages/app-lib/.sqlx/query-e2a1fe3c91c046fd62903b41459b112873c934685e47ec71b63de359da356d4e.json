@@ -1,0 +1,38 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT instance_id, relative_path FROM plus_content_origins WHERE project_ref = $1",
+  "describe": {
+    "columns": [
+      {
+        "name": "instance_id",
+        "ordinal": 0,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_origins",
+            "name": "instance_id"
+          }
+        }
+      },
+      {
+        "name": "relative_path",
+        "ordinal": 1,
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "plus_content_origins",
+            "name": "relative_path"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "e2a1fe3c91c046fd62903b41459b112873c934685e47ec71b63de359da356d4e"
+}

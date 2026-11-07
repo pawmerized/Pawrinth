@@ -8,12 +8,12 @@ import {
 	getLatestMatchingInstallVersion,
 	useVIntl,
 } from '@modrinth/ui'
-import { openUrl } from '@tauri-apps/plugin-opener'
 import dayjs from 'dayjs'
 import { nextTick, type Ref, ref } from 'vue'
 import type { Router } from 'vue-router'
 
 import { useAppSettings } from '@/composables/use-app-settings.ts'
+import { preferStableVersion } from '@/features/plus-install/version-choice'
 import { trackEvent } from '@/helpers/analytics'
 import {
 	get_organization,
@@ -85,7 +85,7 @@ function resolveContentType(projectType?: Labrinth.Projects.v2.ProjectType) {
 	return projectType && RESOLVABLE_PROJECT_TYPES.has(projectType) ? projectType : 'mod'
 }
 
-function isVersionCompatible(
+export function isVersionCompatible(
 	version: Labrinth.Versions.v2.Version,
 	project: Labrinth.Projects.v2.Project,
 	instance: GameInstance,
@@ -98,7 +98,8 @@ function isVersionCompatible(
 	)
 }
 
-function findPreferredVersion(
+/** Expects newest first. Only ever returns a version that fits the instance. */
+export function findPreferredVersion(
 	versions: Labrinth.Versions.v2.Version[],
 	project: Labrinth.Projects.v2.Project,
 	instance: GameInstance,
@@ -106,11 +107,13 @@ function findPreferredVersion(
 	const projectType = project.project_type ?? 'mod'
 
 	return (
-		versions.find(
-			(v) =>
-				v.game_versions.includes(instance.game_version) &&
-				(projectType === 'mod' ? v.loaders.includes(instance.loader) : true),
-		) ?? versions.find((v) => isVersionCompatible(v, project, instance))
+		preferStableVersion(
+			versions.filter(
+				(v) =>
+					v.game_versions.includes(instance.game_version) &&
+					(projectType === 'mod' ? v.loaders.includes(instance.loader) : true),
+			),
+		) ?? preferStableVersion(versions.filter((v) => isVersionCompatible(v, project, instance)))
 	)
 }
 
@@ -129,6 +132,20 @@ type InstallTargetInstance = Pick<
 	GameInstance,
 	'id' | 'name' | 'icon_path' | 'game_version' | 'loader'
 >
+
+export type ExternalInstallInstance = InstallTargetInstance
+
+/** A project from another provider, offered through the same instance picker. */
+export interface ExternalInstallRequest {
+	/** Kept apart from Modrinth ids, such as `curseforge:123`. */
+	projectId: string
+	projectType: string
+	projectInfo: ContentInstallProjectInfo
+	targets: { game_version: string; loader: string }[]
+	installedInstanceIds: string[]
+	/** Resolves to whether it was installed. Reports its own errors. */
+	installToInstance: (instance: ExternalInstallInstance) => Promise<boolean>
+}
 
 export interface ContentInstallContext {
 	instances: Ref<ContentInstallInstance[]>
@@ -178,6 +195,13 @@ export interface ContentInstallContext {
 	installingItems: Ref<Map<string, ContentItem[]>>
 	installRevisionByInstance: Ref<Map<string, number>>
 	installFailureRevisionByInstance: Ref<Map<string, number>>
+	showExternalInstallModal: (request: ExternalInstallRequest) => Promise<void>
+	beginExternalInstall: (
+		instanceId: string,
+		project: { id: string; title: string; icon_url?: string | null; project_type?: string },
+		versionNumber?: string,
+	) => void
+	endExternalInstall: (instanceId: string, projectIds: string[], succeeded: boolean) => void
 }
 
 export const [injectContentInstall, provideContentInstall] = createContext<ContentInstallContext>(
@@ -454,6 +478,8 @@ export function createContentInstall(opts: {
 	let incompatibilityWarningCallback: ContentInstallCallback = () => {}
 	let incompatibilityWarningInstalled = false
 
+	let currentExternal: ExternalInstallRequest | null = null
+
 	let pendingModpackInstall: {
 		project: Labrinth.Projects.v2.Project
 		version: string
@@ -473,6 +499,7 @@ export function createContentInstall(opts: {
 			showModal?: boolean
 		},
 	) {
+		currentExternal = null
 		currentProject = project
 		currentVersions = versions
 		currentCallback = onInstall
@@ -499,7 +526,7 @@ export function createContentInstall(opts: {
 									name: org.name,
 									iconUrl: org.icon_url,
 									circle: false,
-									link: () => openUrl(`https://modrinth.com/organization/${orgSlug}`),
+									link: `/organization/${encodeURIComponent(orgSlug)}`,
 								},
 							}
 						}
@@ -540,14 +567,7 @@ export function createContentInstall(opts: {
 			for (const l of v.loaders) loaderSet.add(l)
 			for (const gv of v.game_versions) gameVersionSet.add(gv)
 		}
-		const mappedLoaders = new Set<string>()
-		for (const l of loaderSet) {
-			if (SUPPORTED_LOADERS.has(l)) mappedLoaders.add(l)
-			else if (VANILLA_COMPATIBLE_LOADERS.has(l)) mappedLoaders.add('vanilla')
-		}
-		compatibleLoaders.value = sortLoaders([...mappedLoaders])
-		gameVersions.value = [...gameVersionSet]
-		releaseGameVersions.value = new Set(gameVersionSet)
+		applyTargetOptions(loaderSet, gameVersionSet)
 
 		preferredLoader.value =
 			hints?.preferredLoader && loaderSet.has(hints.preferredLoader) ? hints.preferredLoader : null
@@ -562,7 +582,30 @@ export function createContentInstall(opts: {
 			trackEvent('ProjectInstallStart', { source: 'ProjectInstallModal' })
 		}
 
-		const gameVersionMetadataPromise = get_game_versions()
+		const gameVersionMetadataPromise = orderGameVersions(gameVersionSet)
+		await loadInstallCandidates(
+			project.id,
+			project.project_type,
+			getInstallTargets(versions),
+			new Set(),
+		)
+		await gameVersionMetadataPromise
+		await projectInfoPromise
+	}
+
+	function applyTargetOptions(loaderSet: Set<string>, gameVersionSet: Set<string>) {
+		const mappedLoaders = new Set<string>()
+		for (const l of loaderSet) {
+			if (SUPPORTED_LOADERS.has(l)) mappedLoaders.add(l)
+			else if (VANILLA_COMPATIBLE_LOADERS.has(l)) mappedLoaders.add('vanilla')
+		}
+		compatibleLoaders.value = sortLoaders([...mappedLoaders])
+		gameVersions.value = [...gameVersionSet]
+		releaseGameVersions.value = new Set(gameVersionSet)
+	}
+
+	function orderGameVersions(gameVersionSet: Set<string>) {
+		return get_game_versions()
 			.then((allGameVersions) => {
 				const releases = new Set<string>()
 				const ordered: string[] = []
@@ -578,13 +621,16 @@ export function createContentInstall(opts: {
 				releaseGameVersions.value = releases
 			})
 			.catch(() => {})
+	}
 
+	async function loadInstallCandidates(
+		projectId: string,
+		projectType: string,
+		targets: { game_version: string; loader: string }[],
+		installedInstanceIds: Set<string>,
+	) {
 		try {
-			const candidates = await get_install_candidates(
-				project.id,
-				project.project_type,
-				getInstallTargets(versions),
-			)
+			const candidates = await get_install_candidates(projectId, projectType, targets)
 			const newInstanceMap: Record<string, InstallTargetInstance> = {}
 			const newInstances: ContentInstallInstance[] = candidates.map((instance) => {
 				newInstanceMap[instance.id] = instance
@@ -592,7 +638,7 @@ export function createContentInstall(opts: {
 					id: instance.id,
 					name: instance.name,
 					iconUrl: getInstanceIconUrl(instance.icon_path),
-					installed: instance.installed,
+					installed: instance.installed || installedInstanceIds.has(instance.id),
 					compatible: instance.compatible,
 					installing: false,
 				}
@@ -609,8 +655,102 @@ export function createContentInstall(opts: {
 		} finally {
 			loading.value = false
 		}
+	}
+
+	async function showExternalInstallModal(request: ExternalInstallRequest) {
+		currentExternal = request
+		currentProject = null
+		currentVersions = []
+		currentCallback = () => {}
+
+		instances.value = []
+		loading.value = true
+		defaultTab.value = 'existing'
+		projectInfo.value = request.projectInfo
+
+		const gameVersionSet = new Set(request.targets.map((target) => target.game_version))
+		applyTargetOptions(new Set(request.targets.map((target) => target.loader)), gameVersionSet)
+		preferredLoader.value = null
+		preferredGameVersion.value = null
+
+		await nextTick()
+		modalRef?.show()
+
+		const gameVersionMetadataPromise = orderGameVersions(gameVersionSet)
+		await loadInstallCandidates(
+			request.projectId,
+			request.projectType,
+			request.targets,
+			new Set(request.installedInstanceIds),
+		)
 		await gameVersionMetadataPromise
-		await projectInfoPromise
+	}
+
+	async function installExternalToInstance(
+		request: ExternalInstallRequest,
+		instance: ContentInstallInstance,
+	) {
+		const selectedInstance = instanceMap[instance.id]
+		const storeInstance = instances.value.find((i) => i.id === instance.id)
+		if (!selectedInstance) {
+			opts.handleError('No project or instance found')
+			return
+		}
+		if (storeInstance) storeInstance.installing = true
+		try {
+			const installed = await request.installToInstance(selectedInstance)
+			if (storeInstance && installed) storeInstance.installed = true
+		} finally {
+			if (storeInstance) storeInstance.installing = false
+		}
+	}
+
+	async function createAndInstallExternal(
+		request: ExternalInstallRequest,
+		data: { name: string; iconPath: string | null; loader: string; gameVersion: string },
+	) {
+		try {
+			const job = await install_create_instance({
+				name: data.name,
+				gameVersion: data.gameVersion,
+				loader: data.loader as InstanceLoader,
+				loaderVersion: 'latest',
+				iconPath: data.iconPath,
+			})
+			const id = installJobInstanceId(job)
+			if (!id) return
+			await wait_for_install_job(opts.appEvents, job.job_id)
+			modalRef?.hide()
+			await opts.router.push(`/instance/${encodeURIComponent(id)}`)
+			await request.installToInstance({
+				id,
+				name: data.name,
+				icon_path: null,
+				game_version: data.gameVersion,
+				loader: data.loader as InstanceLoader,
+			} as ExternalInstallInstance)
+		} catch (err) {
+			opts.handleError(err)
+		}
+	}
+
+	function beginExternalInstall(
+		instanceId: string,
+		project: { id: string; title: string; icon_url?: string | null; project_type?: string },
+		versionNumber?: string,
+	) {
+		addInstallingItem(instanceId, project)
+		if (versionNumber) {
+			updateInstallingItem(instanceId, `__installing_${project.id}`, {
+				version: { id: project.id, version_number: versionNumber, file_name: '' },
+			})
+		}
+	}
+
+	function endExternalInstall(instanceId: string, projectIds: string[], succeeded: boolean) {
+		removeInstallingItems(instanceId, projectIds)
+		if (!succeeded) markInstanceContentInstallFailed(instanceId)
+		markInstanceContentChanged(instanceId)
 	}
 
 	async function prepareNewInstance(projectId: string) {
@@ -648,6 +788,10 @@ export function createContentInstall(opts: {
 	}
 
 	async function handleInstallToInstance(instance: ContentInstallInstance) {
+		if (currentExternal) {
+			await installExternalToInstance(currentExternal, instance)
+			return
+		}
 		const selectedInstance = instanceMap[instance.id]
 		const storeInstance = instances.value.find((i) => i.id === instance.id)
 		if (!currentProject || !selectedInstance) {
@@ -805,6 +949,10 @@ export function createContentInstall(opts: {
 		loader: string
 		gameVersion: string
 	}) {
+		if (currentExternal) {
+			await createAndInstallExternal(currentExternal, data)
+			return
+		}
 		const loaderCandidates =
 			data.loader === 'vanilla' ? ['vanilla', 'datapack', 'minecraft'] : [data.loader]
 		const version =
@@ -1022,6 +1170,9 @@ export function createContentInstall(opts: {
 		handleInstallToInstance,
 		handleCreateAndInstall,
 		prepareNewInstance,
+		showExternalInstallModal,
+		beginExternalInstall,
+		endExternalInstall,
 		handleNavigate,
 		handleCancel,
 		setContentInstallModal(ref: ModalRef) {

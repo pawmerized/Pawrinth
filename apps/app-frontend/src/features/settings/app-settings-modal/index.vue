@@ -2,13 +2,16 @@
 import {
 	CodeIcon,
 	CoffeeIcon,
+	DiscordIcon,
 	EyeOffIcon,
 	GaugeIcon,
 	HeartHandshakeIcon,
+	KeyIcon,
 	LanguagesIcon,
 	LightBulbIcon,
 	ModrinthIcon,
 	PaintbrushIcon,
+	PaletteIcon,
 	RefreshCwIcon,
 	Settings2Icon,
 	ToggleRightIcon,
@@ -33,7 +36,13 @@ import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/
 import { computed, ref } from 'vue'
 
 import { useAppSettings } from '@/composables/use-app-settings.ts'
-import PrivacySettings from '@/features/settings/account/privacy-settings.vue'
+import PlusAboutSettings from '@/features/plus-settings/about-settings.vue'
+import PlusCurseforgeSettings from '@/features/plus-settings/curseforge-settings.vue'
+import PlusDiscordSettings from '@/features/plus-settings/discord-settings.vue'
+import PlusInterfaceSettings from '@/features/plus-settings/interface-settings.vue'
+import PlusPrivacySettings from '@/features/plus-settings/privacy-settings.vue'
+import PlusRecoverySettings from '@/features/plus-settings/recovery-settings.vue'
+import PlusThemeEditor from '@/features/plus-themes/theme-editor.vue'
 import ProfileSettings from '@/features/settings/account/profile-settings.vue'
 import SocialSettings from '@/features/settings/account/social-settings.vue'
 import AppearanceSettings from '@/features/settings/display/appearance-settings.vue'
@@ -83,6 +92,10 @@ const tabCategories = defineMessages({
 	system: {
 		id: 'app.settings.sidebar.label.system',
 		defaultMessage: 'System',
+	},
+	modrinthPlus: {
+		id: 'plus.settings.category',
+		defaultMessage: 'Pawrinth',
 	},
 })
 
@@ -145,15 +158,6 @@ const tabs = [
 	},
 	{
 		name: defineMessage({
-			id: 'app.settings.tabs.privacy',
-			defaultMessage: 'Privacy',
-		}),
-		category: tabCategories.account,
-		icon: EyeOffIcon,
-		content: PrivacySettings,
-	},
-	{
-		name: defineMessage({
 			id: 'app.settings.tabs.java-and-memory',
 			defaultMessage: 'Java and memory',
 		}),
@@ -205,6 +209,69 @@ const tabs = [
 		category: tabCategories.system,
 		icon: WrenchIcon,
 		content: TroubleshootingSettings,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.themes',
+			defaultMessage: 'Themes',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: PaletteIcon,
+		content: PlusThemeEditor,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.interface',
+			defaultMessage: 'Interface',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: WindowIcon,
+		content: PlusInterfaceSettings,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.privacy',
+			defaultMessage: 'Streamer mode',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: EyeOffIcon,
+		content: PlusPrivacySettings,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.discord',
+			defaultMessage: 'Discord status',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: DiscordIcon,
+		content: PlusDiscordSettings,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.recovery',
+			defaultMessage: 'Update recovery',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: RefreshCwIcon,
+		content: PlusRecoverySettings,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.api-configuration',
+			defaultMessage: 'API configuration',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: KeyIcon,
+		content: PlusCurseforgeSettings,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.about',
+			defaultMessage: 'About',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: ModrinthIcon,
+		content: PlusAboutSettings,
 	},
 ]
 
@@ -306,7 +373,22 @@ function showInstanceDefaults(tab: InstanceDefaultsTab): void {
 	modal.value?.show()
 }
 
-defineExpose({ show, showProfile, showFeatureFlags, showSyncedOptions, showInstanceDefaults })
+function showApiConfiguration(): void {
+	const tabIndex = availableTabs.value.findIndex((tab) => tab.content === PlusCurseforgeSettings)
+	if (tabIndex >= 0) {
+		modal.value?.setTab(tabIndex)
+	}
+	modal.value?.show()
+}
+
+defineExpose({
+	show,
+	showProfile,
+	showFeatureFlags,
+	showSyncedOptions,
+	showInstanceDefaults,
+	showApiConfiguration,
+})
 
 const { progress, version: downloadingVersion } = injectAppUpdateDownloadProgress()
 
@@ -361,7 +443,7 @@ const messages = defineMessages({
 	},
 	appVersion: {
 		id: 'app.settings.app-version',
-		defaultMessage: 'Modrinth App {version}',
+		defaultMessage: 'Pawrinth {version}',
 	},
 	macos: {
 		id: 'app.settings.operating-system.macos',

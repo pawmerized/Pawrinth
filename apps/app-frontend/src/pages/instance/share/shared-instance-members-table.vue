@@ -87,10 +87,11 @@
 							size="24px"
 							circle
 							no-shadow
+							class="plus-private-stream"
 						/>
 						<span
 							:ref="(element) => setUsernameRef(row.id, element)"
-							class="min-w-0 truncate font-medium"
+							class="plus-private-stream min-w-0 truncate font-medium"
 							>{{ row.username }}</span
 						>
 					</AutoLink>

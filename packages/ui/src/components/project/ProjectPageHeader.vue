@@ -36,9 +36,12 @@
 						:tooltip="formatNumber(project.downloads)"
 					/>
 					<PageHeaderMetadataNumberItem
+						v-if="!followersLabel || project.followers > 0"
 						:icon="HeartIcon"
 						:value="project.followers"
-						:label="formatMessage(messages.followersStat, { count: project.followers })"
+						:label="
+							followersLabel ?? formatMessage(messages.followersStat, { count: project.followers })
+						"
 						:tooltip="formatNumber(project.followers)"
 					/>
 				</template>
@@ -96,10 +99,13 @@ withDefaults(
 		project: HeaderProject
 		projectV3?: HeaderProjectV3 | null
 		showStatusBadge?: boolean
+		/** For a provider whose equivalent count isn't followers. It's hidden while it's zero. */
+		followersLabel?: string
 	}>(),
 	{
 		projectV3: null,
 		showStatusBadge: false,
+		followersLabel: undefined,
 	},
 )
 

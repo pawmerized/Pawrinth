@@ -19,7 +19,7 @@ const messages = defineMessages({
 	appDirectoryDescription: {
 		id: 'app.settings.resource-management.app-directory.description',
 		defaultMessage:
-			'Where Modrinth App stores instances and other files. Changes take effect after restarting the app.',
+			'Where Pawrinth stores instances and other files. Changes take effect after restarting the app.',
 	},
 	selectAppDirectory: {
 		id: 'app.settings.resource-management.app-directory.select',
@@ -88,7 +88,7 @@ async function findLauncherDir() {
 				v-model="settings.custom_dir"
 				:icon="BoxIcon"
 				type="text"
-				wrapper-class="w-full"
+				wrapper-class="plus-private-stream w-full"
 			>
 				<template #right>
 					<IconButton

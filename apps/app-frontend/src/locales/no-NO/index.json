@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Vis logger"
   },
-  "app.ads-consent.accept": {
-    "message": "Godta alt"
-  },
-  "app.ads-consent.body": {
-    "message": "Annonser gjør Modrinth mulig og finansierer betalinger til skapere. Partnerne våre kan lagre eller få tilgang til informasjonskapsler i appen for å tilpasse annonser og måle ytelse."
-  },
-  "app.ads-consent.manage": {
-    "message": "Administrer preferanser"
-  },
-  "app.ads-consent.reject": {
-    "message": "Avslå alle"
-  },
-  "app.ads-consent.title": {
-    "message": "Ditt personvern og hvordan annonser støtter Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Vis instanser i biblioteket i et kompakt radoppsett."
   },
@@ -165,7 +150,7 @@
     "message": "Gjøm navnelapp"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimer Modrinth App når Minecraft starter."
+    "message": "Minimer Pawrinth når Minecraft starter."
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "Minimer app"
@@ -207,7 +192,7 @@
     "message": "Hjem og innhold"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "Vis Modrinth App i forgrunnen når Minecraft lukkes."
+    "message": "Vis Pawrinth i forgrunnen når Minecraft lukkes."
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "Refokuser appen når Minecraft lukkes"
@@ -493,9 +478,6 @@
   },
   "app.settings.tabs.language": {
     "message": "Språk"
-  },
-  "app.settings.tabs.privacy": {
-    "message": "Personvern"
   },
   "app.update.complete-toast.text": {
     "message": "Klikk her for å se endringsloggen."

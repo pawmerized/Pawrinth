@@ -335,7 +335,10 @@ pub(crate) async fn resolve_java_for_launch(
     {
         (PathBuf::from(java_version.path), false)
     } else {
-        (crate::api::jre::auto_install_java(key).await?, true)
+        (
+            crate::api::jre::auto_install_java_with_loading(key, true).await?,
+            true,
+        )
     };
 
     let java_version = crate::api::jre::check_jre(java_path).await?;
@@ -656,6 +659,13 @@ async fn install_minecraft_inner(
                     .await?;
             }
 
+            // Processors rewrite shared library jars that the next processor reads, so
+            // installs of the same game version take turns.
+            let _processors = crate::install::control::lock_shared_step(
+                format!("loader-processors-{}", content_set.game_version),
+            )
+            .await?;
+
             // Forge processors (90-100)
             for (index, processor) in processors.iter().enumerate() {
                 if let Some(sides) = &processor.sides
@@ -663,7 +673,7 @@ async fn install_minecraft_inner(
                 {
                     if let Some(reporter) = &reporter {
                         reporter
-                            .update(
+                            .update_in_shared_step(
                                 InstallPhaseId::RunningLoaderProcessors,
                                 Some(InstallProgress {
                                     current: (index + 1) as u64,
@@ -732,7 +742,7 @@ async fn install_minecraft_inner(
                 }
                 if let Some(reporter) = &reporter {
                     reporter
-                        .update(
+                        .update_in_shared_step(
                             InstallPhaseId::RunningLoaderProcessors,
                             Some(InstallProgress {
                                 current: (index + 1) as u64,
@@ -1284,11 +1294,16 @@ pub async fn launch_minecraft(
         }
     }
 
-    let _ = state
-        .presence
-        .discord_rpc
-        .set_activity(&format!("Playing {}", instance.name), true, &state.pool)
-        .await;
+    crate::plus::discord::show_playing_in_background(
+        crate::plus::discord::PlayingInstance {
+            name: instance.name.clone(),
+            game_version: Some(
+                context.applied_content_set.game_version.clone(),
+            ),
+            loader: Some(context.applied_content_set.loader),
+            started_at: Some(Utc::now().timestamp()),
+        },
+    );
 
     let _ = state
         .presence

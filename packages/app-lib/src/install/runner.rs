@@ -906,6 +906,18 @@ async fn run_job_inner(
                     Box::pin(crate::api::instance::synced_packs::reconcile_after_content_change(
 						&instance_id,
 					)).await;
+                    if let Err(error) = crate::plus::operations::finish_update(
+                        &job_id.to_string(),
+                        &instance_id,
+                        true,
+                        state,
+                    )
+                    .await
+                    {
+                        tracing::warn!(
+                            "Failed to record update operation {job_id}: {error}"
+                        );
+                    }
                 }
                 recovery::clear_staging_dir(&job_state, &state.content_store)
                     .await;
@@ -1026,6 +1038,20 @@ async fn terminalize_failed_job_inner(
             false
         }
     };
+    let failed_instance_id = job_state
+        .rollback
+        .as_ref()
+        .map(|rollback| rollback.instance.instance.id.clone());
+    if let Err(error) = crate::plus::operations::settle_failed_job(
+        &job_id.to_string(),
+        failed_instance_id.as_deref(),
+        cleanup_succeeded,
+        state,
+    )
+    .await
+    {
+        tracing::warn!("Failed to settle update operation {job_id}: {error}");
+    }
 
     if let Some(record) = store::finish_active(
         job_id,
@@ -1137,7 +1163,7 @@ async fn run_request_inner(
             install_pack(
                 job_id,
                 job_state,
-                location,
+                location.clone(),
                 instance_id.clone(),
                 DownloadReason::Modpack,
                 &state.pool,
@@ -1145,6 +1171,12 @@ async fn run_request_inner(
             .await?;
             apply_post_install_edit(&instance_id, post_install_edit, state)
                 .await?;
+            crate::plus::curseforge_pack::finish_install(
+                &instance_id,
+                &location,
+                state,
+            )
+            .await?;
             Ok(Some(instance_id))
         }
         InstallRequest::CreateSharedInstance { data } => {
@@ -1317,7 +1349,7 @@ async fn run_request_inner(
             install_pack(
                 job_id,
                 job_state,
-                location,
+                location.clone(),
                 instance_id.clone(),
                 DownloadReason::Modpack,
                 &state.pool,
@@ -1331,6 +1363,12 @@ async fn run_request_inner(
             .await?;
             apply_post_install_edit(&instance_id, post_install_edit, state)
                 .await?;
+            crate::plus::curseforge_pack::finish_install(
+                &instance_id,
+                &location,
+                state,
+            )
+            .await?;
             Ok(Some(instance_id))
         }
         InstallRequest::BulkUpdateContent {
@@ -1354,6 +1392,13 @@ async fn run_request_inner(
                 ))
                 .await?;
             prepare_update_backup(job_id, request, job_state, state).await?;
+            crate::plus::operations::begin_update(
+                &job_id.to_string(),
+                &instance_id,
+                crate::plus::operations::OperationKind::UpdateAll,
+                state,
+            )
+            .await?;
             crate::state::instances::commands::apply_bulk_update(
                 &instance_id,
                 plan,

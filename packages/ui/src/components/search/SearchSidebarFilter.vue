@@ -154,11 +154,16 @@
 												<div
 													v-if="typeof option.icon === 'string'"
 													class="h-4 w-4"
+													aria-hidden="true"
 													v-html="option.icon"
 												/>
-												<component :is="option.icon" v-else class="h-4 w-4" />
+												<component :is="option.icon" v-else class="h-4 w-4" aria-hidden="true" />
 											</span>
-											<span class="truncate text-sm" :style="iconStyle(option)">
+											<span
+												class="truncate text-sm"
+												:style="iconStyle(option)"
+												:title="option.formatted_name ?? option.id"
+											>
 												{{ option.formatted_name ?? option.id }}
 											</span>
 										</slot>
@@ -215,7 +220,7 @@
 					:label="`${group.formatted_name}`"
 					@update:model-value="toggleGroup(group.id)"
 				/>
-				<div v-if="hasProvidedFilter" class="mt-2 mx-1">
+				<div v-if="hasProvidedFilter && !hideSyncButton" class="mt-2 mx-1">
 					<Button
 						class="w-fit"
 						@click="
@@ -278,6 +283,7 @@ const props = defineProps<{
 	selectedProjectClass?: string
 	openByDefault?: boolean
 	providedFilters: FilterValue[]
+	hideSyncButton?: boolean
 	resultCount?: number
 	loading?: boolean
 	refreshing?: boolean

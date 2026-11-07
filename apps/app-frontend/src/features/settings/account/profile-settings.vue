@@ -1,5 +1,7 @@
 <template>
+	<StreamerModeNotice v-if="streamerMode" />
 	<AccountProfileSettings
+		v-else
 		ref="profileSettings"
 		:patch-user="patchUser"
 		:change-avatar="changeAvatar"
@@ -14,6 +16,8 @@ import type { Labrinth } from '@modrinth/api-client'
 import { AccountProfileSettings, injectAuth } from '@modrinth/ui'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
+import StreamerModeNotice from '@/features/plus-privacy/streamer-mode-notice.vue'
+import { usePrivacy } from '@/features/plus-privacy/use-privacy'
 import { injectAppSettingsModal } from '@/features/settings/app-settings-modal/context'
 import {
 	change_user_avatar,
@@ -24,6 +28,7 @@ import {
 
 const settingsModal = injectAppSettingsModal()
 const auth = injectAuth()
+const { streamerMode } = usePrivacy()
 const profileSettings = ref<InstanceType<typeof AccountProfileSettings> | null>(null)
 
 onMounted(() => {

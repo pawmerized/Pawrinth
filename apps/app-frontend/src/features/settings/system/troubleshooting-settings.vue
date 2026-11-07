@@ -1,22 +1,7 @@
 <script setup lang="ts">
-import {
-	CheckIcon,
-	CopyIcon,
-	DownloadIcon,
-	FolderOpenIcon,
-	LoaderCircleIcon,
-	TrashIcon,
-} from '@modrinth/assets'
-import {
-	Button,
-	defineMessages,
-	injectNotificationManager,
-	IntlFormatted,
-	Toggle,
-	useVIntl,
-} from '@modrinth/ui'
+import { DownloadIcon, FolderOpenIcon, LoaderCircleIcon, TrashIcon } from '@modrinth/assets'
+import { Button, defineMessages, injectNotificationManager, Toggle, useVIntl } from '@modrinth/ui'
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { openUrl } from '@tauri-apps/plugin-opener'
 import { ref } from 'vue'
 
 import {
@@ -25,18 +10,15 @@ import {
 } from '@/components/ui/download-manager/debug-info-export'
 import ConfirmModalWrapper from '@/components/ui/modal/ConfirmModalWrapper.vue'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
-import { get_ads_debug_state } from '@/helpers/ads.js'
 import { purge_cache_types } from '@/helpers/cache.js'
 import { appSettingsKeys, get, set } from '@/helpers/settings.ts'
-import { copyToClipboard, showAppDbBackupsFolder } from '@/helpers/utils.js'
+import { showAppDbBackupsFolder } from '@/helpers/utils.js'
 
-const { addNotification, handleError } = injectNotificationManager()
+const { handleError } = injectNotificationManager()
 const { formatMessage } = useVIntl()
 const appSettings = useAppSettings()
 const queryClient = useQueryClient()
 const clearCacheConfirmModal = ref<InstanceType<typeof ConfirmModalWrapper> | null>(null)
-const copyingAdDetails = ref(false)
-const copiedAdDetails = ref(false)
 
 const copyDetailsMutation = useMutation({
 	mutationKey: appSettingsKeys.update,
@@ -64,36 +46,11 @@ const messages = defineMessages({
 	debugInfoDescription: {
 		id: 'app.settings.resource-management.debug-info.description',
 		defaultMessage:
-			'Export app logs and diagnostic data to a ZIP file to share with Modrinth support.',
+			'Export app logs and diagnostic data to a ZIP file to share when reporting a problem.',
 	},
 	exportDebugInfo: {
 		id: 'app.settings.resource-management.debug-info.export',
 		defaultMessage: 'Export debug info',
-	},
-	reportAdTitle: {
-		id: 'app.settings.troubleshooting.report-ad.title',
-		defaultMessage: 'Report an ad',
-	},
-	reportAdDescription: {
-		id: 'app.settings.troubleshooting.report-ad.description',
-		defaultMessage:
-			"Seen an inappropriate or offensive ad? Copy its details while it's showing and send them to <support>Modrinth Support</support>. We'll review it and remove it.",
-	},
-	copyAdDetails: {
-		id: 'app.settings.troubleshooting.report-ad.copy',
-		defaultMessage: 'Copy ad details',
-	},
-	copiedAdDetails: {
-		id: 'app.settings.troubleshooting.report-ad.copied',
-		defaultMessage: 'Copied',
-	},
-	noAdLoadedTitle: {
-		id: 'app.settings.troubleshooting.report-ad.no-ad.title',
-		defaultMessage: 'No ad found',
-	},
-	noAdLoadedText: {
-		id: 'app.settings.troubleshooting.report-ad.no-ad.text',
-		defaultMessage: 'Wait for the ad to load, then try again.',
 	},
 	appCacheTitle: {
 		id: 'app.settings.resource-management.app-cache.title',
@@ -179,43 +136,6 @@ async function openDbBackupsFolder() {
 async function handleExportDebugInfo() {
 	await exportDebugInfo(formatMessage(messages.exportDebugInfo)).catch(handleError)
 }
-
-function openSupport() {
-	openUrl('https://support.modrinth.com')
-}
-
-async function handleCopyAdDetails() {
-	copyingAdDetails.value = true
-
-	try {
-		const adReport = (await get_ads_debug_state()) as
-			| ({ current_ad?: string } & Record<string, unknown>)
-			| null
-
-		if (!adReport) {
-			addNotification({
-				type: 'error',
-				title: formatMessage(messages.noAdLoadedTitle),
-				text: formatMessage(messages.noAdLoadedText),
-			})
-			return
-		}
-
-		const { current_ad: currentAd, ...info } = adReport
-		await copyToClipboard(
-			`CURRENT_AD: ${currentAd ?? 'unknown'}\n\nINFO:\n${JSON.stringify(info, null, 2)}`,
-		)
-
-		copiedAdDetails.value = true
-		setTimeout(() => {
-			copiedAdDetails.value = false
-		}, 3000)
-	} catch (error) {
-		handleError(error as Error)
-	} finally {
-		copyingAdDetails.value = false
-	}
-}
 </script>
 
 <template>
@@ -274,39 +194,6 @@ async function handleCopyAdDetails() {
 			</Button>
 			<p class="m-0 leading-tight text-secondary">
 				{{ formatMessage(messages.debugInfoDescription) }}
-			</p>
-		</div>
-		<div class="flex flex-col gap-2.5">
-			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(messages.reportAdTitle) }}
-			</h2>
-			<Button
-				id="copy-ad-details"
-				class="w-fit"
-				:disabled="copyingAdDetails || copiedAdDetails"
-				@click="handleCopyAdDetails"
-			>
-				<LoaderCircleIcon
-					v-if="copyingAdDetails"
-					class="motion-safe:animate-spin"
-					aria-hidden="true"
-				/>
-				<CheckIcon v-else-if="copiedAdDetails" class="text-green" aria-hidden="true" />
-				<CopyIcon v-else aria-hidden="true" />
-				{{ formatMessage(copiedAdDetails ? messages.copiedAdDetails : messages.copyAdDetails) }}
-			</Button>
-			<p class="m-0 leading-tight text-secondary">
-				<IntlFormatted :message-id="messages.reportAdDescription">
-					<template #support="{ children }">
-						<button
-							type="button"
-							class="inline cursor-pointer border-0 bg-transparent p-0 text-[length:inherit] leading-[inherit] text-blue hover:underline"
-							@click="openSupport"
-						>
-							<component :is="() => children" />
-						</button>
-					</template>
-				</IntlFormatted>
 			</p>
 		</div>
 		<div class="flex items-center justify-between gap-4">

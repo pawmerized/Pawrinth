@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Voir les journaux"
   },
-  "app.ads-consent.accept": {
-    "message": "Tout accepter"
-  },
-  "app.ads-consent.body": {
-    "message": "Les publicités rendent Modrinth possible et rémunèrent les créateurs. Nos partenaires peuvent stocker des cookies ou y accéder au sein de l'application afin de personnaliser les publicités et de mesurer les performances."
-  },
-  "app.ads-consent.manage": {
-    "message": "Gérer les préférences"
-  },
-  "app.ads-consent.reject": {
-    "message": "Tout refuser"
-  },
-  "app.ads-consent.title": {
-    "message": "Votre vie privée et comment les publicités soutiennent Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Afficher les instances de la bibliothèque dans une disposition compacte."
   },
@@ -165,7 +150,7 @@
     "message": "Cacher le pseudo"
   },
   "app.appearance-settings.minimize-launcher.description": {
-    "message": "Minimiser Modrinth App quand Minecraft se lance."
+    "message": "Minimiser Pawrinth quand Minecraft se lance."
   },
   "app.appearance-settings.minimize-launcher.title": {
     "message": "Minimiser l'application"
@@ -207,7 +192,7 @@
     "message": "Accueil et contenu"
   },
   "app.behavior-settings.refocus-on-game-close.description": {
-    "message": "Mettre Modrinth App au premier plan lorsque Minecraft se ferme."
+    "message": "Mettre Pawrinth au premier plan lorsque Minecraft se ferme."
   },
   "app.behavior-settings.refocus-on-game-close.title": {
     "message": "Recentrer l'application à la fermeture de Minecraft"
@@ -513,7 +498,7 @@
     "message": "Voir l'instance"
   },
   "app.hosting.update-required.description": {
-    "message": "Vous avez besoin de mettre à jour pour utiliser Modrinth Hosting via Modrinth App"
+    "message": "Vous avez besoin de mettre à jour pour utiliser Modrinth Hosting via Pawrinth"
   },
   "app.hosting.update-required.download": {
     "message": "Télécharger pour mettre à jour"
@@ -522,7 +507,7 @@
     "message": "Modrinth Bot excité"
   },
   "app.hosting.update-required.title": {
-    "message": "Mise à jour de Modrinth App requise"
+    "message": "Mise à jour de Pawrinth requise"
   },
   "app.install.phase.downloading_content": {
     "message": "Téléchargement du contenu"
@@ -1400,9 +1385,6 @@
   "app.nav.switch-account": {
     "message": "Changer de compte"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Passer à Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "Voir le profil"
   },
@@ -1417,12 +1399,6 @@
   },
   "app.navigation.next-image": {
     "message": "Prochaine image"
-  },
-  "app.news.title": {
-    "message": "Nouveautés"
-  },
-  "app.news.view-all": {
-    "message": "Voir toutes les nouveautés"
   },
   "app.notification.warning": {
     "message": "Avertissement"
@@ -1647,7 +1623,7 @@
     "message": "Les plus anciens"
   },
   "app.settings.app-version": {
-    "message": "Modrinth App {version}"
+    "message": "Pawrinth {version}"
   },
   "app.settings.default-instance-options.environment-variables.description": {
     "message": "Variables d'environnement définies lors du lancement d'une instance."
@@ -2747,21 +2723,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Les publicités rendent Modrinth possible et financent les rémunérations des créateurs. Nos partenaires peuvent stocker des cookies ou y accéder au sein de l'application afin de personnaliser les publicités et de mesurer les performances. Vous pouvez refuser ou gérer vos préférences ci-dessous."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Affiche Modrinth App en tant que votre activité actuelle sur Discord. Cela n'affecte pas Rich Presence ajouté à l'instance par les mods. Nécessite un redémarrage de l'application."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth collecte des données d'analyse et d'utilisation anonymes afin d'améliorer l'expérience utilisateur et de personnaliser votre expérience. En désactivant cette option, vous choisissez de ne plus participer et vos données ne seront plus collectées."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Télémétrie"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Afficher l’action Copier les détails lorsqu’une installation est en attente ou en cours. Elle est toujours disponible pour les installations échouées ou interrompues."
   },
@@ -2790,7 +2751,7 @@
     "message": "Parcourir pour le répertoire de l'application"
   },
   "app.settings.resource-management.app-directory.description": {
-    "message": "Où Modrinth App stocke les instances et les autres fichiers. Changer prend effet après avoir redémarré l'application."
+    "message": "Où Pawrinth stocke les instances et les autres fichiers. Changer prend effet après avoir redémarré l'application."
   },
   "app.settings.resource-management.app-directory.select": {
     "message": "Sélectionner un nouveau répertoire pour l'application"
@@ -3113,9 +3074,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "Commandes de lancement"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Confidentialité"
-  },
   "app.settings.tabs.resources": {
     "message": "Ressources"
   },
@@ -3133,24 +3091,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "Effacer le cache de l'app ?"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "Copié"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "Copier les détails de la pub"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "Vous avez vu une pub inappropriée ou offensante ? Copiez ses détails quand elle est affichée et envoyez-les au <support>Support Modrinth</support>. Nous l'examinerons et la retirons."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "Attendez que la pub soit chargée, puis réessayez."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "Aucune publicité trouvée"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "Signaler une publicité"
   },
   "app.shared-instance-publish.preparing": {
     "message": "Préparation de la mise à jour…"
@@ -3335,21 +3275,6 @@
   "app.skins.toggle-ears-features-on": {
     "message": "Activer"
   },
-  "app.survey.body": {
-    "message": "Cela vous dérangerait-il de répondre à quelques questions sur votre expérience avec l'application Modrinth ?"
-  },
-  "app.survey.footer": {
-    "message": "Ces retours seront transmis directement à l'équipe de Modrinth et aideront à orienter les futures mises à jour !"
-  },
-  "app.survey.no-thanks": {
-    "message": "Non merci"
-  },
-  "app.survey.take-survey": {
-    "message": "Répondre au sondage"
-  },
-  "app.survey.title": {
-    "message": "Salut, utilisateur de Modrinth !"
-  },
   "app.sync-instances-update.badge": {
     "message": "Nouveautés de cette mise à jour"
   },
@@ -3480,13 +3405,13 @@
     "message": "Packs de ressources synchronisés"
   },
   "app.update-popup.body.download-complete": {
-    "message": "Modrinth App v{version} a finie d'être téléchargée. Rechargez pour mettre à jour maintenant, ou automatiquement quand vous fermez Modrinth App."
+    "message": "Pawrinth v{version} a finie d'être téléchargée. Rechargez pour mettre à jour maintenant, ou automatiquement quand vous fermez Pawrinth."
   },
   "app.update-popup.body.linux": {
-    "message": "Modrinth App v{version} est disponible. Utilisez votre gestionnaire de paquets pour profiter des dernières fonctionnalités et corrections !"
+    "message": "Pawrinth v{version} est disponible. Utilisez votre gestionnaire de paquets pour profiter des dernières fonctionnalités et corrections !"
   },
   "app.update-popup.body.metered": {
-    "message": "Modrinth App v{version} est disponible maintenant ! Puisque vous êtes sur un réseau métré, nous ne l'avons pas téléchargé automatiquement."
+    "message": "Pawrinth v{version} est disponible maintenant ! Puisque vous êtes sur un réseau métré, nous ne l'avons pas téléchargé automatiquement."
   },
   "app.update-popup.changelog": {
     "message": "Journal des modifications"
@@ -3684,7 +3609,7 @@
     "message": "Dissocier l'instance partagée"
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-body": {
-    "message": "Cela supprime l'instance partagée des serveurs de Modrinth. Les personnes l'utilisant dans Modrinth App vont cesser de recevoir des mises à jour, mais votre instance locale et son contenu resteront sur cet appareil."
+    "message": "Cela supprime l'instance partagée des serveurs de Modrinth. Les personnes l'utilisant dans Pawrinth vont cesser de recevoir des mises à jour, mais votre instance locale et son contenu resteront sur cet appareil."
   },
   "installation-settings.unpublish-shared-instance.modal.admonition-header": {
     "message": "Dépublication de l'instance partagée"
@@ -4273,9 +4198,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "Obtenir Minecraft"
-  },
-  "minecraft-required.get-support": {
-    "message": "Obtenir de l'aide"
   },
   "minecraft-required.header": {
     "message": "Minecraft requis"

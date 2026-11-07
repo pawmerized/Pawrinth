@@ -234,7 +234,9 @@
 					{{
 						actionLoading
 							? formatMessage(commonMessages.installingLabel)
-							: incompatibilityWarningMode
+							: actionText
+								? actionText(selectedVersion?.version_number ?? '...')
+								: incompatibilityWarningMode
 								? formatMessage(messages.installAnywayButton)
 								: formatMessage(
 										isDowngrade
@@ -435,6 +437,9 @@ const props = withDefaults(
 		loadingChangelog?: boolean
 		actionDisabled?: boolean
 		actionDisabledTooltip?: string
+		/** Replaces the wording of the main button, for choosing a version to install. */
+		actionText?: (versionNumber: string) => string
+		hideUpdateWarning?: boolean
 	}>(),
 	{
 		projectType: undefined,
@@ -516,7 +521,7 @@ function isVersionCompatible(version: Labrinth.Versions.v2.Version): boolean {
 }
 
 const currentVersion = computed(() => props.versions.find((v) => v.id === props.currentVersionId))
-const showUpdateWarning = computed(() => !isModpack.value)
+const showUpdateWarning = computed(() => !isModpack.value && !props.hideUpdateWarning)
 
 const isDowngrade = computed(() => {
 	if (!selectedVersion.value || !currentVersion.value) return false

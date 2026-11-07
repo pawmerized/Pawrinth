@@ -4,7 +4,10 @@ import {
 	EditIcon,
 	EyeIcon,
 	InfoIcon,
+	HeartIcon,
+	PlusIcon,
 	RotateCounterClockwiseIcon,
+	SearchIcon,
 	ShirtIcon,
 	SpinnerIcon,
 	WindowsIcon,
@@ -17,6 +20,7 @@ import {
 	injectAuth,
 	injectModrinthClient,
 	injectNotificationManager,
+	NavTabs,
 	SkinPreviewRenderer,
 	Toggle,
 	useVIntl,
@@ -26,6 +30,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { type DragDropEvent, getCurrentWebview } from '@tauri-apps/api/webview'
 import { computedAsync } from '@vueuse/core'
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 import EarsModIcon from '@/assets/skins/ears-mod.png'
 import EditSkinModal from '@/components/ui/skin/EditSkinModal.vue'
@@ -33,11 +38,26 @@ import VirtualSkinSectionList from '@/components/ui/skin/VirtualSkinSectionList.
 import { useAppSettings } from '@/composables/use-app-settings.ts'
 import { handleSevereError } from '@/composables/use-error.js'
 import { injectMinecraftAccounts } from '@/features/minecraft-accounts/context'
+import { usePrivacy } from '@/features/plus-privacy/use-privacy'
+import {
+	type DiscoveredSkin,
+	skinBytes,
+	toSelectableSkin,
+} from '@/features/plus-skins/discovered-skin'
+import FavoriteSkins from '@/features/plus-skins/favorite-skins.vue'
+import FindSkins from '@/features/plus-skins/find-skins.vue'
+import SkinDetailModal from '@/features/plus-skins/skin-detail-modal.vue'
+import {
+	GALLERY_SOURCE_ID,
+	isSkinSourceId,
+	type SkinSourceId,
+} from '@/features/plus-skins/skin-sources'
 import { trackEvent } from '@/helpers/analytics'
 import { check_reachable, get_default_user, login as login_flow, users } from '@/helpers/auth'
 import { cleanupUnusedPreviews } from '@/helpers/rendering/skin-previews'
 import type { Cape, Skin, SkinTextureUrl } from '@/helpers/skins.ts'
 import {
+	determineModelType,
 	equip_skin,
 	filterDefaultSkins,
 	filterSavedSkins,
@@ -72,6 +92,7 @@ type VirtualSkinSectionListExpose = {
 const PENDING_SKIN_REFRESH_DELAY_MS = 11_000
 const DEFAULT_SKIN_SECTION_SORT_ORDER = ['Default skins', 'Modrinth Pride']
 const EARS_NOTICE_PLACEHOLDER = '__EARS_MOD_NAME__'
+const FAVORITES_TAB = 'favorites'
 const messages = defineMessages({
 	modrinthPrideSection: {
 		id: 'app.skins.section.modrinth-pride',
@@ -211,6 +232,10 @@ const messages = defineMessages({
 		id: 'app.skins.sign-in.button',
 		defaultMessage: 'Sign in to Microsoft',
 	},
+	mySkinsTab: { id: 'plus.skins.tab.mine', defaultMessage: 'My skins' },
+	findSkinsTab: { id: 'plus.skins.tab.find', defaultMessage: 'Find skins' },
+	favoritesTab: { id: 'plus.skins.favorites.title', defaultMessage: 'Favorites' },
+	addToMySkins: { id: 'plus.skins.find.import', defaultMessage: 'Add to my skins' },
 })
 
 const editSkinModal = useTemplateRef('editSkinModal')
@@ -222,6 +247,24 @@ const notifications = injectNotificationManager()
 const { addNotification, handleError } = notifications
 const auth = injectAuth()
 const client = injectModrinthClient()
+const route = useRoute()
+const router = useRouter()
+const { blurNames, namesReplaced, shownName } = usePrivacy()
+
+const activeSkinSource = computed<SkinSourceId>(() =>
+	isSkinSourceId(route.query.source) ? route.query.source : GALLERY_SOURCE_ID,
+)
+const showingFavorites = computed(() => route.query.source === FAVORITES_TAB)
+const findingSkins = computed(
+	() => typeof route.query.source === 'string' && !showingFavorites.value,
+)
+const skinViewTabs = computed(() => [
+	{ label: formatMessage(messages.mySkinsTab), href: '', icon: ShirtIcon },
+	{ label: formatMessage(messages.findSkinsTab), href: activeSkinSource.value, icon: SearchIcon },
+	{ label: formatMessage(messages.favoritesTab), href: FAVORITES_TAB, icon: HeartIcon },
+])
+const skinDetailModal = useTemplateRef('skinDetailModal')
+const previewedFoundSkin = ref<DiscoveredSkin | null>(null)
 
 const appSettings = useAppSettings()
 const skins = ref<Skin[]>([])
@@ -345,7 +388,11 @@ const skinTexture = computedAsync(async () => {
 })
 const capeTexture = computed(() => currentCape.value?.texture)
 const skinVariant = computed(() => selectedSkin.value?.variant)
-const skinNametag = computed(() => (appSettings.hideNametagSkinsPage ? undefined : username.value))
+const skinNametag = computed(() => {
+	if (appSettings.hideNametagSkinsPage || !username.value) return undefined
+	if (blurNames.value && !namesReplaced.value) return undefined
+	return shownName(username.value)
+})
 const isSkinManagementReadOnly = computed(
 	() =>
 		!!currentUser.value &&
@@ -799,9 +846,32 @@ async function applySelectedSkin() {
 	}
 }
 
+/** A found skin isn't saved yet, so this shows it without changing anything. */
+async function previewFoundSkin(skin: DiscoveredSkin) {
+	previewedFoundSkin.value = skin
+	selectedSkin.value = toSelectableSkin(skin)
+	if (skin.model !== 'UNKNOWN') return
+	const model = await determineModelType(skin.textureUrl).catch(() => 'CLASSIC' as const)
+	if (previewedFoundSkin.value === skin && selectedSkin.value) {
+		selectedSkin.value = { ...selectedSkin.value, variant: model }
+	}
+}
+
+async function importFoundSkin(skin: DiscoveredSkin) {
+	try {
+		await processSkinFileBuffer(await skinBytes(skin))
+	} catch (error) {
+		handleError(error as Error)
+	}
+}
+
 async function onSkinSaved(options: { applied: boolean; skin?: Skin; previousSkin?: Skin }) {
 	if (options.skin) {
 		updateLocalSkin(options.skin, options.applied, options.previousSkin)
+		if (findingSkins.value || showingFavorites.value) {
+			selectedSkin.value = options.skin
+			void router.replace({ query: {} })
+		}
 	}
 
 	if (!options.skin) {
@@ -1009,8 +1079,9 @@ watch(
 	() => {},
 )
 
-watch(selectedSkin, () => {
+watch(selectedSkin, (skin) => {
 	earsFeaturesEnabled.value = true
+	if (skin?.texture_key !== previewedFoundSkin.value?.key) previewedFoundSkin.value = null
 })
 
 watch(isSkinManagementReadOnly, (readOnly) => {
@@ -1084,6 +1155,12 @@ await loadSkins()
 		@saved="onSkinSaved"
 		@deleted="() => loadSkins()"
 	/>
+	<SkinDetailModal
+		ref="skinDetailModal"
+		:read-only="isSkinManagementReadOnly"
+		@import="importFoundSkin"
+		@search-tag="router.replace({ query: { source: GALLERY_SOURCE_ID } })"
+	/>
 	<input
 		ref="addSkinFileInput"
 		type="file"
@@ -1144,7 +1221,7 @@ await loadSkins()
 									type="base"
 									size="lg"
 									class="skin-preview-action-button"
-									:disabled="isApplyingSkin || isSkinManagementReadOnly"
+									:disabled="isApplyingSkin || (isSkinManagementReadOnly && !previewedFoundSkin)"
 									:aria-label="formatMessage(commonMessages.resetButton)"
 									@click="resetSelectedSkin"
 								>
@@ -1154,6 +1231,22 @@ await loadSkins()
 									</span>
 								</Button>
 								<Button
+									v-if="previewedFoundSkin"
+									type="colored"
+									color="brand"
+									size="lg"
+									class="skin-preview-action-button"
+									:disabled="isSkinManagementReadOnly"
+									:aria-label="formatMessage(messages.addToMySkins)"
+									@click="previewedFoundSkin && importFoundSkin(previewedFoundSkin)"
+								>
+									<PlusIcon />
+									<span class="skin-preview-action-label">
+										{{ formatMessage(messages.addToMySkins) }}
+									</span>
+								</Button>
+								<Button
+									v-else
 									v-tooltip="
 										!currentUser
 											? formatMessage(messages.demoApplyTooltip)
@@ -1255,8 +1348,28 @@ await loadSkins()
 			</div>
 		</div>
 
-		<div class="pt-2">
+		<div class="flex flex-col gap-4 pt-2">
+			<NavTabs :links="skinViewTabs" query="source" replace />
+			<FindSkins
+				v-if="findingSkins"
+				:source="activeSkinSource"
+				:previewing-key="previewedFoundSkin?.key"
+				:read-only="isSkinManagementReadOnly"
+				@preview="previewFoundSkin"
+				@open="(skin, event) => skinDetailModal?.show(event, skin)"
+				@import="importFoundSkin"
+				@add-file="openAddSkinFileBrowser"
+			/>
+			<FavoriteSkins
+				v-else-if="showingFavorites"
+				:previewing-key="previewedFoundSkin?.key"
+				:read-only="isSkinManagementReadOnly"
+				@preview="previewFoundSkin"
+				@open="(skin, event) => skinDetailModal?.show(event, skin)"
+				@import="importFoundSkin"
+			/>
 			<VirtualSkinSectionList
+				v-else
 				ref="skinSectionList"
 				:saved-skins="savedSkins"
 				:default-skin-sections="defaultSkinSections"

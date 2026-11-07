@@ -128,6 +128,29 @@ impl InstallProgressReporter {
         events: Vec<InstallJobEventKind>,
     ) -> crate::Result<()> {
         super::control::checkpoint(self.job_id).await?;
+        self.apply_update(phase, progress, details, events).await
+    }
+
+    /// For progress during a step other installs are waiting on. A pause takes effect once
+    /// the step is over, so a paused install can't keep the others waiting.
+    pub(crate) async fn update_in_shared_step(
+        &self,
+        phase: InstallPhaseId,
+        progress: Option<InstallProgress>,
+        details: InstallPhaseDetails,
+    ) -> crate::Result<()> {
+        super::control::ensure_not_canceled(self.job_id)?;
+        self.apply_update(phase, progress, details, Vec::new())
+            .await
+    }
+
+    async fn apply_update(
+        &self,
+        phase: InstallPhaseId,
+        progress: Option<InstallProgress>,
+        details: InstallPhaseDetails,
+        events: Vec<InstallJobEventKind>,
+    ) -> crate::Result<()> {
         let mut state = self.state.lock().await;
         let phase_started = state.job.progress.phase != phase
             || matches!(

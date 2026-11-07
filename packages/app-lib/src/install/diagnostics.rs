@@ -599,6 +599,10 @@ pub(crate) async fn censor_support_text(
         replace_nonempty(&mut text, &token, "{MINECRAFT_TOKEN}");
     }
 
+    if let Some((key, _)) = crate::plus::curseforge_key::resolve().await {
+        replace_nonempty(&mut text, key.expose(), "{CURSEFORGE_API_KEY}");
+    }
+
     text = censor_ip_addresses(text);
 
     Ok(text)

@@ -1023,11 +1023,7 @@ impl Process {
             tracing::warn!("Failed to write exit status to log file: {}", e);
         }
 
-        let _ = state
-            .presence
-            .discord_rpc
-            .clear_to_default(true, &state.pool, &state.process_manager)
-            .await;
+        crate::plus::discord::refresh_in_background();
 
         let _ = state.presence.friends_socket.update_status(None).await;
 

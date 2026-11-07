@@ -1,0 +1,26 @@
+html.plus-density-compact {
+	font-size: 15px;
+}
+
+html.plus-reduce-motion *,
+html.plus-reduce-motion *::before,
+html.plus-reduce-motion *::after {
+	animation-duration: 0.001ms !important;
+	animation-iteration-count: 1 !important;
+	transition-duration: 0.001ms !important;
+	scroll-behavior: auto !important;
+}
+
+html.plus-blur-names .plus-private {
+	filter: blur(6px);
+	user-select: none;
+}
+
+html.plus-streamer-mode .plus-private-stream {
+	filter: blur(8px);
+	user-select: none;
+}
+
+html.plus-streamer-mode .image-viewer-content {
+	filter: blur(24px);
+}

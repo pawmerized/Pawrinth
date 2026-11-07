@@ -5,7 +5,13 @@
 			<TagItem
 				v-for="tag in allTags"
 				:key="tag"
-				:action="props.project.actualProjectType ? () => handleClickTag(tag) : undefined"
+				:action="
+					props.tagAction
+						? () => props.tagAction?.(tag)
+						: props.project.actualProjectType
+							? () => handleClickTag(tag)
+							: undefined
+				"
 			>
 				<FormattedTag :tag="tag" />
 			</TagItem>
@@ -36,6 +42,8 @@ const handleClickTag = (tag: string) => {
 }
 
 const props = defineProps<{
+	/** Where a tag leads, for apps whose routes differ from the website's. */
+	tagAction?: (tag: string) => void
 	project: {
 		categories: string[]
 		additional_categories: string[]

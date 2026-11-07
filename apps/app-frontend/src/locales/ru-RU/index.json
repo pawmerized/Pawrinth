@@ -131,21 +131,6 @@
   "app.action-bar.view-logs": {
     "message": "Посмотреть журнал"
   },
-  "app.ads-consent.accept": {
-    "message": "Принять всё"
-  },
-  "app.ads-consent.body": {
-    "message": "Реклама обеспечивает работу Modrinth и выплаты авторам. Для персонализации и анализа рекламы наши партнёры могут использовать куки."
-  },
-  "app.ads-consent.manage": {
-    "message": "Настроить"
-  },
-  "app.ads-consent.reject": {
-    "message": "Отклонить всё"
-  },
-  "app.ads-consent.title": {
-    "message": "Конфиденциальность и реклама на Modrinth"
-  },
   "app.appearance-settings.compact-mode.description": {
     "message": "Отображать сборки в библиотеке компактным списком."
   },
@@ -513,7 +498,7 @@
     "message": "Посмотреть сборку"
   },
   "app.hosting.update-required.description": {
-    "message": "Обновитесь, чтобы использовать Modrinth Hosting через Modrinth App"
+    "message": "Обновитесь, чтобы использовать Modrinth Hosting через Pawrinth"
   },
   "app.hosting.update-required.download": {
     "message": "Скачать и обновить"
@@ -522,7 +507,7 @@
     "message": "Восторженный Modrinth Bot"
   },
   "app.hosting.update-required.title": {
-    "message": "Обновите Modrinth App"
+    "message": "Обновите Pawrinth"
   },
   "app.install.phase.downloading_content": {
     "message": "Скачивание контента"
@@ -1385,9 +1370,6 @@
   "app.nav.switch-account": {
     "message": "Сменить аккаунт"
   },
-  "app.nav.upgrade-to-modrinth-plus": {
-    "message": "Перейти на Modrinth+"
-  },
   "app.nav.view-profile": {
     "message": "Посмотреть профиль"
   },
@@ -1402,12 +1384,6 @@
   },
   "app.navigation.next-image": {
     "message": "Следующее изображение"
-  },
-  "app.news.title": {
-    "message": "Новости"
-  },
-  "app.news.view-all": {
-    "message": "Посмотреть все новости"
   },
   "app.notification.warning": {
     "message": "Внимание"
@@ -1629,7 +1605,7 @@
     "message": "Сначала старые"
   },
   "app.settings.app-version": {
-    "message": "Modrinth App {version}"
+    "message": "Pawrinth {version}"
   },
   "app.settings.default-instance-options.environment-variables.description": {
     "message": "Переменные среды при запуске игры."
@@ -2729,21 +2705,6 @@
   "app.settings.operating-system.macos": {
     "message": "macOS"
   },
-  "app.settings.privacy.ads-consent.intro": {
-    "message": "Реклама обеспечивает работу Modrinth и выплаты авторам. Для персонализации и анализа рекламы наши партнёры могут использовать куки. Отказаться и настроить куки можно ниже."
-  },
-  "app.settings.privacy.discord-rich-presence.description": {
-    "message": "Показывать Modrinth App в текущей активности Discord. Не влияет на Rich Presence модов. Требуется перезапуск."
-  },
-  "app.settings.privacy.discord-rich-presence.title": {
-    "message": "Discord Rich Presence"
-  },
-  "app.settings.privacy.telemetry.description": {
-    "message": "Modrinth собирает анонимные данные об использовании для персонализации и улучшения сервиса. Отключите этот параметр, чтобы отказаться от сбора данных."
-  },
-  "app.settings.privacy.telemetry.title": {
-    "message": "Телеметрия"
-  },
   "app.settings.resource-management.always-show-copy-details.description": {
     "message": "Показывать кнопку «Получить отчёт» на всех этапах установки. Для прерванных установок кнопка видна всегда."
   },
@@ -3095,9 +3056,6 @@
   "app.settings.tabs.launch-hooks": {
     "message": "Команды запуска"
   },
-  "app.settings.tabs.privacy": {
-    "message": "Приватность"
-  },
   "app.settings.tabs.resources": {
     "message": "Ресурсы"
   },
@@ -3115,24 +3073,6 @@
   },
   "app.settings.troubleshooting.clear-cache.confirm.title": {
     "message": "Очистить кеш приложения?"
-  },
-  "app.settings.troubleshooting.report-ad.copied": {
-    "message": "Скопировано"
-  },
-  "app.settings.troubleshooting.report-ad.copy": {
-    "message": "Скопировать рекламные данные"
-  },
-  "app.settings.troubleshooting.report-ad.description": {
-    "message": "Заметили неприемлемую или оскорбительную рекламу? Скопируйте её данные, пока она показывается, и отправьте в <support>поддержку Modrinth</support>. Мы проверим и удалим её."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.text": {
-    "message": "Дождитесь загрузки рекламы и попробуйте снова."
-  },
-  "app.settings.troubleshooting.report-ad.no-ad.title": {
-    "message": "Реклама не найдена"
-  },
-  "app.settings.troubleshooting.report-ad.title": {
-    "message": "Пожаловаться на рекламу"
   },
   "app.shared-instance-publish.preparing": {
     "message": "Подготовка изменений..."
@@ -3316,21 +3256,6 @@
   },
   "app.skins.toggle-ears-features-on": {
     "message": "Показать"
-  },
-  "app.survey.body": {
-    "message": "Не хотите ответить на несколько вопросов о вашем опыте с Modrinth App?"
-  },
-  "app.survey.footer": {
-    "message": "Этот отзыв будет доставлен напрямую команде Modrinth и поможет разрабатывать будущие обновления!"
-  },
-  "app.survey.no-thanks": {
-    "message": "Нет, спасибо"
-  },
-  "app.survey.take-survey": {
-    "message": "Пройти опрос"
-  },
-  "app.survey.title": {
-    "message": "Привет, пользователь Modrinth!"
   },
   "app.sync-instances-update.badge": {
     "message": "Новинка"
@@ -4309,9 +4234,6 @@
   },
   "minecraft-required.get-minecraft": {
     "message": "Приобрести Minecraft"
-  },
-  "minecraft-required.get-support": {
-    "message": "Поддержка"
   },
   "minecraft-required.header": {
     "message": "Требуется Minecraft"

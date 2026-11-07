@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "UPDATE settings SET plus = json_patch(plus, $1)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "b81b66f438b3df44261ad2e9a8931db19fec0ea6608cb6c5ca9605d54129a325"
+}
