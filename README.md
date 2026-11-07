@@ -59,16 +59,9 @@ CurseForge needs a free API key from CurseForge, added once under Settings. Pawr
 - **Snapshots and compare:** save an instance's content before a big change, and compare two instances side by side.
 - **Crash help:** common crash causes are pointed out in the logs.
 
-### Discord status
-
-Shows what you're playing on your Discord profile with nothing to set up, with buttons for friends to install Pawrinth or join its Discord server. Pick what's shown, write your own text and buttons, and see a live preview. Streamer mode reduces it to "Playing Minecraft".
-
-<p align="center">
-	<img src=".github/assets/screenshots/discord.png" alt="Pawrinth's Discord status settings with a live preview" width="100%">
-</p>
-
 ### And more
 
+- **Discord status:** shows what you're playing, with buttons for friends to install Pawrinth or join its Discord server.
 - **Skins:** a live skin gallery with search, 3D previews and favorites, and any player's current skin by username.
 - **Streamer mode:** hides account names, avatars, friends and folder paths on screen and in logs.
 - **Setup wizard** on first launch: choose a look and layout, and bring over instances from other launchers.
