@@ -104,7 +104,7 @@ Custom mode adds both lines of text, the logo picture and its hover text, a smal
 
 The logo on the built-in application is the art asset `BUILT_IN_LOGO_ASSET`. Pictures for it are in `apps/app/icons/discord/`. If the asset is replaced under a new name, change that constant. Discord leaves out a picture it can't find rather than showing a broken one, and Test connection reports it.
 
-The built-in status always has two buttons. **Install Pawrinth** downloads `Pawrinth-Setup.exe` from the newest GitHub release (`INSTALLER_URL` in `discord.rs`), and the release workflow uploads that file under the same name every time, so the link never changes. **Join the Discord** opens Pawrinth's server through a permanent invite (`COMMUNITY_INVITE_URL`). If that invite is ever deleted, replace it there and in `about-settings.vue`, then release. Custom mode can replace both with your own buttons. Discord only shows a status's buttons to other people, never on your own profile, so checking them needs a second account.
+The built-in status always has two buttons. **Install Pawrinth** opens the newest release's page on GitHub (`RELEASES_URL` in `discord.rs`), where people download `Pawrinth-Setup.exe`. **Join the Discord** opens Pawrinth's server through a permanent invite (`COMMUNITY_INVITE_URL`). If that invite is ever deleted, replace it there and in `about-settings.vue`, then release. Custom mode can replace both with your own buttons. Discord only shows a status's buttons to other people, never on your own profile, so checking them needs a second account.
 
 **If Discord runs as administrator**, Windows won't let Pawrinth reach it, and the same is true of any other app that isn't running as administrator. Settings says so.
 

@@ -15,9 +15,8 @@ const LOGO_TEXT: &str = "Pawrinth";
 const DEFAULT_IDLE_TEXT: &str = "Browsing Pawrinth";
 const HIDDEN_PLAYING_TEXT: &str = "Playing Minecraft";
 const INSTALL_BUTTON_LABEL: &str = "Install Pawrinth";
-/// The installer from the newest release on Pawrinth's GitHub. Releases publish it
-/// under this fixed name as well as with their version number.
-pub(crate) const INSTALLER_URL: &str = "https://github.com/pawmerized/Pawrinth/releases/latest/download/Pawrinth-Setup.exe";
+/// The page of the newest release on Pawrinth's GitHub, where people pick the download.
+pub(crate) const RELEASES_URL: &str = "https://github.com/pawmerized/Pawrinth/releases/latest";
 const COMMUNITY_BUTTON_LABEL: &str = "Join the Discord";
 /// Pawrinth's community server.
 pub(crate) const COMMUNITY_INVITE_URL: &str = "https://discord.gg/HDVG4TmuB7";
@@ -249,7 +248,7 @@ fn presence_buttons(settings: &DiscordSettings) -> Vec<PresenceButton> {
     if settings.use_custom {
         custom_buttons(settings)
     } else {
-        install_button(Some(INSTALLER_URL))
+        install_button(Some(RELEASES_URL))
             .into_iter()
             .chain(button_from(COMMUNITY_BUTTON_LABEL, COMMUNITY_INVITE_URL))
             .collect()
@@ -364,7 +363,7 @@ pub async fn status() -> crate::Result<DiscordStatus> {
         application: application_id(&plus.discord).0,
         connected: guard.is_connected(),
         problem: guard.problem(),
-        install_button: install_button(Some(INSTALLER_URL)).is_some(),
+        install_button: install_button(Some(RELEASES_URL)).is_some(),
     })
 }
 
@@ -907,14 +906,14 @@ mod tests {
     }
 
     #[test]
-    fn the_built_in_status_offers_the_installer_and_the_community() {
+    fn the_built_in_status_offers_the_releases_page_and_the_community() {
         let buttons = presence_buttons(&DiscordSettings::default());
         assert_eq!(
             buttons,
             vec![
                 PresenceButton {
                     label: "Install Pawrinth".to_string(),
-                    url: INSTALLER_URL.to_string(),
+                    url: RELEASES_URL.to_string(),
                 },
                 PresenceButton {
                     label: "Join the Discord".to_string(),
@@ -923,7 +922,7 @@ mod tests {
             ]
         );
         assert!(
-            INSTALLER_URL
+            RELEASES_URL
                 .starts_with("https://github.com/pawmerized/Pawrinth/")
         );
         assert!(COMMUNITY_INVITE_URL.starts_with("https://discord.gg/"));
