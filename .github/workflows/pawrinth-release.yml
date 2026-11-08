@@ -104,6 +104,7 @@ jobs:
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" "target/publish/Pawrinth-Setup.exe" --clobber
+            gh release edit "$TAG" --draft=false
           else
             gh release create "$TAG" "target/publish/Pawrinth-Setup.exe" --title "Pawrinth $VERSION" --generate-notes --latest
           fi
