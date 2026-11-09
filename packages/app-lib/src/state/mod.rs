@@ -159,6 +159,12 @@ impl State {
             .startup_complete
             .store(true, std::sync::atomic::Ordering::Release);
         tokio::spawn(async move {
+            if let Err(error) = crate::plus::memory::refresh_all(state).await {
+                tracing::warn!("Couldn't check automatic memory: {error}");
+            }
+        });
+        crate::plus::world_backups::start(state);
+        tokio::spawn(async move {
             loop {
                 if let Err(error) =
                     content_store::migrate_instance_copies(state).await

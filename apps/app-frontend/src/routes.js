@@ -102,6 +102,22 @@ export default new createRouter({
 			},
 		},
 		{
+			path: '/technic',
+			name: 'Discover on Technic',
+			component: () => import('@/features/plus-technic/browse-page.vue'),
+			meta: {
+				saveScroll: true,
+			},
+		},
+		{
+			path: '/technic/pack/:slug',
+			name: 'Technic pack',
+			component: () => import('@/features/plus-technic/pack-page.vue'),
+			meta: {
+				saveScroll: true,
+			},
+		},
+		{
 			path: '/instance/:id',
 			name: 'Instance',
 			component: () => import('@/pages/instance/layout.vue'),

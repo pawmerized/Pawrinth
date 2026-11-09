@@ -7,6 +7,7 @@ import {
 	IconButton,
 	injectNotificationManager,
 	Input,
+	Toggle,
 	useVIntl,
 } from '@modrinth/ui'
 import { openUrl } from '@tauri-apps/plugin-opener'
@@ -14,6 +15,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import { notifyCurseforgeKeyChanged } from '@/features/plus-curseforge/key-state'
 import MineskinSettings from '@/features/plus-settings/mineskin-settings.vue'
+import { patchPlusSettings, usePlusSettings } from '@/features/plus-settings/use-plus-settings'
 import {
 	type CfKeyOutcome,
 	type CfKeyStatus,
@@ -27,6 +29,7 @@ const CONSOLE_URL = 'https://console.curseforge.com/'
 
 const { formatMessage } = useVIntl()
 const { handleError } = injectNotificationManager()
+const { settings } = usePlusSettings()
 
 const messages = defineMessages({
 	title: { id: 'plus.curseforge.title', defaultMessage: 'CurseForge' },
@@ -164,7 +167,25 @@ const messages = defineMessages({
 		defaultMessage:
 			'CurseForge issues keys through its developer console. A key is tied to you, and CurseForge’s terms don’t allow sharing it.',
 	},
-	openConsole: { id: 'plus.curseforge.getting-key.open', defaultMessage: 'Open CurseForge console' },
+	openConsole: {
+		id: 'plus.curseforge.getting-key.open',
+		defaultMessage: 'Open CurseForge console',
+	},
+	proxyTitle: {
+		id: 'plus.curseforge.proxy',
+		defaultMessage: 'Use curse.tools instead of a key',
+	},
+	proxyText: {
+		id: 'plus.curseforge.proxy.text',
+		defaultMessage:
+			'curse.tools is a free community service that passes requests on to CurseForge, so you don’t need a key of your own. It isn’t run by CurseForge or Pawrinth. It sees what you search for and install, and it can stop working at any time. Downloads still come straight from CurseForge’s servers, and projects whose authors don’t allow other apps stay blocked.',
+	},
+	proxyOnHeader: { id: 'plus.curseforge.proxy.on', defaultMessage: 'Using curse.tools' },
+	proxyOnText: {
+		id: 'plus.curseforge.proxy.on.text',
+		defaultMessage:
+			'CurseForge projects come through curse.tools. Your own key isn’t used while this is on.',
+	},
 	rules: { id: 'plus.curseforge.rules', defaultMessage: 'What to expect' },
 	rulesText: {
 		id: 'plus.curseforge.rules.text',
@@ -184,6 +205,8 @@ const busy = ref(false)
 const result = ref<Result | null>(null)
 
 const hasSavedKey = computed(() => status.value?.source === 'user')
+const usesProxy = computed(() => settings.value?.curseforge?.use_community_proxy === true)
+const proxyBusy = ref(false)
 const showForm = computed(() => !hasSavedKey.value || replacing.value)
 const canUseDraft = computed(() => draft.value.trim().length > 0 && !busy.value)
 const storeAvailable = computed(() => status.value?.store_available !== false)
@@ -363,6 +386,19 @@ function remove(): Promise<void> {
 	})
 }
 
+async function setProxy(enabled: boolean): Promise<void> {
+	proxyBusy.value = true
+	result.value = null
+	try {
+		await patchPlusSettings({ curseforge: { use_community_proxy: enabled } })
+		notifyCurseforgeKeyChanged()
+	} catch (error) {
+		handleError(error as Error)
+	} finally {
+		proxyBusy.value = false
+	}
+}
+
 function startReplacing(): void {
 	result.value = null
 	replacing.value = true
@@ -384,7 +420,15 @@ onBeforeUnmount(clearDraft)
 		<p class="m-0 mt-1">{{ formatMessage(messages.description) }}</p>
 
 		<Admonition
-			v-if="summary && !result"
+			v-if="usesProxy && !result"
+			class="mt-4"
+			type="info"
+			:header="formatMessage(messages.proxyOnHeader)"
+		>
+			{{ formatMessage(messages.proxyOnText) }}
+		</Admonition>
+		<Admonition
+			v-else-if="summary && !result"
 			class="mt-4"
 			:type="summary.type"
 			:header="summary.header"
@@ -474,6 +518,22 @@ onBeforeUnmount(clearDraft)
 				</Button>
 			</div>
 		</form>
+
+		<div class="mt-6 flex items-center justify-between gap-4">
+			<div>
+				<h3 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.proxyTitle) }}
+				</h3>
+				<p class="m-0 mt-1">{{ formatMessage(messages.proxyText) }}</p>
+			</div>
+			<Toggle
+				id="plus-curseforge-proxy"
+				:model-value="usesProxy"
+				:disabled="proxyBusy || !settings"
+				class="shrink-0"
+				@update:model-value="setProxy($event)"
+			/>
+		</div>
 
 		<h3 class="m-0 mt-6 text-lg font-semibold text-contrast">
 			{{ formatMessage(messages.gettingKey) }}

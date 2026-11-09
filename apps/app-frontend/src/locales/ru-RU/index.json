@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Посмотреть сборку"
   },
-  "app.hosting.update-required.description": {
-    "message": "Обновитесь, чтобы использовать Modrinth Hosting через Pawrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Скачать и обновить"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Восторженный Modrinth Bot"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Обновите Pawrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "Скачивание контента"
   },
@@ -1354,9 +1342,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Аккаунт Modrinth"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Удалить аккаунт"

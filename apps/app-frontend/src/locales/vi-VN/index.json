@@ -488,18 +488,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Xem bản cài đặt"
   },
-  "app.hosting.update-required.description": {
-    "message": "Bạn cần cập nhật để sử dụng Modrinth Hosting qua Ứng dụng Modrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Tải xuống để cập nhật"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Bot Modrinth đang phấn khích"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Yêu cầu cập nhật Ứng dụng Modrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "Đang tải nội dung"
   },
@@ -1360,9 +1348,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Tài khoản Modrinth"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Xóa tài khoản"

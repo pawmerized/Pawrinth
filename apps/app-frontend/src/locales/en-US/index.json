@@ -4496,6 +4496,9 @@
   "plus.compare.title": {
     "message": "Compare instances"
   },
+  "plus.content.check-mods": {
+    "message": "Check mods: recognise, find duplicates"
+  },
   "plus.content.compare": {
     "message": "Compare"
   },
@@ -4572,7 +4575,7 @@
     "message": "CurseForge needs an API key"
   },
   "plus.curseforge.browse.needs-key.text": {
-    "message": "CurseForge only allows searching and downloading with an API key, so no projects can be shown yet. Add your own key in Settings to browse here."
+    "message": "CurseForge only allows searching and downloading with an API key, so no projects can be shown yet. Add your own key in Settings to browse here, or turn on curse.tools there."
   },
   "plus.curseforge.browse.open-api-settings": {
     "message": "Open API configuration"
@@ -4758,7 +4761,7 @@
     "message": "{count, plural, one {like} other {likes}}"
   },
   "plus.curseforge.page.needs-key": {
-    "message": "CurseForge only shows project details to apps with an API key."
+    "message": "CurseForge only shows project details to apps with an API key. Add your own key in Settings, or turn on curse.tools there."
   },
   "plus.curseforge.page.no-description": {
     "message": "CurseForge doesn't have a description for this project."
@@ -4792,6 +4795,18 @@
   },
   "plus.curseforge.provider": {
     "message": "CurseForge"
+  },
+  "plus.curseforge.proxy": {
+    "message": "Use curse.tools instead of a key"
+  },
+  "plus.curseforge.proxy.on": {
+    "message": "Using curse.tools"
+  },
+  "plus.curseforge.proxy.on.text": {
+    "message": "CurseForge projects come through curse.tools. Your own key isn’t used while this is on."
+  },
+  "plus.curseforge.proxy.text": {
+    "message": "curse.tools is a free community service that passes requests on to CurseForge, so you don’t need a key of your own. It isn’t run by CurseForge or Pawrinth. It sees what you search for and install, and it can stop working at any time. Downloads still come straight from CurseForge’s servers, and projects whose authors don’t allow other apps stay blocked."
   },
   "plus.curseforge.result.connected.text": {
     "message": "CurseForge accepted the saved key."
@@ -5312,6 +5327,21 @@
   "plus.interface.last-page.description": {
     "message": "Start on the page you had open instead of your default page."
   },
+  "plus.interface.logo": {
+    "message": "Logo"
+  },
+  "plus.interface.logo.description": {
+    "message": "Shown in the title bar, on the loading screen and as the window icon on the taskbar. Shortcuts keep the paw."
+  },
+  "plus.interface.logo.mochi": {
+    "message": "Mochi"
+  },
+  "plus.interface.logo.nova": {
+    "message": "Nova"
+  },
+  "plus.interface.logo.paw": {
+    "message": "Paw"
+  },
   "plus.interface.motion": {
     "message": "Reduce motion"
   },
@@ -5341,6 +5371,27 @@
   },
   "plus.interface.title": {
     "message": "Interface"
+  },
+  "plus.memory.applied": {
+    "message": "Pawrinth set this instance to match."
+  },
+  "plus.memory.automatic": {
+    "message": "Set automatically"
+  },
+  "plus.memory.manual": {
+    "message": "Set by you"
+  },
+  "plus.memory.manual.text": {
+    "message": "You set this instance’s memory yourself, so Pawrinth leaves it alone. On this PC the recommendation comes to {amount}."
+  },
+  "plus.memory.recommended": {
+    "message": "The pack recommends {amount}."
+  },
+  "plus.memory.reduced": {
+    "message": "This PC has {total} of memory, so Pawrinth set {amount} to leave enough for Windows and your other apps."
+  },
+  "plus.memory.use-recommended": {
+    "message": "Use the recommended amount"
   },
   "plus.mineskin.settings.accepted": {
     "message": "MineSkin accepted this key, and it is saved."
@@ -5380,6 +5431,93 @@
   },
   "plus.mineskin.settings.unchecked": {
     "message": "The key is saved, but MineSkin couldn't check it right now."
+  },
+  "plus.mods.check.again": {
+    "message": "Check again"
+  },
+  "plus.mods.check.cant-remove": {
+    "message": "Pawrinth can’t confirm that any copy works with this instance’s Minecraft version and loader, so it won’t remove one. Remove the wrong copy yourself if you’re sure."
+  },
+  "plus.mods.check.doesnt-work": {
+    "message": "Not for this instance"
+  },
+  "plus.mods.check.duplicates": {
+    "message": "Duplicate mods"
+  },
+  "plus.mods.check.duplicates.text": {
+    "message": "These files are the same mod, found by the mod ids inside them or their project. Minecraft can crash with two copies, so keep one."
+  },
+  "plus.mods.check.equivalents": {
+    "message": "Also on Modrinth at the same version"
+  },
+  "plus.mods.check.equivalents.text": {
+    "message": "These CurseForge mods are on Modrinth with the same version for this Minecraft version and loader, from the same source code. Switching keeps the version you have."
+  },
+  "plus.mods.check.intro": {
+    "message": "Pawrinth recognises mods that weren’t installed through it by their exact file, links them to Modrinth or CurseForge so they get updates, and finds copies of the same mod."
+  },
+  "plus.mods.check.keep": {
+    "message": "Keep"
+  },
+  "plus.mods.check.linked": {
+    "message": "{count, plural, one {Linked # mod to CurseForge} other {Linked # mods to CurseForge}}"
+  },
+  "plus.mods.check.linked.text": {
+    "message": "CurseForge updates manage them from now on. Nothing about the files changed."
+  },
+  "plus.mods.check.no-curseforge": {
+    "message": "CurseForge wasn’t checked"
+  },
+  "plus.mods.check.no-curseforge.text": {
+    "message": "Recognising mods from CurseForge needs an API key or curse.tools, under Settings, API configuration."
+  },
+  "plus.mods.check.no-duplicates": {
+    "message": "No mod is installed twice."
+  },
+  "plus.mods.check.recognised": {
+    "message": "{modrinth} from Modrinth, {curseforge} from CurseForge, {unknown, plural, one {# not recognised} other {# not recognised}}"
+  },
+  "plus.mods.check.remove": {
+    "message": "Remove"
+  },
+  "plus.mods.check.remove.confirm": {
+    "message": "Remove {file}? Pawrinth takes a snapshot first, so you can bring it back from Update history."
+  },
+  "plus.mods.check.removed": {
+    "message": "Removed {file}. You can bring it back from Update history."
+  },
+  "plus.mods.check.source.curseforge": {
+    "message": "CurseForge"
+  },
+  "plus.mods.check.source.modrinth": {
+    "message": "Modrinth"
+  },
+  "plus.mods.check.source.unknown": {
+    "message": "Not recognised"
+  },
+  "plus.mods.check.switch": {
+    "message": "Switch to Modrinth"
+  },
+  "plus.mods.check.switch.confirm": {
+    "message": "Replace {file} with {replacement} from Modrinth? Pawrinth checks the Modrinth file is the same mod first, and takes a snapshot so you can undo it."
+  },
+  "plus.mods.check.switched": {
+    "message": "{name} now comes from Modrinth."
+  },
+  "plus.mods.check.title": {
+    "message": "Check mods"
+  },
+  "plus.mods.check.unknown": {
+    "message": "Not recognised"
+  },
+  "plus.mods.check.unknown.text": {
+    "message": "No exact match on Modrinth or CurseForge, so these stay as they are and you manage them yourself."
+  },
+  "plus.mods.check.unsure": {
+    "message": "Can’t tell"
+  },
+  "plus.mods.check.works": {
+    "message": "Works with this instance"
   },
   "plus.news.category.announcement": {
     "message": "Announcement"
@@ -5503,6 +5641,9 @@
   },
   "plus.provider.modrinth": {
     "message": "Modrinth"
+  },
+  "plus.provider.technic": {
+    "message": "Technic"
   },
   "plus.recovery.cleanup": {
     "message": "Remove old entries automatically"
@@ -5779,6 +5920,114 @@
   },
   "plus.skins.thumbnail.preview": {
     "message": "Preview of {name}"
+  },
+  "plus.technic.back": {
+    "message": "Back"
+  },
+  "plus.technic.description": {
+    "message": "Modpacks from the Technic Platform. Each one is made and hosted by its creator, and installs as a new instance."
+  },
+  "plus.technic.failed": {
+    "message": "Couldn't load Technic"
+  },
+  "plus.technic.insecure.header": {
+    "message": "This pack downloads insecurely"
+  },
+  "plus.technic.insecure.install": {
+    "message": "Install anyway"
+  },
+  "plus.technic.insecure.text": {
+    "message": "{name} downloads over plain HTTP, and Technic gives no way to check its files. Someone on your network could swap them for something harmful. Only install it if you trust the pack and your connection."
+  },
+  "plus.technic.install-failed": {
+    "message": "Couldn't install {name}"
+  },
+  "plus.technic.minecraft": {
+    "message": "Minecraft {version}"
+  },
+  "plus.technic.no-results": {
+    "message": "No Technic modpacks match that."
+  },
+  "plus.technic.nothing-to-download": {
+    "message": "{name} has nothing to download on Technic."
+  },
+  "plus.technic.open": {
+    "message": "Open on Technic"
+  },
+  "plus.technic.pack.about": {
+    "message": "About"
+  },
+  "plus.technic.pack.details": {
+    "message": "Details"
+  },
+  "plus.technic.pack.failed": {
+    "message": "Couldn't load this modpack"
+  },
+  "plus.technic.pack.game-version": {
+    "message": "Minecraft"
+  },
+  "plus.technic.pack.insecure.header": {
+    "message": "Downloads over an insecure connection"
+  },
+  "plus.technic.pack.insecure.text": {
+    "message": "This pack is downloaded over plain HTTP, so its files can’t be checked on the way. Pawrinth asks before installing it."
+  },
+  "plus.technic.pack.installs": {
+    "message": "Installs"
+  },
+  "plus.technic.pack.latest": {
+    "message": "Latest version"
+  },
+  "plus.technic.pack.likes": {
+    "message": "{count, plural, one {like} other {likes}}"
+  },
+  "plus.technic.pack.no-description": {
+    "message": "The creator hasn’t written a description."
+  },
+  "plus.technic.pack.nothing.header": {
+    "message": "Nothing to download"
+  },
+  "plus.technic.pack.nothing.text": {
+    "message": "Technic doesn’t list a download for this pack, so it can’t be installed."
+  },
+  "plus.technic.pack.official": {
+    "message": "Official Technic pack"
+  },
+  "plus.technic.pack.runs": {
+    "message": "Times played"
+  },
+  "plus.technic.pack.tags": {
+    "message": "Tags"
+  },
+  "plus.technic.pack.updates": {
+    "message": "Updates from the creator"
+  },
+  "plus.technic.pack.version": {
+    "message": "Version {version}"
+  },
+  "plus.technic.provider": {
+    "message": "Technic"
+  },
+  "plus.technic.results": {
+    "message": "Search results"
+  },
+  "plus.technic.retry": {
+    "message": "Try again"
+  },
+  "plus.technic.search": {
+    "message": "Search Technic modpacks"
+  },
+  "plus.technic.title": {
+    "message": "Technic modpacks"
+  },
+  "plus.technic.trending": {
+    "message": "Trending on Technic"
+  },
+  "plus.technic.unverified.text": {
+    "message": "{files} didn’t match the checksums the pack’s server lists, even after downloading again. They came over a secure connection, so the pack’s creator most likely changed them without updating the list."
+  },
+  "plus.technic.unverified.title": {
+    "message": "Some files of {name} didn’t match their checksums"
   },
   "plus.themes.applied": {
     "message": "Applied"
@@ -6094,6 +6343,81 @@
   },
   "plus.wizard.welcome.text": {
     "message": "A few quick choices and you're ready to play. Every step is optional, and you can change anything later in Settings."
+  },
+  "plus.world-backups.automatic": {
+    "message": "Back up worlds automatically"
+  },
+  "plus.world-backups.automatic.text": {
+    "message": "Backups are kept in Pawrinth’s data folder, apart from Update history. A world is only backed up again after it changes, never while Minecraft has it open, and a backup missed while Pawrinth was closed happens soon after it opens."
+  },
+  "plus.world-backups.backed-up": {
+    "message": "Backed up {world}"
+  },
+  "plus.world-backups.button": {
+    "message": "World backups"
+  },
+  "plus.world-backups.close-first": {
+    "message": "Close Minecraft to restore a world."
+  },
+  "plus.world-backups.daily": {
+    "message": "Every day"
+  },
+  "plus.world-backups.delete": {
+    "message": "Delete"
+  },
+  "plus.world-backups.delete.confirm": {
+    "message": "Delete this backup? This can’t be undone."
+  },
+  "plus.world-backups.every": {
+    "message": "How often"
+  },
+  "plus.world-backups.hourly": {
+    "message": "Every hour"
+  },
+  "plus.world-backups.keep": {
+    "message": "Automatic backups to keep per world"
+  },
+  "plus.world-backups.keep-count": {
+    "message": "{count, plural, one {# backup} other {# backups}}"
+  },
+  "plus.world-backups.kind.automatic": {
+    "message": "Automatic"
+  },
+  "plus.world-backups.kind.before-restore": {
+    "message": "Before a restore"
+  },
+  "plus.world-backups.kind.manual": {
+    "message": "Made by you"
+  },
+  "plus.world-backups.missing-world": {
+    "message": "This world isn’t in the instance any more. Restoring a backup brings it back."
+  },
+  "plus.world-backups.no-worlds": {
+    "message": "This instance has no singleplayer worlds yet."
+  },
+  "plus.world-backups.none": {
+    "message": "No backups yet."
+  },
+  "plus.world-backups.now": {
+    "message": "Back up now"
+  },
+  "plus.world-backups.restore": {
+    "message": "Restore"
+  },
+  "plus.world-backups.restore.confirm": {
+    "message": "Replace {world} with this backup from {date}? The world as it is now is backed up first, so you can undo this."
+  },
+  "plus.world-backups.restored": {
+    "message": "Restored {world}. Its previous state was backed up first."
+  },
+  "plus.world-backups.six-hours": {
+    "message": "Every 6 hours"
+  },
+  "plus.world-backups.title": {
+    "message": "World backups"
+  },
+  "plus.world-backups.weekly": {
+    "message": "Every week"
   },
   "search.filter.locked.instance": {
     "message": "Provided by the instance"

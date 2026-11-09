@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Visa instans"
   },
-  "app.hosting.update-required.description": {
-    "message": "Du behöver uppdatera för att använda Modrinth Hosting genom Pawrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Ladda ner för att uppdatera"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Exalterad Modrinth-bot"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Pawrinth-uppdatering krävs"
-  },
   "app.install.phase.downloading_content": {
     "message": "Laddar ner innehåll"
   },
@@ -1366,9 +1354,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Modrinth-konto"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Ta bort konto"

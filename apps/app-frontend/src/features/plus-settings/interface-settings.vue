@@ -10,6 +10,8 @@ import {
 import { useDebounceFn } from '@vueuse/core'
 import { computed } from 'vue'
 
+import { LOGO_IDS, type LogoId, resolveLogo } from '@/features/plus-logos/logos'
+import PawrinthLogo from '@/features/plus-logos/pawrinth-logo.vue'
 import { openSetupWizard } from '@/features/plus-wizard/wizard-state'
 import { injectAppSettingsModal } from '@/features/settings/app-settings-modal/context'
 import type { PlusSettingsPatch } from '@/helpers/plus'
@@ -22,6 +24,15 @@ const { settings } = usePlusSettings()
 
 const messages = defineMessages({
 	title: { id: 'plus.interface.title', defaultMessage: 'Interface' },
+	logoTitle: { id: 'plus.interface.logo', defaultMessage: 'Logo' },
+	logoDescription: {
+		id: 'plus.interface.logo.description',
+		defaultMessage:
+			'Shown in the title bar, on the loading screen and as the window icon on the taskbar. Shortcuts keep the paw.',
+	},
+	logoPaw: { id: 'plus.interface.logo.paw', defaultMessage: 'Paw' },
+	logoMochi: { id: 'plus.interface.logo.mochi', defaultMessage: 'Mochi' },
+	logoNova: { id: 'plus.interface.logo.nova', defaultMessage: 'Nova' },
 	scaleTitle: { id: 'plus.interface.scale', defaultMessage: 'Interface scale' },
 	scaleDescription: {
 		id: 'plus.interface.scale.description',
@@ -60,6 +71,22 @@ function runSetup(): void {
 	openSetupWizard()
 }
 
+const logoNames = {
+	paw: messages.logoPaw,
+	mochi: messages.logoMochi,
+	nova: messages.logoNova,
+} as const
+
+const chosenLogo = computed(() => resolveLogo(settings.value?.appearance.logo))
+
+async function chooseLogo(logo: LogoId): Promise<void> {
+	try {
+		await patchPlusSettings({ appearance: { logo: logo === 'paw' ? null : logo } })
+	} catch (error) {
+		handleError(error as Error)
+	}
+}
+
 const scalePercent = computed(() => Math.round((settings.value?.interface.ui_scale ?? 1) * 100))
 
 async function update(value: NonNullable<PlusSettingsPatch['interface']>): Promise<void> {
@@ -86,6 +113,28 @@ function resetAll(): Promise<void> {
 	<section v-if="settings">
 		<h2 class="m-0 text-xl font-semibold text-contrast">{{ formatMessage(messages.title) }}</h2>
 		<div class="mt-4 flex flex-col gap-6">
+			<div>
+				<h3 class="m-0 text-lg font-semibold text-contrast">
+					{{ formatMessage(messages.logoTitle) }}
+				</h3>
+				<p class="m-0 mt-1">{{ formatMessage(messages.logoDescription) }}</p>
+				<div class="mt-3 flex flex-wrap gap-3">
+					<button
+						v-for="logo in LOGO_IDS"
+						:key="logo"
+						type="button"
+						class="flex w-28 cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-solid bg-surface-3 p-3 text-primary transition-[filter] hover:brightness-110 focus-visible:brightness-110"
+						:class="chosenLogo === logo ? 'border-brand text-contrast' : 'border-surface-5'"
+						:aria-pressed="chosenLogo === logo"
+						:data-logo="logo"
+						@click="chooseLogo(logo)"
+					>
+						<PawrinthLogo :logo="logo" mark-only class="size-16" aria-hidden="true" />
+						<span class="font-semibold">{{ formatMessage(logoNames[logo]) }}</span>
+					</button>
+				</div>
+			</div>
+
 			<div>
 				<div class="flex items-center justify-between gap-4">
 					<div>

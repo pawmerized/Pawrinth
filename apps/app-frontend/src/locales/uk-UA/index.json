@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Переглянути примірник"
   },
-  "app.hosting.update-required.description": {
-    "message": "Вам потрібно оновитися, щоб використовувати Modrinth Hosting через застосунок Modrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Завантажити для оновлення"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Схвильований бот Modrinth"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Потрібне оновлення Pawrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "Завантаження вмісту"
   },
@@ -1363,9 +1351,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Обліковий запис Modrinth"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Вилучити обліковий запис"

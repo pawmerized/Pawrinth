@@ -395,18 +395,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "عرض النسخة"
   },
-  "app.hosting.update-required.description": {
-    "message": "يجب عليك التحديث لاستخدام Modrinth Hosting بواسطة تطبيق Modrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "نزّل للتحديث"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "بوت Modrinth المتحمّس"
-  },
-  "app.hosting.update-required.title": {
-    "message": "يلزم تحديث تطبيق Modrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "جارٍ تنزيل المحتوى"
   },
@@ -1255,9 +1243,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "حساب Modrinth"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "استضافة Modrinth"
   },
   "app.nav.remove-account": {
     "message": "إزالة الحساب"

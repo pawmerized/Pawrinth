@@ -8,8 +8,8 @@ import { defineMessages, useVIntl } from '#ui/composables/i18n'
 import { getTagMessage } from '#ui/utils/tag-messages'
 
 import {
-	type ProjectSort,
 	projectFilterOptions,
+	type ProjectSort,
 	type ProjectToolsState,
 	type ToolProject,
 } from '../project-tools'
@@ -24,11 +24,23 @@ const { formatMessage } = useVIntl()
 
 const messages = defineMessages({
 	search: { id: 'user-profile.project-tools.search', defaultMessage: 'Search projects...' },
-	sortDownloads: { id: 'user-profile.project-tools.sort.downloads', defaultMessage: 'Most downloads' },
-	sortFollowers: { id: 'user-profile.project-tools.sort.followers', defaultMessage: 'Most popular' },
-	sortUpdated: { id: 'user-profile.project-tools.sort.updated', defaultMessage: 'Recently updated' },
+	sortDownloads: {
+		id: 'user-profile.project-tools.sort.downloads',
+		defaultMessage: 'Most downloads',
+	},
+	sortFollowers: {
+		id: 'user-profile.project-tools.sort.followers',
+		defaultMessage: 'Most popular',
+	},
+	sortUpdated: {
+		id: 'user-profile.project-tools.sort.updated',
+		defaultMessage: 'Recently updated',
+	},
 	sortName: { id: 'user-profile.project-tools.sort.name', defaultMessage: 'Name' },
-	allCategories: { id: 'user-profile.project-tools.all-categories', defaultMessage: 'All categories' },
+	allCategories: {
+		id: 'user-profile.project-tools.all-categories',
+		defaultMessage: 'All categories',
+	},
 	allLoaders: { id: 'user-profile.project-tools.all-loaders', defaultMessage: 'All loaders' },
 	allVersions: { id: 'user-profile.project-tools.all-versions', defaultMessage: 'All versions' },
 })

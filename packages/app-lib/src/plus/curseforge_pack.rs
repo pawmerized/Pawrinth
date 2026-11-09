@@ -213,7 +213,7 @@ fn pack_loader(
     }
 }
 
-fn pack_dependencies(
+pub(super) fn pack_dependencies(
     game_version: &str,
     loader: ModLoader,
     loader_version: Option<&str>,
@@ -256,7 +256,7 @@ fn file_sha1(path: &Path) -> Option<String> {
     sha1_hex(std::io::BufReader::new(std::fs::File::open(path).ok()?)).ok()
 }
 
-fn display_name(name: &str) -> String {
+pub(super) fn display_name(name: &str) -> String {
     let cleaned: String = name
         .chars()
         .map(|c| {
@@ -378,7 +378,7 @@ async fn download_pack(
     crate::util::io::create_dir_all(&staging).await?;
     let downloaded = crate::util::fetch::fetch_file_with_client(
         url,
-        &sha1,
+        Some(&sha1),
         &state.fetch_semaphore,
         &state.pool,
         api::http_client(),
@@ -773,7 +773,7 @@ pub async fn prepare(
     file_id: Option<u64>,
     instance_id: Option<String>,
 ) -> crate::Result<PreparedPack> {
-    api::require_key().await?;
+    api::require_access().await?;
     let state = State::get().await?;
     remove_old_packs(&state).await;
     let project = api::fetch_project(project_id, &state).await?;
@@ -1187,7 +1187,7 @@ pub(crate) async fn fetch_pack_file(
     crate::util::io::create_dir_all(&staging).await?;
     let downloaded = crate::util::fetch::fetch_file_with_client(
         url,
-        &sha1.to_ascii_lowercase(),
+        Some(&sha1.to_ascii_lowercase()),
         &state.fetch_semaphore,
         &state.pool,
         api::http_client(),

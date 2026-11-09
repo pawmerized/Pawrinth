@@ -43,7 +43,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppEvent } from '@/composables/use-app-event'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
 import ProviderSwitch from '@/features/plus-curseforge/provider-switch.vue'
-import { hasSyncedFilter, useInstanceFilterSync } from '@/features/plus-install/instance-filter-sync'
+import {
+	hasSyncedFilter,
+	useInstanceFilterSync,
+} from '@/features/plus-install/instance-filter-sync'
 import { readInstanceTarget } from '@/features/plus-install/instance-target'
 import { get_project, get_search_results_v3, get_version_many } from '@/helpers/cache.js'
 import {

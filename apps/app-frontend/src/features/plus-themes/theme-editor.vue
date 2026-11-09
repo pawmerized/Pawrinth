@@ -43,11 +43,11 @@ import {
 	exportTheme,
 	isUsable,
 	PALETTE_KEYS,
-	type PaletteKey,
 	paletteFromTokens,
+	type PaletteKey,
 	parseThemeImport,
-	themeFileName,
 	type ThemeBase,
+	themeFileName,
 	type ThemePalette,
 	uniqueThemeName,
 } from './theme-model'
@@ -124,7 +124,7 @@ const messages = defineMessages({
 	previewTitle: { id: 'plus.themes.import.preview', defaultMessage: 'Previewing {name}' },
 	previewDescription: {
 		id: 'plus.themes.import.preview.description',
-		defaultMessage: "This is how it looks. Nothing is saved until you choose below.",
+		defaultMessage: 'This is how it looks. Nothing is saved until you choose below.',
 	},
 	duplicateHeader: {
 		id: 'plus.themes.import.duplicate',
@@ -374,13 +374,17 @@ function startRename(theme: CustomTheme): void {
 async function saveRename(theme: CustomTheme): Promise<void> {
 	const name = renameText.value.trim().slice(0, 48)
 	if (!name) return
-	const others = savedThemes.value.filter((saved) => saved.id !== theme.id).map((saved) => saved.name)
+	const others = savedThemes.value
+		.filter((saved) => saved.id !== theme.id)
+		.map((saved) => saved.name)
 	const finalName = uniqueThemeName(name, others)
 	renamingId.value = null
 	if (finalName === theme.name) return
 	try {
 		await persistThemes(
-			savedThemes.value.map((saved) => (saved.id === theme.id ? { ...saved, name: finalName } : saved)),
+			savedThemes.value.map((saved) =>
+				saved.id === theme.id ? { ...saved, name: finalName } : saved,
+			),
 			activeThemeId.value,
 		)
 	} catch (error) {
@@ -484,7 +488,9 @@ async function commitImport(apply: boolean, replace: boolean): Promise<void> {
 	const pending = pendingImport.value
 	if (!pending) return
 	const existing = replace ? duplicateOf.value : null
-	const names = savedThemes.value.filter((theme) => theme.id !== existing?.id).map((theme) => theme.name)
+	const names = savedThemes.value
+		.filter((theme) => theme.id !== existing?.id)
+		.map((theme) => theme.name)
 	const saved: CustomTheme = {
 		...pending.theme,
 		id: existing?.id ?? crypto.randomUUID(),

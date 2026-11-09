@@ -181,7 +181,10 @@ function getFilterOpenByDefault(filterId: string): boolean {
 				<p class="m-0 font-bold">{{ ctx.instanceSync.value.title }}</p>
 				<p class="m-0 text-sm font-semibold text-primary">{{ ctx.instanceSync.value.status }}</p>
 				<p class="m-0 text-secondary text-sm">{{ ctx.instanceSync.value.description }}</p>
-				<Button class="w-fit" @click="ctx.instanceSync?.value?.set(!ctx.instanceSync.value.enabled)">
+				<Button
+					class="w-fit"
+					@click="ctx.instanceSync?.value?.set(!ctx.instanceSync.value.enabled)"
+				>
 					<LockOpenIcon v-if="ctx.instanceSync.value.enabled" aria-hidden="true" />
 					<UpdatedIcon v-else aria-hidden="true" />
 					{{ ctx.instanceSync.value.actionLabel }}
@@ -274,7 +277,9 @@ function getFilterOpenByDefault(filterId: string): boolean {
 			<SearchSidebarFilter
 				v-for="filter in ctx.filters.value.filter(
 					(f) =>
-						f.display !== 'none' && !hiddenFilterTypes.includes(f.id) && !isHeldByInstanceSync(f.id),
+						f.display !== 'none' &&
+						!hiddenFilterTypes.includes(f.id) &&
+						!isHeldByInstanceSync(f.id),
 				)"
 				:key="`filter-${filter.id}`"
 				v-model:selected-filters="ctx.currentFilters.value"

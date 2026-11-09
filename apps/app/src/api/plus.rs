@@ -14,6 +14,8 @@ use theseus::plus::discord::{
 use theseus::plus::manifest::{
     ManifestComparison, VersionedManifest, compare_manifests,
 };
+use theseus::plus::memory::{self, MemoryStatus};
+use theseus::plus::mod_matching::{self, ModReport, SwitchReport};
 use theseus::plus::news::{self, NewsFeed};
 use theseus::plus::operations::{
     self, Operation, RestorePreviewItem, RestoreReport, StorageUsage,
@@ -24,7 +26,11 @@ use theseus::plus::skin_gallery::{
     self, GalleryKeyOutcome, GalleryKeyStatus, GalleryPage, GallerySkinDetails,
 };
 use theseus::plus::skin_lookup::{self, SkinLookup};
+use theseus::plus::technic::{self, PackDetails, PackSummary};
 use theseus::plus::theme_files;
+use theseus::plus::world_backups::{
+    self, InstanceBackups, RestoreReport as WorldRestoreReport, WorldBackup,
+};
 
 pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
     tauri::plugin::Builder::new("plus")
@@ -82,6 +88,22 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             plus_cf_export,
             plus_cf_installed_in,
             plus_cf_installed_projects,
+            plus_technic_browse,
+            plus_technic_pack,
+            plus_technic_prepare,
+            plus_technic_install,
+            plus_memory_status,
+            plus_memory_set_manual,
+            plus_memory_use_automatic,
+            plus_ftb_app_instances,
+            plus_mods_check,
+            plus_mods_remove_duplicate,
+            plus_mods_switch_to_modrinth,
+            plus_world_backups_list,
+            plus_world_backups_set_schedule,
+            plus_world_backup_now,
+            plus_world_backup_restore,
+            plus_world_backup_delete,
         ])
         .build()
 }
@@ -383,6 +405,133 @@ pub async fn plus_cf_export(
 #[tauri::command]
 pub async fn plus_cf_pack_list() -> Result<Vec<PackInfo>> {
     Ok(curseforge_pack::installed_packs().await?)
+}
+
+#[tauri::command]
+pub async fn plus_technic_browse(
+    query: Option<String>,
+) -> Result<Vec<PackSummary>> {
+    Ok(technic::browse(query).await?)
+}
+
+#[tauri::command]
+pub async fn plus_technic_pack(slug: String) -> Result<PackDetails> {
+    Ok(technic::pack(slug).await?)
+}
+
+#[tauri::command]
+pub async fn plus_technic_prepare(
+    slug: String,
+    allow_insecure: bool,
+) -> Result<technic::PreparedPack> {
+    Ok(technic::prepare(slug, allow_insecure).await?)
+}
+
+#[tauri::command]
+pub async fn plus_technic_install(
+    token: String,
+) -> Result<theseus::install::InstallJobSnapshot> {
+    Ok(technic::install(token).await?)
+}
+
+/// FTB App instances in a folder, with their own names, since their folders are
+/// named by id.
+#[tauri::command]
+pub async fn plus_ftb_app_instances(
+    path: std::path::PathBuf,
+) -> Result<Vec<theseus::pack::import::ftb_app::FtbAppInstance>> {
+    Ok(theseus::pack::import::ftb_app::list_instances(&path).await?)
+}
+
+/// Links unknown mods to CurseForge and lists duplicates and Modrinth equivalents.
+#[tauri::command]
+pub async fn plus_mods_check(instance_id: String) -> Result<ModReport> {
+    Ok(mod_matching::check(&instance_id).await?)
+}
+
+#[tauri::command]
+pub async fn plus_mods_remove_duplicate(
+    instance_id: String,
+    remove_path: String,
+    keep_path: String,
+) -> Result<String> {
+    Ok(
+        mod_matching::remove_duplicate(&instance_id, &remove_path, &keep_path)
+            .await?,
+    )
+}
+
+#[tauri::command]
+pub async fn plus_mods_switch_to_modrinth(
+    instance_id: String,
+    relative_path: String,
+    version_id: String,
+) -> Result<SwitchReport> {
+    Ok(mod_matching::switch_to_modrinth(
+        &instance_id,
+        &relative_path,
+        &version_id,
+    )
+    .await?)
+}
+
+#[tauri::command]
+pub async fn plus_world_backups_list(
+    instance_id: String,
+) -> Result<InstanceBackups> {
+    Ok(world_backups::list(&instance_id).await?)
+}
+
+#[tauri::command]
+pub async fn plus_world_backups_set_schedule(
+    instance_id: String,
+    schedule: settings::WorldBackupSchedule,
+) -> Result<settings::WorldBackupSchedule> {
+    Ok(world_backups::set_schedule(&instance_id, schedule).await?)
+}
+
+#[tauri::command]
+pub async fn plus_world_backup_now(
+    instance_id: String,
+    world: String,
+) -> Result<WorldBackup> {
+    Ok(world_backups::back_up_now(&instance_id, &world).await?)
+}
+
+/// Replaces a world with one of its backups, after backing up the world as it is.
+#[tauri::command]
+pub async fn plus_world_backup_restore(
+    instance_id: String,
+    world: String,
+    file_name: String,
+) -> Result<WorldRestoreReport> {
+    Ok(world_backups::restore(&instance_id, &world, &file_name).await?)
+}
+
+#[tauri::command]
+pub async fn plus_world_backup_delete(
+    instance_id: String,
+    world: String,
+    file_name: String,
+) -> Result<()> {
+    Ok(world_backups::delete(&instance_id, &world, &file_name).await?)
+}
+
+#[tauri::command]
+pub async fn plus_memory_status(instance_id: String) -> Result<MemoryStatus> {
+    Ok(memory::status(&instance_id).await?)
+}
+
+#[tauri::command]
+pub async fn plus_memory_set_manual(instance_id: String) -> Result<()> {
+    Ok(memory::set_manual(&instance_id).await?)
+}
+
+#[tauri::command]
+pub async fn plus_memory_use_automatic(
+    instance_id: String,
+) -> Result<MemoryStatus> {
+    Ok(memory::use_automatic(&instance_id).await?)
 }
 
 #[tauri::command]

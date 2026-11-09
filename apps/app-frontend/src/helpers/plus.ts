@@ -9,6 +9,7 @@ export interface PlusSettings {
 		active_theme_id: string | null
 		themes: unknown[]
 		background: unknown
+		logo: string | null
 	}
 	interface: {
 		ui_scale: number
@@ -59,6 +60,9 @@ export interface PlusSettings {
 		button_url: string | null
 		second_button_label: string | null
 		second_button_url: string | null
+	}
+	curseforge: {
+		use_community_proxy: boolean
 	}
 }
 
@@ -636,6 +640,251 @@ export async function plus_cf_export(
 
 export async function plus_cf_pack_list(): Promise<CfPackInfo[]> {
 	return await invoke('plugin:plus|plus_cf_pack_list')
+}
+
+export interface TechnicPackSummary {
+	slug: string
+	name: string
+	author: string | null
+	summary: string | null
+	icon_url: string | null
+	game_version: string | null
+	installs: number | null
+	ratings: number | null
+}
+
+export interface TechnicPackUpdate {
+	author: string | null
+	date: number | null
+	text: string
+}
+
+export interface TechnicPackDetails {
+	slug: string
+	name: string
+	author: string | null
+	description: string | null
+	icon_url: string | null
+	background_url: string | null
+	game_version: string | null
+	version: string | null
+	installs: number | null
+	runs: number | null
+	ratings: number | null
+	official: boolean
+	tags: string[]
+	page_url: string | null
+	updates: TechnicPackUpdate[]
+	downloadable: boolean
+	insecure: boolean
+}
+
+export interface TechnicPreparedPack {
+	token: string
+	slug: string
+	name: string
+	version: string
+	game_version: string
+	loader: string
+	loader_version: string | null
+	file_count: number
+	total_bytes: number
+	unverified: string[]
+}
+
+/** Technic's trending packs, or the packs matching a search. */
+export async function plus_technic_browse(query: string | null): Promise<TechnicPackSummary[]> {
+	return await invoke('plugin:plus|plus_technic_browse', { query })
+}
+
+export async function plus_technic_pack(slug: string): Promise<TechnicPackDetails> {
+	return await invoke('plugin:plus|plus_technic_pack', { slug })
+}
+
+/** Downloads and converts a pack. Packs that download over plain HTTP need `allowInsecure`. */
+export async function plus_technic_prepare(
+	slug: string,
+	allowInsecure: boolean,
+): Promise<TechnicPreparedPack> {
+	return await invoke('plugin:plus|plus_technic_prepare', { slug, allowInsecure })
+}
+
+export async function plus_technic_install(token: string): Promise<InstallJobSnapshot> {
+	return await invoke('plugin:plus|plus_technic_install', { token })
+}
+
+export type PlusMemorySource = 'technic' | 'ftb_app'
+
+export interface PlusMemoryStatus {
+	recommended_mb: number | null
+	source: PlusMemorySource | null
+	automatic: boolean
+	current_mb: number | null
+	total_mb: number
+	suggested_mb: number | null
+	reduced: boolean
+}
+
+/** The pack's recommended memory, if it has one, and whether it's applied automatically. */
+export async function plus_memory_status(instanceId: string): Promise<PlusMemoryStatus> {
+	return await invoke('plugin:plus|plus_memory_status', { instanceId })
+}
+
+export async function plus_memory_set_manual(instanceId: string): Promise<void> {
+	await invoke('plugin:plus|plus_memory_set_manual', { instanceId })
+}
+
+export async function plus_memory_use_automatic(instanceId: string): Promise<PlusMemoryStatus> {
+	return await invoke('plugin:plus|plus_memory_use_automatic', { instanceId })
+}
+
+export interface FtbAppInstance {
+	folder: string
+	name: string
+	pack_version: string | null
+	game_version: string
+	loader: string
+}
+
+/** FTB App instances in a folder, with the names the FTB App shows. */
+export async function plus_ftb_app_instances(path: string): Promise<FtbAppInstance[]> {
+	return await invoke('plugin:plus|plus_ftb_app_instances', { path })
+}
+
+export type CheckedModSource =
+	| { provider: 'modrinth'; project_id: string; version_id: string }
+	| { provider: 'curseforge'; project_id: number; file_id: number }
+	| { provider: 'unknown' }
+
+export type ModCompatibility = 'compatible' | 'incompatible' | 'unknown'
+
+export interface CheckedModFile {
+	relative_path: string
+	file_name: string
+	enabled: boolean
+	source: CheckedModSource
+	name: string
+	version: string | null
+	mod_ids: string[]
+	compatibility: ModCompatibility
+}
+
+export interface DuplicateModGroup {
+	name: string
+	files: CheckedModFile[]
+	keep: string
+	can_remove: boolean
+}
+
+export interface ModrinthEquivalent {
+	relative_path: string
+	file_name: string
+	name: string
+	version: string
+	project_id: string
+	version_id: string
+	modrinth_file_name: string
+}
+
+export interface ModReport {
+	game_version: string
+	loader: string
+	files: CheckedModFile[]
+	newly_linked: string[]
+	duplicates: DuplicateModGroup[]
+	modrinth_equivalents: ModrinthEquivalent[]
+	curseforge_checked: boolean
+}
+
+/** Links unknown mods to CurseForge and finds duplicates and the same versions on Modrinth. */
+export async function plus_mods_check(instanceId: string): Promise<ModReport> {
+	return await invoke('plugin:plus|plus_mods_check', { instanceId })
+}
+
+/** Removes one copy of a duplicated mod after a snapshot. Returns the snapshot's id. */
+export async function plus_mods_remove_duplicate(
+	instanceId: string,
+	removePath: string,
+	keepPath: string,
+): Promise<string> {
+	return await invoke('plugin:plus|plus_mods_remove_duplicate', {
+		instanceId,
+		removePath,
+		keepPath,
+	})
+}
+
+export async function plus_mods_switch_to_modrinth(
+	instanceId: string,
+	relativePath: string,
+	versionId: string,
+): Promise<{ snapshot_id: string; new_path: string }> {
+	return await invoke('plugin:plus|plus_mods_switch_to_modrinth', {
+		instanceId,
+		relativePath,
+		versionId,
+	})
+}
+
+export interface WorldBackupSchedule {
+	enabled: boolean
+	interval_hours: number
+	keep: number
+}
+
+export type WorldBackupKind = 'automatic' | 'manual' | 'before_restore'
+
+export interface WorldBackup {
+	file_name: string
+	created: string
+	size: number
+	kind: WorldBackupKind
+}
+
+export interface WorldBackups {
+	world: string
+	exists: boolean
+	backups: WorldBackup[]
+}
+
+export interface InstanceBackups {
+	schedule: WorldBackupSchedule
+	worlds: WorldBackups[]
+}
+
+export async function plus_world_backups_list(instanceId: string): Promise<InstanceBackups> {
+	return await invoke('plugin:plus|plus_world_backups_list', { instanceId })
+}
+
+export async function plus_world_backups_set_schedule(
+	instanceId: string,
+	schedule: WorldBackupSchedule,
+): Promise<WorldBackupSchedule> {
+	return await invoke('plugin:plus|plus_world_backups_set_schedule', { instanceId, schedule })
+}
+
+export async function plus_world_backup_now(
+	instanceId: string,
+	world: string,
+): Promise<WorldBackup> {
+	return await invoke('plugin:plus|plus_world_backup_now', { instanceId, world })
+}
+
+/** Replaces a world with a backup. The world as it is now is backed up first. */
+export async function plus_world_backup_restore(
+	instanceId: string,
+	world: string,
+	fileName: string,
+): Promise<{ saved_current_as: string | null }> {
+	return await invoke('plugin:plus|plus_world_backup_restore', { instanceId, world, fileName })
+}
+
+export async function plus_world_backup_delete(
+	instanceId: string,
+	world: string,
+	fileName: string,
+): Promise<void> {
+	await invoke('plugin:plus|plus_world_backup_delete', { instanceId, world, fileName })
 }
 
 export async function plus_theme_file_read(path: string): Promise<string> {

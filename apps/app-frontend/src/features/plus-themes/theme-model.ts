@@ -229,8 +229,9 @@ export function exportTheme(
 
 /** Safe on every system, and easy to recognize in a folder. */
 export function themeFileName(name: string): string {
-	const safe = name
-		.replace(/[<>:"/\\|?*\u0000-\u001f]/g, '')
+	const safe = Array.from(name)
+		.filter((char) => char.charCodeAt(0) >= 0x20 && !'<>:"/\\|?*'.includes(char))
+		.join('')
 		.replace(/\s+/g, ' ')
 		.trim()
 		.slice(0, MAX_NAME_LENGTH)
@@ -325,5 +326,9 @@ export function parseThemeImport(text: string): ImportResult {
 		const { path: _path, ...adjustments } = normalized
 		background = adjustments
 	}
-	return { ok: true, theme: { name: candidate.name.trim(), base: candidate.base, palette }, background }
+	return {
+		ok: true,
+		theme: { name: candidate.name.trim(), base: candidate.base, palette },
+		background,
+	}
 }

@@ -2,6 +2,8 @@ import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window'
 import { readonly, ref, shallowRef, watch } from 'vue'
 
+import { currentLogo, resolveLogo, setCurrentLogo } from '@/features/plus-logos/logos'
+import { applyWindowIcon } from '@/features/plus-logos/window-icon'
 import { setThemeLibrary, startThemeEngine } from '@/features/plus-themes/theme-engine'
 import {
 	plus_settings_get,
@@ -29,6 +31,16 @@ async function applyUiScale(scale: number): Promise<void> {
 	)
 }
 
+function applyLogo(value: PlusSettings['appearance']): void {
+	const logo = resolveLogo(value.logo)
+	const windowShowsPaw = logo === 'paw' && currentLogo.value === 'paw'
+	setCurrentLogo(logo)
+	if (windowShowsPaw) return
+	void applyWindowIcon(logo).catch((error) => {
+		console.error('Failed to set the window icon', error)
+	})
+}
+
 function applyInterfaceClasses(value: PlusSettings['interface']): void {
 	const html = document.documentElement
 	html.classList.toggle('plus-reduce-motion', value.reduce_motion)
@@ -45,6 +57,7 @@ export async function initPlusSettings(): Promise<void> {
 		setThemeLibrary(loaded.appearance.themes, loaded.appearance.active_theme_id)
 		applyInterfaceClasses(loaded.interface)
 		applyPrivacyClasses(loaded.privacy)
+		applyLogo(loaded.appearance)
 		if (loaded.interface.ui_scale !== 1) {
 			await applyUiScale(loaded.interface.ui_scale)
 		}
@@ -64,6 +77,9 @@ watch(settings, (value, previous) => {
 	if (!value) return
 	applyInterfaceClasses(value.interface)
 	applyPrivacyClasses(value.privacy)
+	if (previous && previous.appearance.logo !== value.appearance.logo) {
+		applyLogo(value.appearance)
+	}
 	if (previous && previous.interface.ui_scale !== value.interface.ui_scale) {
 		void applyUiScale(value.interface.ui_scale).catch((error) => {
 			console.error('Failed to apply UI scale', error)

@@ -16,7 +16,8 @@ const DEFAULT_IDLE_TEXT: &str = "Browsing Pawrinth";
 const HIDDEN_PLAYING_TEXT: &str = "Playing Minecraft";
 const INSTALL_BUTTON_LABEL: &str = "Install Pawrinth";
 /// The page of the newest release on Pawrinth's GitHub, where people pick the download.
-pub(crate) const RELEASES_URL: &str = "https://github.com/pawmerized/Pawrinth/releases/latest";
+pub(crate) const RELEASES_URL: &str =
+    "https://github.com/pawmerized/Pawrinth/releases/latest";
 const COMMUNITY_BUTTON_LABEL: &str = "Join the Discord";
 /// Pawrinth's community server.
 pub(crate) const COMMUNITY_INVITE_URL: &str = "https://discord.gg/HDVG4TmuB7";
@@ -922,8 +923,7 @@ mod tests {
             ]
         );
         assert!(
-            RELEASES_URL
-                .starts_with("https://github.com/pawmerized/Pawrinth/")
+            RELEASES_URL.starts_with("https://github.com/pawmerized/Pawrinth/")
         );
         assert!(COMMUNITY_INVITE_URL.starts_with("https://discord.gg/"));
     }

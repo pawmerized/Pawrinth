@@ -60,7 +60,9 @@ const matches = computed(() => searchFavorites(favorites.value, query.value).map
 			:spellcheck="false"
 			:placeholder="formatMessage(messages.search)"
 		/>
-		<p v-if="favorites.length === 0" class="m-0 text-secondary">{{ formatMessage(messages.empty) }}</p>
+		<p v-if="favorites.length === 0" class="m-0 text-secondary">
+			{{ formatMessage(messages.empty) }}
+		</p>
 		<p v-else-if="matches.length === 0" class="m-0 text-secondary">
 			{{ formatMessage(messages.noMatches, { query }) }}
 		</p>

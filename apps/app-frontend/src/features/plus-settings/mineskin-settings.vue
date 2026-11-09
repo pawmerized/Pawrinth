@@ -32,17 +32,30 @@ const messages = defineMessages({
 			"The skin gallery uses MineSkin. It works without a key, with stricter limits, but MineSkin's terms ask apps to use one, so you can add your own. It stays in your system's credential store and is only sent to MineSkin.",
 	},
 	saved: { id: 'plus.mineskin.settings.saved', defaultMessage: 'Saved key' },
-	noKey: { id: 'plus.mineskin.settings.no-key', defaultMessage: 'No key saved. The gallery is using MineSkin without one.' },
+	noKey: {
+		id: 'plus.mineskin.settings.no-key',
+		defaultMessage: 'No key saved. The gallery is using MineSkin without one.',
+	},
 	storeUnavailable: {
 		id: 'plus.mineskin.settings.store-unavailable',
-		defaultMessage: "Your system's credential store can't be reached, so a key can't be saved right now.",
+		defaultMessage:
+			"Your system's credential store can't be reached, so a key can't be saved right now.",
 	},
-	placeholder: { id: 'plus.mineskin.settings.placeholder', defaultMessage: 'Paste your MineSkin API key' },
+	placeholder: {
+		id: 'plus.mineskin.settings.placeholder',
+		defaultMessage: 'Paste your MineSkin API key',
+	},
 	save: { id: 'plus.mineskin.settings.save', defaultMessage: 'Save key' },
 	remove: { id: 'plus.mineskin.settings.remove', defaultMessage: 'Remove key' },
 	getKey: { id: 'plus.mineskin.settings.get-key', defaultMessage: 'Get a key from MineSkin' },
-	accepted: { id: 'plus.mineskin.settings.accepted', defaultMessage: 'MineSkin accepted this key, and it is saved.' },
-	rejected: { id: 'plus.mineskin.settings.rejected', defaultMessage: "MineSkin rejected this key, so it wasn't saved." },
+	accepted: {
+		id: 'plus.mineskin.settings.accepted',
+		defaultMessage: 'MineSkin accepted this key, and it is saved.',
+	},
+	rejected: {
+		id: 'plus.mineskin.settings.rejected',
+		defaultMessage: "MineSkin rejected this key, so it wasn't saved.",
+	},
 	unchecked: {
 		id: 'plus.mineskin.settings.unchecked',
 		defaultMessage: "The key is saved, but MineSkin couldn't check it right now.",
@@ -108,7 +121,9 @@ onMounted(() => void refresh().catch(handleError))
 		<template v-else-if="status">
 			<div v-if="status.hint" class="mt-3 flex flex-wrap items-center justify-between gap-2">
 				<div>
-					<h3 class="m-0 text-base font-semibold text-contrast">{{ formatMessage(messages.saved) }}</h3>
+					<h3 class="m-0 text-base font-semibold text-contrast">
+						{{ formatMessage(messages.saved) }}
+					</h3>
 					<p class="plus-private-stream m-0 mt-1 font-mono text-contrast">{{ status.hint }}</p>
 				</div>
 				<Button color="red" type="outlined" :disabled="busy" @click="removeKey">
@@ -131,7 +146,9 @@ onMounted(() => void refresh().catch(handleError))
 					{{ formatMessage(messages.save) }}
 				</Button>
 			</form>
-			<p v-if="outcome" class="m-0 mt-2 text-sm text-primary" role="status">{{ outcomeText(outcome) }}</p>
+			<p v-if="outcome" class="m-0 mt-2 text-sm text-primary" role="status">
+				{{ outcomeText(outcome) }}
+			</p>
 		</template>
 
 		<Button class="mt-3" native-type="button" @click="openUrl(ACCOUNT_URL)">

@@ -488,15 +488,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Vizualizează instanța"
   },
-  "app.hosting.update-required.description": {
-    "message": "Trebuie să efectuați o actualizare pentru a putea utiliza serviciul Modrinth Hosting prin intermediul aplicației Modrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Descărcați pentru a actualiza"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Este necesară actualizarea aplicației Modrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "Descărcarea conținutului"
   },

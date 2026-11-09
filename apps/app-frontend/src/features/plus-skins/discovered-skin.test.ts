@@ -75,7 +75,10 @@ describe('duplicates', () => {
 
 	it('keeps the first copy of each skin across pages', () => {
 		const seen = new Set<string>()
-		expect(newSkinsOnly([skin('a'), skin('b'), skin('a')], seen).map((s) => s.key)).toEqual(['a', 'b'])
+		expect(newSkinsOnly([skin('a'), skin('b'), skin('a')], seen).map((s) => s.key)).toEqual([
+			'a',
+			'b',
+		])
 		expect(newSkinsOnly([skin('b'), skin('c')], seen).map((s) => s.key)).toEqual(['c'])
 	})
 })
@@ -91,7 +94,10 @@ describe('favorites', () => {
 	})
 
 	it('add to the top without repeating', () => {
-		const list = withFavorite([favorite(), favorite({ key: OTHER_HASH })], favorite({ name: 'New' }))
+		const list = withFavorite(
+			[favorite(), favorite({ key: OTHER_HASH })],
+			favorite({ name: 'New' }),
+		)
 		expect(list.map((item) => item.key)).toEqual([HASH, OTHER_HASH])
 		expect(list[0].name).toBe('New')
 	})
@@ -102,7 +108,10 @@ describe('favorites', () => {
 	})
 
 	it('can be searched by name, tag or source', () => {
-		const list = [favorite(), favorite({ key: OTHER_HASH, name: 'Dog', tags: [], source: 'mojang' })]
+		const list = [
+			favorite(),
+			favorite({ key: OTHER_HASH, name: 'Dog', tags: [], source: 'mojang' }),
+		]
 		expect(searchFavorites(list, 'cat').map((item) => item.name)).toEqual(['Cat'])
 		expect(searchFavorites(list, 'CUTE').map((item) => item.name)).toEqual(['Cat'])
 		expect(searchFavorites(list, 'mojang').map((item) => item.name)).toEqual(['Dog'])

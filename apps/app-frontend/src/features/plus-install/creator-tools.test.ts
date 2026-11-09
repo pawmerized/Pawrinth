@@ -9,8 +9,8 @@ import {
 	filterProjects,
 	pageCountOf,
 	pageOf,
-	PROJECTS_PER_PAGE,
 	projectFilterOptions,
+	PROJECTS_PER_PAGE,
 	rememberedProjectTools,
 	rememberProjectTools,
 } from '../../../../../packages/ui/src/layouts/shared/user-profile/project-tools'
@@ -99,7 +99,11 @@ describe('searching a creator’s projects', () => {
 	it('pages through many projects', () => {
 		const many = Array.from({ length: PROJECTS_PER_PAGE + 3 }, (_, index) => index)
 		expect(pageOf(many, 1)).toHaveLength(PROJECTS_PER_PAGE)
-		expect(pageOf(many, 2)).toEqual([PROJECTS_PER_PAGE, PROJECTS_PER_PAGE + 1, PROJECTS_PER_PAGE + 2])
+		expect(pageOf(many, 2)).toEqual([
+			PROJECTS_PER_PAGE,
+			PROJECTS_PER_PAGE + 1,
+			PROJECTS_PER_PAGE + 2,
+		])
 		expect(pageCountOf(many.length)).toBe(2)
 		expect(pageCountOf(0)).toBe(1)
 	})

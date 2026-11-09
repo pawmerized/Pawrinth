@@ -19,12 +19,18 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { open } from '@tauri-apps/plugin-dialog'
-import { computed, readonly, ref, watch } from 'vue'
+import { computed, nextTick, readonly, ref, watch } from 'vue'
 
 import JavaDetectionModal from '@/components/ui/JavaDetectionModal.vue'
 import useJavaTest from '@/composables/useJavaTest'
 import useMemorySlider from '@/composables/useMemorySlider'
 import { edit, get_optimal_jre_key } from '@/helpers/instance'
+import {
+	plus_memory_set_manual,
+	plus_memory_status,
+	plus_memory_use_automatic,
+	type PlusMemoryStatus,
+} from '@/helpers/plus'
 import { get, parseEnvVars, serializeEnvVars } from '@/helpers/settings.ts'
 import type { AppSettings } from '@/helpers/types'
 
@@ -100,9 +106,47 @@ const envVars = ref(
 	serializeEnvVars(instance.value.custom_env_vars ?? globalSettings.custom_env_vars),
 )
 
-const overrideMemorySettings = ref(!!instance.value.memory)
-const memory = ref({ ...(instance.value.memory ?? globalSettings.memory) })
+const memoryStatus = ref<PlusMemoryStatus | null>(
+	await plus_memory_status(instance.value.id).catch(() => null),
+)
+const initialMemory = memoryStatus.value?.current_mb ?? instance.value.memory?.maximum ?? null
+const overrideMemorySettings = ref(initialMemory !== null)
+const memory = ref(
+	initialMemory !== null ? { maximum: initialMemory } : { ...globalSettings.memory },
+)
 const { maxMemory, snapPoints, memoryQuery } = useMemorySlider()
+let applyingRecommendedMemory = false
+
+function formatMemory(mb: number): string {
+	return `${Number((mb / 1024).toFixed(1))} GB`
+}
+
+watch(
+	[overrideMemorySettings, memory],
+	() => {
+		if (applyingRecommendedMemory || !memoryStatus.value?.automatic) return
+		memoryStatus.value = { ...memoryStatus.value, automatic: false }
+		plus_memory_set_manual(instance.value.id).catch(handleError)
+	},
+	{ deep: true },
+)
+
+async function useRecommendedMemory(): Promise<void> {
+	applyingRecommendedMemory = true
+	try {
+		const status = await plus_memory_use_automatic(instance.value.id)
+		memoryStatus.value = status
+		if (status.current_mb !== null) {
+			overrideMemorySettings.value = true
+			memory.value = { maximum: status.current_mb }
+		}
+		await nextTick()
+	} catch (error) {
+		handleError(error as Error)
+	} finally {
+		applyingRecommendedMemory = false
+	}
+}
 
 watch(overrideJavaArgs, (enabled) => {
 	if (!enabled) {
@@ -191,6 +235,30 @@ const messages = defineMessages({
 		id: 'instance.settings.tabs.java.hooks',
 		defaultMessage: 'Hooks',
 	},
+	memoryAutomatic: { id: 'plus.memory.automatic', defaultMessage: 'Set automatically' },
+	memoryManual: { id: 'plus.memory.manual', defaultMessage: 'Set by you' },
+	memoryRecommended: {
+		id: 'plus.memory.recommended',
+		defaultMessage: 'The pack recommends {amount}.',
+	},
+	memoryApplied: {
+		id: 'plus.memory.applied',
+		defaultMessage: 'Pawrinth set this instance to match.',
+	},
+	memoryReduced: {
+		id: 'plus.memory.reduced',
+		defaultMessage:
+			'This PC has {total} of memory, so Pawrinth set {amount} to leave enough for Windows and your other apps.',
+	},
+	memoryManualText: {
+		id: 'plus.memory.manual.text',
+		defaultMessage:
+			'You set this instance’s memory yourself, so Pawrinth leaves it alone. On this PC the recommendation comes to {amount}.',
+	},
+	memoryUseRecommended: {
+		id: 'plus.memory.use-recommended',
+		defaultMessage: 'Use the recommended amount',
+	},
 })
 </script>
 
@@ -210,6 +278,55 @@ const messages = defineMessages({
 					</h2>
 				</div>
 				<Toggle id="override-memory-allocation" v-model="overrideMemorySettings" />
+			</div>
+			<div
+				v-if="memoryStatus?.recommended_mb"
+				class="mt-3 flex flex-col items-start gap-2 rounded-xl bg-surface-2 p-3"
+			>
+				<div class="flex flex-wrap items-center gap-2">
+					<span
+						class="rounded-full border border-solid px-2 py-0.5 text-xs font-semibold"
+						:class="
+							memoryStatus.automatic ? 'border-brand text-brand' : 'border-surface-5 text-secondary'
+						"
+					>
+						{{
+							formatMessage(
+								memoryStatus.automatic ? messages.memoryAutomatic : messages.memoryManual,
+							)
+						}}
+					</span>
+					<span class="text-sm text-primary">
+						{{
+							formatMessage(messages.memoryRecommended, {
+								amount: formatMemory(memoryStatus.recommended_mb),
+							})
+						}}
+					</span>
+				</div>
+				<p v-if="memoryStatus.automatic && memoryStatus.reduced" class="m-0 text-sm text-secondary">
+					{{
+						formatMessage(messages.memoryReduced, {
+							total: formatMemory(memoryStatus.total_mb),
+							amount: formatMemory(memoryStatus.suggested_mb ?? memoryStatus.recommended_mb),
+						})
+					}}
+				</p>
+				<p v-else-if="memoryStatus.automatic" class="m-0 text-sm text-secondary">
+					{{ formatMessage(messages.memoryApplied) }}
+				</p>
+				<template v-else>
+					<p class="m-0 text-sm text-secondary">
+						{{
+							formatMessage(messages.memoryManualText, {
+								amount: formatMemory(memoryStatus.suggested_mb ?? memoryStatus.recommended_mb),
+							})
+						}}
+					</p>
+					<Button @click="useRecommendedMemory">
+						{{ formatMessage(messages.memoryUseRecommended) }}
+					</Button>
+				</template>
 			</div>
 			<div class="pt-3">
 				<Slider

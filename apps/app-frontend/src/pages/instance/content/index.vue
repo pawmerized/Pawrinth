@@ -30,6 +30,15 @@
 				>
 					<ArrowLeftRightIcon aria-hidden="true" />
 				</IconButton>
+				<IconButton
+					v-tooltip="formatMessage(plusMessages.checkMods)"
+					type="outlined"
+					size="lg"
+					:label="formatMessage(plusMessages.checkMods)"
+					@click="modCheckModal?.show($event)"
+				>
+					<ScanEyeIcon aria-hidden="true" />
+				</IconButton>
 			</template>
 			<template #notices>
 				<Admonition
@@ -70,6 +79,11 @@
 				/>
 				<InstanceCompareModal ref="compareModal" :instance-id="instance.id" />
 				<CurseforgeUpdatesModal ref="curseforgeUpdatesModal" :instance-id="instance.id" />
+				<ModCheckModal
+					ref="modCheckModal"
+					:instance-id="instance.id"
+					@changed="refreshContentState('must_revalidate')"
+				/>
 				<SyncedContentModal ref="syncedContentModal" />
 				<UnknownFileWarningModal
 					ref="unknownFileWarningModal"
@@ -168,6 +182,7 @@ import {
 	LockIcon,
 	LockOpenIcon,
 	PackageOpenIcon,
+	ScanEyeIcon,
 } from '@modrinth/assets'
 import {
 	Admonition,
@@ -220,6 +235,7 @@ import MissingFilesList from '@/features/plus-curseforge/missing-files-list.vue'
 import { injectModpackInstall } from '@/features/plus-curseforge/modpack-install-context'
 import { installedRowView, toVersionView } from '@/features/plus-curseforge/project-adapter'
 import CurseforgeUpdatesModal from '@/features/plus-curseforge/updates-modal.vue'
+import ModCheckModal from '@/features/plus-mods/mod-check-modal.vue'
 import InstanceCompareModal from '@/features/plus-updates/instance-compare-modal.vue'
 import UpdateHistoryModal from '@/features/plus-updates/update-history-modal.vue'
 import { trackEvent } from '@/helpers/analytics'
@@ -450,6 +466,7 @@ const isModpackUpdating = ref(false)
 const isBulkOperating = ref(false)
 const updateHistoryModal = ref<InstanceType<typeof UpdateHistoryModal> | null>(null)
 const compareModal = ref<InstanceType<typeof InstanceCompareModal> | null>(null)
+const modCheckModal = ref<InstanceType<typeof ModCheckModal> | null>(null)
 const curseforgeUpdatesModal = ref<InstanceType<typeof CurseforgeUpdatesModal> | null>(null)
 const curseforgeReady = ref(false)
 watch(
@@ -467,6 +484,10 @@ const formatBytes = useFormatBytes()
 const awaitingUpdateSummary = ref<number | null>(null)
 const { addPopupNotification } = injectPopupNotificationManager()
 const plusMessages = defineMessages({
+	checkMods: {
+		id: 'plus.content.check-mods',
+		defaultMessage: 'Check mods: recognise, find duplicates',
+	},
 	summaryDone: { id: 'plus.content.summary.done', defaultMessage: 'Update finished' },
 	summaryPartial: { id: 'plus.content.summary.partial', defaultMessage: 'Update partly finished' },
 	summaryText: {

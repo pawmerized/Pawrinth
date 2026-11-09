@@ -385,7 +385,8 @@ function getProjectCardTags(result: Labrinth.Search.v3.ResultSearchProject, disp
 								? `/user/${encodeURIComponent(result.author_id ?? result.author)}`
 								: ctx.variant === 'web'
 									? `/organization/${result.organization_id}`
-									: (ctx.getOrganizationLink?.(result.organization_id) ?? `https://modrinth.com/organization/${result.organization_id}`)),
+									: (ctx.getOrganizationLink?.(result.organization_id) ??
+										`https://modrinth.com/organization/${result.organization_id}`)),
 					}"
 					:date-updated="result.date_modified"
 					:date-published="result.date_created"
@@ -397,8 +398,8 @@ function getProjectCardTags(result: Labrinth.Search.v3.ResultSearchProject, disp
 					:tags="getProjectCardTags(result, true)"
 					:all-tags="getProjectCardTags(result, false)"
 					:deprioritized-tags="ctx.deprioritizedTags.value.filter((tag) => !isTagSelected(tag))"
-											:exclude-loaders="ctx.excludeLoaders.value"
-											:tag-action="tagAction"
+					:exclude-loaders="ctx.excludeLoaders.value"
+					:tag-action="tagAction"
 					:is-tag-selected="isTagSelected"
 					:followers="result.follows"
 					:banner="result.featured_gallery ?? undefined"

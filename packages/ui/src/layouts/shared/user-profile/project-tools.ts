@@ -79,7 +79,9 @@ export function pageCountOf(total: number): number {
 
 /** Only what these projects actually have, so no filter can come up empty by itself. */
 export function projectFilterOptions(projects: readonly ToolProject[]) {
-	const unique = (values: (string | undefined)[]) => [...new Set(values.filter(Boolean) as string[])]
+	const unique = (values: (string | undefined)[]) => [
+		...new Set(values.filter(Boolean) as string[]),
+	]
 	return {
 		categories: unique(projects.flatMap(categoriesOf)).sort((a, b) => a.localeCompare(b)),
 		loaders: unique(projects.flatMap((project) => project.loaders ?? [])).sort((a, b) =>

@@ -14,13 +14,13 @@ import {
 import { useQuery } from '@tanstack/vue-query'
 import { computed, ref, shallowRef, triggerRef, watch, watchEffect } from 'vue'
 
-import { rememberPrivateNames, usePrivacy } from '@/features/plus-privacy/use-privacy'
-import { users as getMinecraftAccounts } from '@/helpers/auth'
 import { useAppEvent } from '@/composables/use-app-event'
 import { useInstanceConsole } from '@/composables/useInstanceConsole'
+import { rememberPrivateNames, usePrivacy } from '@/features/plus-privacy/use-privacy'
 import { useCrashFindings } from '@/features/plus-updates/crash-findings'
-import { plus_diagnose_log, plus_settings_get } from '@/helpers/plus'
+import { users as getMinecraftAccounts } from '@/helpers/auth'
 import { delete_logs_by_filename, get_output_by_filename } from '@/helpers/logs.js'
+import { plus_diagnose_log, plus_settings_get } from '@/helpers/plus'
 
 import { injectInstancePage } from '../instance-context'
 import { instanceKeys } from '../query-options'

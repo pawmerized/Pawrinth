@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import { Admonition, defineMessages, injectNotificationManager, Input, Toggle, useVIntl } from '@modrinth/ui'
+import {
+	Admonition,
+	defineMessages,
+	injectNotificationManager,
+	Input,
+	Toggle,
+	useVIntl,
+} from '@modrinth/ui'
 import { useDebounceFn } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 
@@ -36,10 +43,17 @@ const messages = defineMessages({
 	displayName: { id: 'plus.privacy.display-name', defaultMessage: 'Name to show instead' },
 	displayNameText: {
 		id: 'plus.privacy.display-name.text',
-		defaultMessage: 'Shows this in place of your account names. Leave it empty to use the real ones.',
+		defaultMessage:
+			'Shows this in place of your account names. Leave it empty to use the real ones.',
 	},
-	placeholder: { id: 'plus.privacy.display-name.placeholder', defaultMessage: 'Your real name is used' },
-	limitsHeader: { id: 'plus.privacy.limits', defaultMessage: 'This only changes what you see here' },
+	placeholder: {
+		id: 'plus.privacy.display-name.placeholder',
+		defaultMessage: 'Your real name is used',
+	},
+	limitsHeader: {
+		id: 'plus.privacy.limits',
+		defaultMessage: 'This only changes what you see here',
+	},
 	limitsText: {
 		id: 'plus.privacy.limits.text',
 		defaultMessage:
@@ -93,7 +107,9 @@ const saveName = useDebounceFn((value: string) => {
 
 			<div class="flex items-center justify-between gap-4">
 				<div>
-					<h3 class="m-0 text-lg font-semibold text-contrast">{{ formatMessage(messages.blur) }}</h3>
+					<h3 class="m-0 text-lg font-semibold text-contrast">
+						{{ formatMessage(messages.blur) }}
+					</h3>
 					<p class="m-0 mt-1">
 						{{ formatMessage(blurFromStreamer ? messages.blurOnByStreamer : messages.blurText) }}
 					</p>

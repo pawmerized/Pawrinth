@@ -706,10 +706,18 @@ async fn prepare_initial_instance_inner(
             emit_instance(&instance_id, InstancePayloadType::Edited).await?;
         }
         InstallRequest::ImportInstance {
-            instance_folder, ..
+            launcher_type,
+            base_path,
+            instance_folder,
         } => {
+            let name = crate::api::pack::import::initial_name(
+                launcher_type,
+                &base_path,
+                &instance_folder,
+            )
+            .await;
             let metadata = crate::api::instance::create(
-                instance_folder,
+                name,
                 "1.19.4".to_string(),
                 ModLoader::Vanilla,
                 Some("latest".to_string()),
@@ -1177,6 +1185,13 @@ async fn run_request_inner(
                 state,
             )
             .await?;
+            crate::plus::technic::finish_install(
+                &instance_id,
+                &location,
+                state,
+            )
+            .await;
+            crate::plus::mod_matching::link_in_background(instance_id.clone());
             Ok(Some(instance_id))
         }
         InstallRequest::CreateSharedInstance { data } => {
@@ -1237,6 +1252,7 @@ async fn run_request_inner(
                 ),
             )
             .await?;
+            crate::plus::mod_matching::link_in_background(instance_id.clone());
             Ok(Some(instance_id))
         }
         InstallRequest::DuplicateInstance { source_instance_id } => {
@@ -1369,6 +1385,13 @@ async fn run_request_inner(
                 state,
             )
             .await?;
+            crate::plus::technic::finish_install(
+                &instance_id,
+                &location,
+                state,
+            )
+            .await;
+            crate::plus::mod_matching::link_in_background(instance_id.clone());
             Ok(Some(instance_id))
         }
         InstallRequest::BulkUpdateContent {

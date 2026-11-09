@@ -168,14 +168,14 @@ import { useRouter } from 'vue-router'
 import AppUpdateButton from '@/components/ui/app-update-button/index.vue'
 import DownloadManager from '@/components/ui/download-manager/index.vue'
 import { useAppEvent } from '@/composables/use-app-event'
+import { usePrivacy } from '@/features/plus-privacy/use-privacy'
+import { patchPlusSettings } from '@/features/plus-settings/use-plus-settings'
 import { trackEvent } from '@/helpers/analytics'
 import { get_many as getInstances } from '@/helpers/instance'
 import { get_all as getRunningProcesses, kill as killProcess } from '@/helpers/process'
 import type { LoadingBar } from '@/helpers/state'
 import { progress_bars_list } from '@/helpers/state'
 import type { GameInstance } from '@/helpers/types'
-import { usePrivacy } from '@/features/plus-privacy/use-privacy'
-import { patchPlusSettings } from '@/features/plus-settings/use-plus-settings'
 
 const { handleError } = injectNotificationManager()
 const popupNotificationManager = injectPopupNotificationManager()
@@ -193,7 +193,10 @@ interface RunningProcess {
 
 const messages = defineMessages({
 	streamerMode: { id: 'plus.privacy.streamer', defaultMessage: 'Streamer mode' },
-	streamerModeOff: { id: 'plus.privacy.streamer.turn-off', defaultMessage: 'Turn off streamer mode' },
+	streamerModeOff: {
+		id: 'plus.privacy.streamer.turn-off',
+		defaultMessage: 'Turn off streamer mode',
+	},
 	streamerModeOn: { id: 'plus.privacy.streamer.turn-on', defaultMessage: 'Turn on streamer mode' },
 	offline: {
 		id: 'app.action-bar.offline',

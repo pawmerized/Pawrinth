@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Ver instancia"
   },
-  "app.hosting.update-required.description": {
-    "message": "Necesitas actualizar para usar Modrinth Hosting a través de la aplicación de Modrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Descarga para actualizar"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Modrinth Both emocionado"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Se requiere actualizar la aplicación de Modrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "Descargando contenido"
   },
@@ -1372,9 +1360,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Cuenta Modrinth"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Eliminar cuenta"

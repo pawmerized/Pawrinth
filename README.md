@@ -34,8 +34,11 @@ Pawrinth is a Minecraft launcher for mods and modpacks from both Modrinth and Cu
 - **One-click installs.** Inside an instance, Install picks the newest version that fits its Minecraft version and loader, and brings its required dependencies along.
 - **CurseForge modpacks** install and update like Modrinth ones, with progress, pausing and retrying in the download manager. Files an author keeps off other apps are listed with links before anything is installed. Updates keep your worlds, your own config changes and the mods you turned off.
 - **Export for CurseForge.** Share an instance as a CurseForge `.zip` as well as a Modrinth `.mrpack`, so friends on either app can play the same pack.
+- **Technic modpacks** have their own tab on the Modpacks page and install as new instances, with their Forge, Fabric or NeoForge version read from the pack itself.
+- **Mods from anywhere get recognised.** Jars from Technic, the FTB App, other launchers or a folder you copied in are matched to Modrinth or CurseForge by their exact file, so they get updates too. Check mods also finds the same mod installed twice, even from different sites, and removes the extra copy only when you say so.
+- **Import from the FTB App** without downloading packs again, with the pack's loader, mods, configs and worlds.
 
-CurseForge needs a free API key from CurseForge, added once under Settings. Pawrinth only uses CurseForge's official API and keeps the key in Windows' credential store. [Why each person needs their own key](PAWRINTH.md#curseforge).
+CurseForge needs a free API key from CurseForge, added once under Settings. Pawrinth keeps it in Windows' credential store and only sends it to CurseForge's official API. You can turn on the community proxy curse.tools there instead, if you'd rather not get a key. [How both work](PAWRINTH.md#curseforge).
 
 <p align="center">
 	<img src=".github/assets/screenshots/curseforge.png" alt="Browsing CurseForge modpacks in Pawrinth" width="49%">
@@ -46,6 +49,7 @@ CurseForge needs a free API key from CurseForge, added once under Settings. Pawr
 
 - **Themes:** Midnight, Nord, Dracula, Catppuccin, Gruvbox and more, or build your own in the theme editor with a live preview.
 - **Accent color and UI scale** for the whole app.
+- **Logos:** keep the paw, or pick Mochi the cat or Nova the unicorn, two pixel-art characters drawn for Pawrinth. The logo you pick shows in the title bar, on the loading screen and on the taskbar.
 - **Backgrounds:** your own picture or GIF behind the app, with blur, dimming and fit.
 - **Theme files** to share a look with friends.
 
@@ -57,12 +61,14 @@ CurseForge needs a free API key from CurseForge, added once under Settings. Pawr
 
 - **Update all, safely.** Every update is recorded, and the update history rolls an instance back to how it was, file for file.
 - **Snapshots and compare:** save an instance's content before a big change, and compare two instances side by side.
+- **World backups on a schedule:** hourly, daily or weekly, keeping as many as you choose, with restores that back up the current world first.
 - **Crash help:** common crash causes are pointed out in the logs.
 
 ### And more
 
 - **Discord status:** shows what you're playing, with buttons for friends to install Pawrinth or join its Discord server.
 - **Skins:** a live skin gallery with search, 3D previews and favorites, and any player's current skin by username.
+- **Memory that fits your PC:** when a pack recommends an amount of RAM, its instance starts with it, trimmed so Windows keeps enough. Change it and it stays yours.
 - **Streamer mode:** hides account names, avatars, friends and folder paths on screen and in logs.
 - **Setup wizard** on first launch: choose a look and layout, and bring over instances from other launchers.
 - **Pawrinth News** from this repository, right in the app.

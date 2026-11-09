@@ -85,6 +85,7 @@ serde-binhum = { workspace = true }
 serde_ini = { workspace = true }
 serde_json = { workspace = true }
 serde_with = { workspace = true }
+md5 = { workspace = true }
 sha1_smol = { workspace = true }
 sha2 = { workspace = true }
 shlex = { workspace = true }

@@ -476,15 +476,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Ver instância"
   },
-  "app.hosting.update-required.description": {
-    "message": "Precisas de atualizar para usar Modrinth Hosting a partir da aplicação Modrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Transfere para atualizar"
-  },
-  "app.hosting.update-required.title": {
-    "message": "É necessária uma atualização da aplicação Modrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "Baixando conteúdo"
   },

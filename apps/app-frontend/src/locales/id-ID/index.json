@@ -341,9 +341,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Lihat instans"
   },
-  "app.hosting.update-required.title": {
-    "message": "Pawrinth membutuhkan pembaruan"
-  },
   "app.install.phase.downloading_content": {
     "message": "Mengunduh konten"
   },

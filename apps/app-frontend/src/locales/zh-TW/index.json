@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "查看實例"
   },
-  "app.hosting.update-required.description": {
-    "message": "你需要更新才能透過 Pawrinth 使用 Modrinth Hosting"
-  },
-  "app.hosting.update-required.download": {
-    "message": "下載即可更新"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "興奮的 Modrinth Bot"
-  },
-  "app.hosting.update-required.title": {
-    "message": "需要更新 Pawrinth"
-  },
   "app.install.phase.downloading_content": {
     "message": "正在下載內容"
   },
@@ -1372,9 +1360,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Modrinth 帳號"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "移除帳號"

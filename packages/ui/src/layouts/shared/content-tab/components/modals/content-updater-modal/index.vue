@@ -237,17 +237,17 @@
 							: actionText
 								? actionText(selectedVersion?.version_number ?? '...')
 								: incompatibilityWarningMode
-								? formatMessage(messages.installAnywayButton)
-								: formatMessage(
-										isDowngrade
-											? messages.downgradeToVersion
-											: switchMode
-												? messages.switchToVersion
-												: messages.updateToVersion,
-										{
-											version: selectedVersion?.version_number ?? '...',
-										},
-									)
+									? formatMessage(messages.installAnywayButton)
+									: formatMessage(
+											isDowngrade
+												? messages.downgradeToVersion
+												: switchMode
+													? messages.switchToVersion
+													: messages.updateToVersion,
+											{
+												version: selectedVersion?.version_number ?? '...',
+											},
+										)
 					}}
 				</Button>
 			</div>

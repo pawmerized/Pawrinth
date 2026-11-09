@@ -479,18 +479,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Näytä instanssi"
   },
-  "app.hosting.update-required.description": {
-    "message": "Modrinth -ohjelma tulee päivittää käyttääksesi Modrinth Hosting -palvelua"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Päivitä"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Innokas Modrinth -botti"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Modrinth -ohjelman päivitys vaaditaan"
-  },
   "app.install.phase.downloading_content": {
     "message": "Ladataan sisältöä"
   },

@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Zobrazit instanci"
   },
-  "app.hosting.update-required.description": {
-    "message": "Musíte aktualizovat Modrinth Hosting přes Pawrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Stáhnout novou aktualizaci"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Nadšený Modrinth Bot"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Pawrinth potřebuje být aktualizovaná"
-  },
   "app.install.phase.downloading_content": {
     "message": "Stahování obsahu"
   },
@@ -1369,9 +1357,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Modrinth účet"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Odebrat účet"

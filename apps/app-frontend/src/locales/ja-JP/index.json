@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "インスタンスを表示"
   },
-  "app.hosting.update-required.description": {
-    "message": "Modrinth Hostingを利用するには、Pawrinthを更新してください"
-  },
-  "app.hosting.update-required.download": {
-    "message": "ダウンロードして更新"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "ワクワクしているModrinth Bot"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Pawrinthの更新が必要です"
-  },
   "app.install.phase.downloading_content": {
     "message": "コンテンツをダウンロード中"
   },
@@ -1372,9 +1360,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Modrinthアカウント"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "アカウントを削除"

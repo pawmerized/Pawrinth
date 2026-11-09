@@ -55,7 +55,9 @@ describe('skin site links', () => {
 
 	it('links a player to their own pages', () => {
 		expect(
-			playerPageLinks({ id: '069a79f444e94726a5befca90e38aaf5', name: 'Notch' }).map((link) => link.url),
+			playerPageLinks({ id: '069a79f444e94726a5befca90e38aaf5', name: 'Notch' }).map(
+				(link) => link.url,
+			),
 		).toEqual([
 			'https://namemc.com/profile/069a79f4-44e9-4726-a5be-fca90e38aaf5',
 			'https://skinmc.net/s?search=Notch&tab=profiles',

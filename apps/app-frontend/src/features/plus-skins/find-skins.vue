@@ -73,11 +73,13 @@ const messages = defineMessages({
 	live: { id: 'plus.skins.gallery.live', defaultMessage: 'Live results from MineSkin' },
 	liveSearch: {
 		id: 'plus.skins.gallery.live-search',
-		defaultMessage: "Live results from MineSkin. These are its closest matches, so some may be loose.",
+		defaultMessage:
+			'Live results from MineSkin. These are its closest matches, so some may be loose.',
 	},
 	empty: {
 		id: 'plus.skins.gallery.empty',
-		defaultMessage: 'MineSkin found no skins for “{query}”. Try another word, or search another site.',
+		defaultMessage:
+			'MineSkin found no skins for “{query}”. Try another word, or search another site.',
 	},
 	emptyLatest: {
 		id: 'plus.skins.gallery.empty-latest',
@@ -105,10 +107,14 @@ const messages = defineMessages({
 	previous: { id: 'plus.skins.gallery.previous', defaultMessage: 'Previous' },
 	next: { id: 'plus.skins.gallery.next', defaultMessage: 'Next' },
 	loadMore: { id: 'plus.skins.gallery.load-more', defaultMessage: 'Load more' },
-	endOfResults: { id: 'plus.skins.gallery.end', defaultMessage: "That's everything MineSkin returned." },
+	endOfResults: {
+		id: 'plus.skins.gallery.end',
+		defaultMessage: "That's everything MineSkin returned.",
+	},
 	moreRateLimited: {
 		id: 'plus.skins.gallery.more-rate-limited',
-		defaultMessage: "MineSkin is limiting requests, so more couldn't be loaded. Try again in a minute.",
+		defaultMessage:
+			"MineSkin is limiting requests, so more couldn't be loaded. Try again in a minute.",
 	},
 	moreUnavailable: {
 		id: 'plus.skins.gallery.more-unavailable',
@@ -222,7 +228,8 @@ const playerLinks = computed(() =>
 	gallery.player.value ? playerPageLinks(gallery.player.value) : [],
 )
 const playerNote = computed(() => {
-	if (gallery.playerStatus.value === 'rate_limited') return formatMessage(messages.playerRateLimited)
+	if (gallery.playerStatus.value === 'rate_limited')
+		return formatMessage(messages.playerRateLimited)
 	if (gallery.playerStatus.value === 'unavailable') return formatMessage(messages.playerUnavailable)
 	return undefined
 })
@@ -295,7 +302,12 @@ function submit(): void {
 			</div>
 		</div>
 
-		<NavTabs :links="sourceLinks" query="source" replace class="max-w-full flex-wrap !rounded-[1.75rem]" />
+		<NavTabs
+			:links="sourceLinks"
+			query="source"
+			replace
+			class="max-w-full flex-wrap !rounded-[1.75rem]"
+		/>
 
 		<template v-if="source === GALLERY_SOURCE_ID">
 			<section class="flex flex-col gap-3" aria-live="polite" data-skin-gallery>
@@ -312,7 +324,9 @@ function submit(): void {
 					</p>
 				</div>
 
-				<p v-if="playerNote" class="m-0 text-sm text-secondary" data-player-note>{{ playerNote }}</p>
+				<p v-if="playerNote" class="m-0 text-sm text-secondary" data-player-note>
+					{{ playerNote }}
+				</p>
 				<div
 					v-if="gallery.player.value && !playerSkin"
 					class="flex flex-wrap items-center gap-2"
@@ -321,7 +335,12 @@ function submit(): void {
 					<span class="text-secondary">
 						{{ formatMessage(messages.noCustomSkin, { name: gallery.player.value.name }) }}
 					</span>
-					<ButtonLink v-for="link in playerLinks" :key="link.source" :href="link.url" target="_blank">
+					<ButtonLink
+						v-for="link in playerLinks"
+						:key="link.source"
+						:href="link.url"
+						target="_blank"
+					>
 						{{ formatMessage(messages.viewOn, { site: SOURCE_NAMES[link.source] }) }}
 						<ExternalIcon aria-hidden="true" />
 					</ButtonLink>
@@ -369,7 +388,12 @@ function submit(): void {
 						}}
 					</p>
 					<div v-if="gallery.activeQuery.value" class="flex flex-wrap gap-2">
-						<ButtonLink v-for="link in emptySearchLinks" :key="link.site" :href="link.url" target="_blank">
+						<ButtonLink
+							v-for="link in emptySearchLinks"
+							:key="link.site"
+							:href="link.url"
+							target="_blank"
+						>
 							{{ formatMessage(messages.everything, { site: link.site }) }}
 							<ExternalIcon aria-hidden="true" />
 						</ButtonLink>
@@ -377,7 +401,9 @@ function submit(): void {
 				</div>
 
 				<div
-					v-if="playerSkin || gallery.status.value === 'loading' || gallery.shownSkins.value.length > 0"
+					v-if="
+						playerSkin || gallery.status.value === 'loading' || gallery.shownSkins.value.length > 0
+					"
 					class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3"
 				>
 					<SkinCard
@@ -438,21 +464,24 @@ function submit(): void {
 							:disabled="gallery.fetchingMore.value"
 							@click="gallery.loadMore()"
 						>
-							<SpinnerIcon v-if="gallery.fetchingMore.value" class="animate-spin" aria-hidden="true" />
+							<SpinnerIcon
+								v-if="gallery.fetchingMore.value"
+								class="animate-spin"
+								aria-hidden="true"
+							/>
 							<PlusIcon v-else aria-hidden="true" />
 							{{ formatMessage(messages.loadMore) }}
 						</Button>
-						<span v-else class="text-sm text-secondary">{{ formatMessage(messages.endOfResults) }}</span>
+						<span v-else class="text-sm text-secondary">{{
+							formatMessage(messages.endOfResults)
+						}}</span>
 					</div>
 				</template>
 			</section>
 		</template>
 
 		<section v-else-if="linkedSite" class="flex flex-col gap-3" data-linked-site>
-			<div
-				v-if="playerSkin"
-				class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3"
-			>
+			<div v-if="playerSkin" class="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-3">
 				<SkinCard
 					:skin="playerSkin"
 					:previewing="previewingKey === playerSkin.key"

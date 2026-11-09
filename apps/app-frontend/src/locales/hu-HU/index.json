@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Példány megtekintése"
   },
-  "app.hosting.update-required.description": {
-    "message": "Frissítened kell, hogy használhasd a Modrinth Hostingot a Pawrinthon keresztül"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Letöltés a frissítéshez"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Izgatott Modrinth bot"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Frissítés szükséges a Pawrinthhoz"
-  },
   "app.install.phase.downloading_content": {
     "message": "A tartalom letöltése..."
   },
@@ -1372,9 +1360,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Modrinth fiók"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Fiók eltávolítása"

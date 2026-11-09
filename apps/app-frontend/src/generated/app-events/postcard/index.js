@@ -791,6 +791,10 @@ function deserialize_IMPORT_LAUNCHER_TYPE(d) {
         };
     case 5:
         return {
+            tag: "FTBApp"
+        };
+    case 6:
+        return {
             tag: "Unknown"
         };
     default:

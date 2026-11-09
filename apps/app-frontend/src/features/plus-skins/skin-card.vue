@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { CheckIcon, EyeIcon, HeartIcon, PlusIcon } from '@modrinth/assets'
-import { Button, defineMessages, IconButton, injectNotificationManager, useVIntl } from '@modrinth/ui'
+import {
+	Button,
+	defineMessages,
+	IconButton,
+	injectNotificationManager,
+	useVIntl,
+} from '@modrinth/ui'
 import { computed } from 'vue'
 
 import type { DiscoveredSkin } from './discovered-skin'
@@ -74,7 +80,11 @@ async function toggleFavorite(): Promise<void> {
 		<div class="min-w-0 px-1">
 			<p class="m-0 truncate text-sm font-semibold text-contrast" :title="name">{{ name }}</p>
 			<p class="m-0 truncate text-xs text-secondary">
-				{{ formatMessage(skin.source === 'mineskin' ? messages.sourceMineskin : messages.sourceMojang) }}
+				{{
+					formatMessage(
+						skin.source === 'mineskin' ? messages.sourceMineskin : messages.sourceMojang,
+					)
+				}}
 			</p>
 		</div>
 		<div class="flex items-center gap-1">

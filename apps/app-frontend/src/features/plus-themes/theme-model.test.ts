@@ -5,16 +5,16 @@ import {
 	contrastRatio,
 	type CustomTheme,
 	exportTheme,
-	paletteFromTokens,
-	THEME_FORMAT_VERSION,
-	themeFileName,
-	uniqueThemeName,
 	isUsable,
 	isValidTheme,
+	paletteFromTokens,
 	parseThemeImport,
 	readableOn,
+	THEME_FORMAT_VERSION,
+	themeFileName,
 	themeStylesheet,
 	themeTokens,
+	uniqueThemeName,
 } from './theme-model'
 import { DARK_STARTER, LIGHT_STARTER, THEME_PRESETS } from './theme-presets'
 

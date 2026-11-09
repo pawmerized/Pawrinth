@@ -15,6 +15,7 @@ import { install_import_instance } from './install'
   - ATLauncher
   - Curseforge
   - PrismLauncher
+  - FTBApp (the FTB App's instances folder, where each instance folder is named by id)
   - Unknown (shouldn't be used, but is used internally if the launcher type isn't recognized)
 
   For each launcher type, we can get a guess of the default path for the launcher, and a list of importable instances

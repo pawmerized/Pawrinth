@@ -13884,6 +13884,7 @@ dependencies = [
  "itertools 0.15.0",
  "json5",
  "keyring",
+ "md5",
  "minecraft-meta-manifest",
  "modrinth-content-management",
  "notify",

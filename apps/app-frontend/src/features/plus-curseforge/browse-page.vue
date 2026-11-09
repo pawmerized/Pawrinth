@@ -122,7 +122,7 @@ const messages = defineMessages({
 	needsKeyText: {
 		id: 'plus.curseforge.browse.needs-key.text',
 		defaultMessage:
-			'CurseForge only allows searching and downloading with an API key, so no projects can be shown yet. Add your own key in Settings to browse here.',
+			'CurseForge only allows searching and downloading with an API key, so no projects can be shown yet. Add your own key in Settings to browse here, or turn on curse.tools there.',
 	},
 	keyRejectedHeader: {
 		id: 'plus.curseforge.browse.key-rejected',

@@ -513,11 +513,12 @@ pub async fn fetch_file(
     }
 }
 
-/// Downloads a temporary file checked against its SHA-1, with a client the caller
-/// chooses. No download analytics are sent, since the host isn't Modrinth's.
+/// Downloads a temporary file, checked against its SHA-1 when there is one, with a
+/// client the caller chooses. No download analytics are sent, since the host isn't
+/// Modrinth's.
 pub(crate) async fn fetch_file_with_client(
     url: &str,
-    sha1: &str,
+    sha1: Option<&str>,
     semaphore: &FetchSemaphore,
     exec: impl sqlx::Executor<'_, Database = sqlx::Sqlite>,
     client: &reqwest::Client,
@@ -527,7 +528,7 @@ pub(crate) async fn fetch_file_with_client(
     let body = fetch_advanced_with_target(
         Method::GET,
         url,
-        Some(sha1),
+        sha1,
         None,
         None,
         None,

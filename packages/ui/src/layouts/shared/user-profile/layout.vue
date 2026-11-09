@@ -530,12 +530,11 @@ import {
 } from '#ui/utils'
 
 import EditUserModal from './components/edit-user-modal.vue'
-import ProjectToolsBar from './components/project-tools-bar.vue'
 import ForcePasswordResetModal from './components/force-password-reset-modal.vue'
 import LockUserModal from './components/lock-user-modal.vue'
+import ProjectToolsBar from './components/project-tools-bar.vue'
 import Reset2faModal from './components/reset-2fa-modal.vue'
 import RestrictUserModal from './components/restrict-user-modal.vue'
-import { blockedUsersQueryKey, injectUserProfile } from './providers'
 import {
 	filterProjects,
 	pageCountOf,
@@ -543,6 +542,7 @@ import {
 	rememberedProjectTools,
 	rememberProjectTools,
 } from './project-tools'
+import { blockedUsersQueryKey, injectUserProfile } from './providers'
 import { hasActivePride26Midas, hasPride26Badge, projectUserSorting } from './utils'
 
 type DisplayMode = 'list' | 'grid' | 'gallery'
@@ -902,7 +902,9 @@ const toolFilteredProjects = computed(() =>
 )
 const toolsPageCount = computed(() => pageCountOf(toolFilteredProjects.value.length))
 const visibleProjects = computed(() =>
-	props.projectTools ? pageOf(toolFilteredProjects.value, tools.value.page) : filteredProjects.value,
+	props.projectTools
+		? pageOf(toolFilteredProjects.value, tools.value.page)
+		: filteredProjects.value,
 )
 const filteredProjects = computed(() =>
 	filterProjectsByType(projects.value, selectedProjectType.value).slice().sort(projectUserSorting),

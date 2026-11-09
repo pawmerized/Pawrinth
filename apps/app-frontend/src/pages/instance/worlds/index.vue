@@ -19,6 +19,12 @@
 		@confirm="proceedRemoveWorld"
 	/>
 	<DesyncServerModal ref="desyncServerModal" @confirm="confirmDesyncServer" />
+	<WorldBackupsModal
+		ref="worldBackupsModal"
+		:instance-id="instance.id"
+		:instance-running="!!playing"
+		@restored="refreshAfterRestore"
+	/>
 	<ReadyTransition :pending="worldsReadyPending">
 		<div v-if="dedupedWorlds.length > 0" class="flex flex-col gap-2">
 			<div class="flex flex-wrap items-center gap-2">
@@ -36,6 +42,10 @@
 					"
 				/>
 				<div class="flex gap-2">
+					<Button type="outlined" size="lg" @click="worldBackupsModal?.show($event)">
+						<DatabaseBackupIcon class="size-5" />
+						{{ formatMessage(plusWorldMessages.backups) }}
+					</Button>
 					<Button type="outlined" size="lg" @click="addServerModal?.show()">
 						<PlusIcon class="size-5" />
 						{{ formatMessage(messages.addServer) }}
@@ -113,6 +123,10 @@
 			:description="formatMessage(messages.noWorldsDescription)"
 		>
 			<template #actions>
+				<Button type="outlined" size="lg" @click="worldBackupsModal?.show($event)">
+					<DatabaseBackupIcon class="size-5" />
+					{{ formatMessage(plusWorldMessages.backups) }}
+				</Button>
 				<Button type="outlined" size="lg" @click="addServerModal?.show()">
 					<PlusIcon class="size-5" />
 					{{ formatMessage(messages.addServer) }}
@@ -126,7 +140,13 @@
 	</ReadyTransition>
 </template>
 <script setup lang="ts">
-import { CompassIcon, PlusIcon, RefreshCwIcon, SearchIcon } from '@modrinth/assets'
+import {
+	CompassIcon,
+	DatabaseBackupIcon,
+	PlusIcon,
+	RefreshCwIcon,
+	SearchIcon,
+} from '@modrinth/assets'
 import { Button } from '@modrinth/ui'
 import {
 	commonMessages,
@@ -154,6 +174,7 @@ import EditWorldModal from '@/components/ui/world/modal/EditSingleplayerWorldMod
 import WorldItem from '@/components/ui/world/WorldItem.vue'
 import { useAppEvent } from '@/composables/use-app-event'
 import { handleSevereError } from '@/composables/use-error.js'
+import WorldBackupsModal from '@/features/plus-worlds/world-backups-modal.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project, get_project_v3 } from '@/helpers/cache.js'
 import { set_synced_option } from '@/helpers/instance'
@@ -250,6 +271,14 @@ const worldToRemove = ref<World | null>(null)
 
 const instance = computed(() => instancePage.instance.value!)
 const playing = instancePage.playing
+const worldBackupsModal = ref<InstanceType<typeof WorldBackupsModal> | null>(null)
+const plusWorldMessages = defineMessages({
+	backups: { id: 'plus.world-backups.button', defaultMessage: 'World backups' },
+})
+
+async function refreshAfterRestore(): Promise<void> {
+	await queryClient.invalidateQueries({ queryKey: instanceKeys.worlds(instance.value.id) })
+}
 
 function play() {
 	if (instance.value.quarantined) return

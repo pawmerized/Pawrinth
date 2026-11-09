@@ -8,7 +8,8 @@ import { type Ref, ref, watch } from 'vue'
 import { redactForStream, usePrivacy } from '@/features/plus-privacy/use-privacy'
 
 function withoutPrivateDetails<T extends Partial<WebNotification>>(notification: T): T {
-	if (typeof notification.title === 'string') notification.title = redactForStream(notification.title)
+	if (typeof notification.title === 'string')
+		notification.title = redactForStream(notification.title)
 	if (typeof notification.text === 'string') notification.text = redactForStream(notification.text)
 	return notification
 }

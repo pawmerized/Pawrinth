@@ -3,6 +3,7 @@
 
 use crate::State;
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 
 pub const UI_SCALE_MIN: f32 = 0.8;
 pub const UI_SCALE_MAX: f32 = 1.5;
@@ -20,6 +21,9 @@ pub struct PlusSettings {
     pub privacy: PrivacySettings,
     pub skins: SkinSettings,
     pub discord: DiscordSettings,
+    pub curseforge: CurseForgeSettings,
+    pub automatic_memory: AutomaticMemorySettings,
+    pub world_backups: WorldBackupSettings,
     /// Fields from a newer build are preserved rather than dropped.
     #[serde(flatten)]
     pub unknown: serde_json::Map<String, serde_json::Value>,
@@ -33,6 +37,9 @@ pub struct AppearanceSettings {
     pub themes: Vec<serde_json::Value>,
     /// Validated by the frontend, which is the only thing that renders it.
     pub background: Option<serde_json::Value>,
+    /// Kept as text so a logo from a newer build doesn't reset every setting;
+    /// the frontend shows the paw for names it doesn't know.
+    pub logo: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -169,6 +176,84 @@ impl Default for DiscordSettings {
     }
 }
 
+/// How Pawrinth reaches CurseForge.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct CurseForgeSettings {
+    /// Sends CurseForge requests through curse.tools, a community proxy that needs no
+    /// key, instead of the official API with the user's own key. Off unless chosen.
+    pub use_community_proxy: bool,
+}
+
+/// Memory that a modpack recommended, by instance id.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct AutomaticMemorySettings {
+    pub instances: BTreeMap<String, InstanceMemoryPlan>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum MemorySource {
+    Technic,
+    FtbApp,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct InstanceMemoryPlan {
+    pub recommended_mb: Option<u32>,
+    pub source: Option<MemorySource>,
+    /// Whether Pawrinth chose the instance's memory from the recommendation. It turns
+    /// off as soon as someone sets the memory themselves.
+    pub automatic: bool,
+    /// What Pawrinth last set, so a change made elsewhere can be told apart.
+    pub applied_mb: Option<u32>,
+}
+
+/// Automatic world backups, by instance id.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct WorldBackupSettings {
+    pub instances: BTreeMap<String, WorldBackupSchedule>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(default)]
+pub struct WorldBackupSchedule {
+    pub enabled: bool,
+    pub interval_hours: u32,
+    /// Automatic backups kept for each world. Older ones are removed.
+    pub keep: u32,
+}
+
+impl Default for WorldBackupSchedule {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            interval_hours: 24,
+            keep: 10,
+        }
+    }
+}
+
+impl WorldBackupSchedule {
+    pub const MIN_INTERVAL_HOURS: u32 = 1;
+    pub const MAX_INTERVAL_HOURS: u32 = 24 * 30;
+    pub const MIN_KEEP: u32 = 1;
+    pub const MAX_KEEP: u32 = 100;
+
+    pub fn normalized(&self) -> Self {
+        Self {
+            enabled: self.enabled,
+            interval_hours: self
+                .interval_hours
+                .clamp(Self::MIN_INTERVAL_HOURS, Self::MAX_INTERVAL_HOURS),
+            keep: self.keep.clamp(Self::MIN_KEEP, Self::MAX_KEEP),
+        }
+    }
+}
+
 impl Default for PlusSettings {
     fn default() -> Self {
         Self {
@@ -181,6 +266,9 @@ impl Default for PlusSettings {
             privacy: PrivacySettings::default(),
             skins: SkinSettings::default(),
             discord: DiscordSettings::default(),
+            curseforge: CurseForgeSettings::default(),
+            automatic_memory: AutomaticMemorySettings::default(),
+            world_backups: WorldBackupSettings::default(),
             unknown: serde_json::Map::new(),
         }
     }
@@ -196,6 +284,9 @@ impl PlusSettings {
         };
         self.rollback.max_operations_per_instance =
             self.rollback.max_operations_per_instance.max(1);
+        for schedule in self.world_backups.instances.values_mut() {
+            *schedule = schedule.normalized();
+        }
         self
     }
 
@@ -266,6 +357,71 @@ mod tests {
     fn empty_object_gives_defaults() {
         let settings: PlusSettings = serde_json::from_str("{}").unwrap();
         assert_eq!(settings, PlusSettings::default());
+    }
+
+    #[test]
+    fn curseforge_uses_the_official_api_until_someone_chooses_otherwise() {
+        assert!(!PlusSettings::default().curseforge.use_community_proxy);
+        let older: PlusSettings =
+            serde_json::from_str(r#"{ "discord": {} }"#).unwrap();
+        assert!(!older.curseforge.use_community_proxy);
+    }
+
+    #[test]
+    fn backup_schedules_stay_in_range() {
+        let mut settings = PlusSettings::default();
+        settings.world_backups.instances.insert(
+            "local:a".to_string(),
+            WorldBackupSchedule {
+                enabled: true,
+                interval_hours: 0,
+                keep: 10_000,
+            },
+        );
+        let schedule =
+            &settings.normalized().world_backups.instances["local:a"];
+        assert_eq!(schedule.interval_hours, 1);
+        assert_eq!(schedule.keep, WorldBackupSchedule::MAX_KEEP);
+    }
+
+    #[tokio::test]
+    async fn one_instance_can_be_patched_without_touching_another() {
+        let db = TestDb::new().await;
+        PlusSettings::merge_patch(
+            &json!({ "world_backups": { "instances": {
+                "local:a": { "enabled": true },
+                "local:b": { "enabled": true, "keep": 3 }
+            } } }),
+            &db.pool,
+        )
+        .await
+        .unwrap();
+        let settings = PlusSettings::merge_patch(
+            &json!({ "world_backups": { "instances": { "local:a": null } } }),
+            &db.pool,
+        )
+        .await
+        .unwrap();
+        assert!(!settings.world_backups.instances.contains_key("local:a"));
+        assert_eq!(settings.world_backups.instances["local:b"].keep, 3);
+        assert_eq!(
+            settings.world_backups.instances["local:b"].interval_hours,
+            24
+        );
+    }
+
+    #[test]
+    fn a_logo_this_build_does_not_know_keeps_the_other_settings() {
+        let settings: PlusSettings = serde_json::from_str(
+            r#"{ "appearance": { "logo": "from-a-newer-build" }, "interface": { "ui_scale": 1.25 } }"#,
+        )
+        .unwrap();
+        assert_eq!(
+            settings.appearance.logo.as_deref(),
+            Some("from-a-newer-build")
+        );
+        assert_eq!(settings.interface.ui_scale, 1.25);
+        assert_eq!(PlusSettings::default().appearance.logo, None);
     }
 
     #[test]

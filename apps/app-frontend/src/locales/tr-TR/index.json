@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Kurulumu göster"
   },
-  "app.hosting.update-required.description": {
-    "message": "Modrinth Hosting'i Pawrinth'ten kullanmak için güncellemeniz gerekiyor"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Güncellemeyi indir"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Heyecanlı Modrinth Botu"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Pawrinth güncellemesi gerekli"
-  },
   "app.install.phase.downloading_content": {
     "message": "İçerik indiriliyor"
   },
@@ -1372,9 +1360,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Modrinth hesabı"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Hesabı kaldır"

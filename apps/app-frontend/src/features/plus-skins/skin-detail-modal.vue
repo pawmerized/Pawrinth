@@ -28,17 +28,9 @@ import {
 	plus_skin_file_save,
 	plus_skin_gallery_details,
 } from '@/helpers/plus'
-import {
-	determineModelType,
-	get_normalized_skin_texture,
-	type SkinModel,
-} from '@/helpers/skins'
+import { determineModelType, get_normalized_skin_texture, type SkinModel } from '@/helpers/skins'
 
-import {
-	type DiscoveredSkin,
-	skinBytes,
-	toSelectableSkin,
-} from './discovered-skin'
+import { type DiscoveredSkin, skinBytes, toSelectableSkin } from './discovered-skin'
 import { useSkinFavorites } from './skin-favorites'
 import { useSkinGallery } from './skin-gallery'
 import { mineskinPageUrl, playerPageLinks } from './skin-sources'
@@ -76,7 +68,10 @@ const messages = defineMessages({
 	model: { id: 'plus.skins.find.player.model', defaultMessage: 'Model' },
 	classic: { id: 'plus.skins.find.player.model.classic', defaultMessage: 'Classic' },
 	slim: { id: 'plus.skins.find.player.model.slim', defaultMessage: 'Slim' },
-	madeFor: { id: 'plus.skins.detail.made-for', defaultMessage: 'This skin is made for {model} arms.' },
+	madeFor: {
+		id: 'plus.skins.detail.made-for',
+		defaultMessage: 'This skin is made for {model} arms.',
+	},
 	views: { id: 'plus.skins.detail.views', defaultMessage: 'Views on MineSkin' },
 	tags: { id: 'plus.skins.detail.tags', defaultMessage: 'Tags' },
 	noCreatorMineskin: {
@@ -284,7 +279,9 @@ defineExpose({ show, hide })
 					</h2>
 					<p class="m-0 text-primary">
 						{{
-							formatMessage(skin.source === 'mineskin' ? messages.sourceMineskin : messages.sourceMojang)
+							formatMessage(
+								skin.source === 'mineskin' ? messages.sourceMineskin : messages.sourceMojang,
+							)
 						}}
 					</p>
 					<p class="m-0 mt-1 text-sm text-secondary">
@@ -300,7 +297,11 @@ defineExpose({ show, hide })
 					<h2 class="m-0 mb-2 text-base font-semibold text-contrast">
 						{{ formatMessage(messages.model) }}
 					</h2>
-					<RadioButtons v-model="previewModel" :items="['CLASSIC', 'SLIM']" class="!flex-row flex-wrap">
+					<RadioButtons
+						v-model="previewModel"
+						:items="['CLASSIC', 'SLIM']"
+						class="!flex-row flex-wrap"
+					>
 						<template #default="{ item }">
 							{{ formatMessage(item === 'CLASSIC' ? messages.classic : messages.slim) }}
 						</template>

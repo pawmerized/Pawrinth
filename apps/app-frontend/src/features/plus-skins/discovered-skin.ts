@@ -123,7 +123,10 @@ export function parseFavorites(saved: unknown): FavoriteSkin[] {
 	return Array.isArray(saved) ? saved.filter(isFavorite) : []
 }
 
-export function withFavorite(list: readonly FavoriteSkin[], favorite: FavoriteSkin): FavoriteSkin[] {
+export function withFavorite(
+	list: readonly FavoriteSkin[],
+	favorite: FavoriteSkin,
+): FavoriteSkin[] {
 	return [favorite, ...list.filter((item) => item.key !== favorite.key)]
 }
 
@@ -135,7 +138,9 @@ export function searchFavorites(list: readonly FavoriteSkin[], query: string): F
 	const text = query.trim().toLowerCase()
 	if (!text) return [...list]
 	return list.filter((item) =>
-		[item.name ?? '', item.source, ...item.tags].some((value) => value.toLowerCase().includes(text)),
+		[item.name ?? '', item.source, ...item.tags].some((value) =>
+			value.toLowerCase().includes(text),
+		),
 	)
 }
 

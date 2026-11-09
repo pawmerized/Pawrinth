@@ -395,18 +395,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "הצג התקנה"
   },
-  "app.hosting.update-required.description": {
-    "message": "עליך לעדכן בכדי להשתמש ב- Modrinth Hosting דרך אפליקציית ה Modrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "הורד על מנת לעדכן"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "רובוט Modrinth מתרגש"
-  },
-  "app.hosting.update-required.title": {
-    "message": "אפליקציית ה- Modrinth דורשת עדכון"
-  },
   "app.install.phase.downloading_content": {
     "message": "מוריד תוכן"
   },
@@ -1264,9 +1252,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "משתמש Modrinth"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "שרתי Modrinth"
   },
   "app.nav.remove-account": {
     "message": "מחק חשבון"

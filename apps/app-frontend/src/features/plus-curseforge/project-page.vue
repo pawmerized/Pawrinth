@@ -117,7 +117,8 @@ const messages = defineMessages({
 	},
 	needsKeyText: {
 		id: 'plus.curseforge.page.needs-key',
-		defaultMessage: 'CurseForge only shows project details to apps with an API key.',
+		defaultMessage:
+			'CurseForge only shows project details to apps with an API key. Add your own key in Settings, or turn on curse.tools there.',
 	},
 	keyRejectedHeader: {
 		id: 'plus.curseforge.browse.key-rejected',

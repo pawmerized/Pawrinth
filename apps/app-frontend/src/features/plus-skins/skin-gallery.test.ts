@@ -140,7 +140,9 @@ describe('the gallery', () => {
 	})
 
 	it('keeps what is shown when a later page fails', async () => {
-		gallery.mockResolvedValueOnce(page('a', [1], 'cursor-1')).mockResolvedValueOnce({ status: 'unavailable' })
+		gallery
+			.mockResolvedValueOnce(page('a', [1], 'cursor-1'))
+			.mockResolvedValueOnce({ status: 'unavailable' })
 		const state = await freshGallery()
 		await state.searchSkins('')
 		await state.showNextPage()

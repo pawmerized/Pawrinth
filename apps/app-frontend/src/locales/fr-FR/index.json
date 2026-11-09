@@ -497,18 +497,6 @@
   "app.home.jump-back-in.view-instance": {
     "message": "Voir l'instance"
   },
-  "app.hosting.update-required.description": {
-    "message": "Vous avez besoin de mettre à jour pour utiliser Modrinth Hosting via Pawrinth"
-  },
-  "app.hosting.update-required.download": {
-    "message": "Télécharger pour mettre à jour"
-  },
-  "app.hosting.update-required.rinthbot-alt": {
-    "message": "Modrinth Bot excité"
-  },
-  "app.hosting.update-required.title": {
-    "message": "Mise à jour de Pawrinth requise"
-  },
   "app.install.phase.downloading_content": {
     "message": "Téléchargement du contenu"
   },
@@ -1369,9 +1357,6 @@
   },
   "app.nav.modrinth-account": {
     "message": "Compte Modrinth"
-  },
-  "app.nav.modrinth-hosting": {
-    "message": "Modrinth Hosting"
   },
   "app.nav.remove-account": {
     "message": "Retirer le compte"

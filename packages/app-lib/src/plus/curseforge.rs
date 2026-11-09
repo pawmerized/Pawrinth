@@ -20,6 +20,11 @@ use std::collections::HashSet;
 use std::time::Duration;
 
 const API_BASE: &str = "https://api.curseforge.com/v1";
+/// curse.tools, a free community proxy that answers like the official API without a
+/// key. It isn't run by CurseForge or Pawrinth, and it's only used when someone turns
+/// it on in settings.
+const COMMUNITY_API_BASE: &str = "https://api.curse.tools/v1";
+const COMMUNITY_API_HOST: &str = "api.curse.tools";
 #[cfg(debug_assertions)]
 const LOCAL_API_BASE_ENV: &str = "PAWRINTH_CURSEFORGE_API_BASE";
 pub(super) const MINECRAFT_GAME_ID: u32 = 432;
@@ -205,11 +210,57 @@ pub(super) fn http_client() -> &'static reqwest::Client {
     &crate::util::fetch::REQWEST_CLIENT
 }
 
-pub(super) async fn require_key() -> crate::Result<ApiKey> {
+/// How requests reach CurseForge.
+#[derive(Clone)]
+pub(super) enum Access {
+    /// The official API, with the user's own key.
+    Key(ApiKey),
+    /// curse.tools. No key of the user's goes there.
+    CommunityProxy,
+}
+
+impl Access {
+    fn base(&self) -> String {
+        #[cfg(debug_assertions)]
+        if let Some(base) = local_api_base() {
+            return base;
+        }
+        match self {
+            Access::Key(_) => API_BASE.to_string(),
+            Access::CommunityProxy => COMMUNITY_API_BASE.to_string(),
+        }
+    }
+
+    fn service(&self) -> &'static str {
+        match self {
+            Access::Key(_) => "CurseForge",
+            Access::CommunityProxy => "curse.tools",
+        }
+    }
+
+    fn may_reach(&self, url: &str) -> bool {
+        match self {
+            Access::Key(_) => is_curseforge_host(url),
+            Access::CommunityProxy => is_community_proxy_target(url),
+        }
+    }
+}
+
+async fn uses_community_proxy(state: &State) -> bool {
+    super::settings::PlusSettings::read(&state.pool)
+        .await
+        .is_ok_and(|settings| settings.curseforge.use_community_proxy)
+}
+
+pub(super) async fn require_access() -> crate::Result<Access> {
+    let state = State::get().await?;
+    if uses_community_proxy(&state).await {
+        return Ok(Access::CommunityProxy);
+    }
     match key_store::resolve().await {
-        Some((key, _)) => Ok(key),
+        Some((key, _)) => Ok(Access::Key(key)),
         None => Err(ErrorKind::InputError(
-            "CurseForge needs an API key for this. Add one in Settings, under Pawrinth and API configuration"
+            "CurseForge needs an API key for this. Add one in Settings, under Pawrinth and API configuration, or turn on curse.tools there"
                 .to_string(),
         )
         .into()),
@@ -235,6 +286,11 @@ const MODE_WITHOUT_KEY: DataMode = DataMode::NeedsKey;
 /// If CurseForge can't be reached the answer is left open, so a network problem shows
 /// as an error rather than as a bad key.
 pub async fn data_mode() -> DataMode {
+    if let Ok(state) = State::get().await
+        && uses_community_proxy(&state).await
+    {
+        return DataMode::Live;
+    }
     let Some((key, _)) = key_store::resolve().await else {
         return MODE_WITHOUT_KEY;
     };
@@ -295,72 +351,112 @@ pub(super) fn is_curseforge_host(url: &str) -> bool {
     };
     parsed.scheme() == "https"
         && parsed.host_str().is_some_and(|host| {
-            host == "api.curseforge.com"
-                || host == "edge.forgecdn.net"
-                || host == "mediafilez.forgecdn.net"
+            host == "api.curseforge.com" || is_download_host(host)
+        })
+}
+
+/// CurseForge's own download servers, which serve files without a key.
+fn is_download_host(host: &str) -> bool {
+    host == "edge.forgecdn.net" || host == "mediafilez.forgecdn.net"
+}
+
+/// Through curse.tools, requests only go to curse.tools itself and to CurseForge's
+/// download servers, so files always come from CurseForge.
+fn is_community_proxy_target(url: &str) -> bool {
+    #[cfg(debug_assertions)]
+    if local_api_base().is_some_and(|base| url.starts_with(&base)) {
+        return true;
+    }
+    let Ok(parsed) = url::Url::parse(url) else {
+        return false;
+    };
+    parsed.scheme() == "https"
+        && parsed.host_str().is_some_and(|host| {
+            host == COMMUNITY_API_HOST || is_download_host(host)
         })
 }
 
 async fn send_get(
     url: &str,
-    key: &ApiKey,
+    access: &Access,
     state: &State,
 ) -> crate::Result<bytes::Bytes> {
-    send_request(url, key, None, state).await
+    send_request(url, access, None, state).await
 }
 
 /// Separate from the shared fetch helper, whose tracing span records its header
 /// argument. That would write the key into log files. With a body it's a POST.
 async fn send_request(
     url: &str,
-    key: &ApiKey,
+    access: &Access,
     body: Option<&serde_json::Value>,
     state: &State,
 ) -> crate::Result<bytes::Bytes> {
-    if !is_curseforge_host(url) {
+    if !access.may_reach(url) {
         bail!(ErrorKind::InputError(
-            "refusing to send the CurseForge API key to another host"
-                .to_string()
+            match access {
+                Access::Key(_) => {
+                    "refusing to send the CurseForge API key to another host"
+                }
+                Access::CommunityProxy => {
+                    "refusing to send a CurseForge request to another host"
+                }
+            }
+            .to_string()
         ));
     }
+    let from_api = url.starts_with(&access.base());
+    let service = if from_api {
+        access.service()
+    } else {
+        "CurseForge"
+    };
     let _permit = state.api_semaphore.0.acquire().await?;
     let mut last_error = String::new();
     for attempt in 1..=MAX_ATTEMPTS {
-        let request = match body {
+        let mut request = match body {
             Some(body) => http_client().post(url).json(body),
             None => http_client().get(url),
         };
-        let response = request
-            .header("x-api-key", key.header_value()?)
-            .header("Accept", "application/json")
-            .send()
-            .await;
+        if let Access::Key(key) = access {
+            request = request.header("x-api-key", key.header_value()?);
+        }
+        let response =
+            request.header("Accept", "application/json").send().await;
         match response {
             Ok(response) if response.status().is_success() => {
                 return Ok(response.bytes().await?);
             }
             Ok(response) if response.status().is_server_error() => {
                 last_error =
-                    format!("CurseForge returned {}", response.status());
+                    format!("{service} returned {}", response.status());
             }
             Ok(response) => {
                 let status = response.status().as_u16();
-                let from_api = url.starts_with(&api_base());
-                if from_api && matches!(status, 401 | 403) {
+                let refused = from_api && matches!(status, 401 | 403);
+                if refused && matches!(access, Access::Key(_)) {
                     key_store::mark_rejected().await;
                 }
                 bail!(ErrorKind::InputError(match status {
-                    401 | 403 if from_api => {
-                        "CurseForge rejected the API key".to_string()
-                    }
+                    401 | 403 if refused => match access {
+                        Access::Key(_) => {
+                            "CurseForge rejected the API key".to_string()
+                        }
+                        Access::CommunityProxy => {
+                            "curse.tools refused the request".to_string()
+                        }
+                    },
                     401 | 403 => "CurseForge refused that download".to_string(),
                     404 => "CurseForge couldn't find that".to_string(),
-                    other => format!("CurseForge returned status {other}"),
+                    429 => format!(
+                        "{service} is limiting requests, so try again in a few minutes"
+                    ),
+                    other => format!("{service} returned status {other}"),
                 }));
             }
             Err(_) => {
                 // The error's text can include request details, so it isn't kept.
-                last_error = "could not reach CurseForge".to_string();
+                last_error = format!("could not reach {service}");
             }
         }
         if attempt < MAX_ATTEMPTS {
@@ -375,10 +471,13 @@ async fn get<T: DeserializeOwned>(
     path_and_query: &str,
     state: &State,
 ) -> crate::Result<T> {
-    let key = require_key().await?;
-    let bytes =
-        send_get(&format!("{}{path_and_query}", api_base()), &key, state)
-            .await?;
+    let access = require_access().await?;
+    let bytes = send_get(
+        &format!("{}{path_and_query}", access.base()),
+        &access,
+        state,
+    )
+    .await?;
     Ok(serde_json::from_slice(&bytes)?)
 }
 
@@ -394,10 +493,10 @@ async fn post_data<T: DeserializeOwned>(
     body: serde_json::Value,
     state: &State,
 ) -> crate::Result<T> {
-    let key = require_key().await?;
+    let access = require_access().await?;
     let bytes = send_request(
-        &format!("{}{path}", api_base()),
-        &key,
+        &format!("{}{path}", access.base()),
+        &access,
         Some(&body),
         state,
     )
@@ -533,7 +632,7 @@ pub async fn search(query: SearchQuery) -> crate::Result<SearchResults> {
         #[cfg(debug_assertions)]
         DataMode::Sample => return Ok(samples::search(&query)),
         DataMode::NeedsKey => {
-            require_key().await?;
+            require_access().await?;
         }
         DataMode::KeyRejected => bail!(ErrorKind::InputError(
             "CurseForge rejected the API key".to_string()
@@ -1125,7 +1224,7 @@ pub async fn plan_install(
 
 async fn download(
     file: &ProjectFile,
-    key: &ApiKey,
+    access: &Access,
     state: &State,
 ) -> crate::Result<tempfile::TempPath> {
     let url = file.download_url.as_deref().ok_or_else(|| {
@@ -1134,7 +1233,7 @@ async fn download(
             file.file_name
         ))
     })?;
-    let bytes = send_get(url, key, state).await?;
+    let bytes = send_get(url, access, state).await?;
     if file.file_length > 0 && bytes.len() as u64 != file.file_length {
         bail!(ErrorKind::InputError(format!(
             "{} downloaded with the wrong size",
@@ -1179,8 +1278,8 @@ async fn install_file(
         ));
     }
     let project_type = project_type_of(project, state).await?;
-    let key = require_key().await?;
-    let temp = download(file, &key, state).await?;
+    let access = require_access().await?;
+    let temp = download(file, &access, state).await?;
     let stored = state.content_store.store_file(&temp).await?;
     let requested = format!("{}/{}", project_type.get_folder(), file.file_name);
     let path = install_stored_file(
@@ -1981,5 +2080,51 @@ mod tests {
     fn the_key_only_goes_to_curseforge() {
         assert!(!is_curseforge_host("http://127.0.0.1:9000/v1/games"));
         assert!(!is_curseforge_host("https://example.invalid/v1/games"));
+        assert!(!is_curseforge_host("https://api.curse.tools/v1/mods/1"));
+    }
+
+    #[test]
+    fn curse_tools_only_reaches_itself_and_curseforge_downloads() {
+        assert!(is_community_proxy_target(
+            "https://api.curse.tools/v1/mods/search?gameId=432"
+        ));
+        assert!(is_community_proxy_target(
+            "https://edge.forgecdn.net/files/1/2/a.jar"
+        ));
+        assert!(is_community_proxy_target(
+            "https://mediafilez.forgecdn.net/files/1/2/a.jar"
+        ));
+        assert!(!is_community_proxy_target(
+            "http://api.curse.tools/v1/mods/1"
+        ));
+        assert!(!is_community_proxy_target(
+            "https://api.curseforge.com/v1/mods/1"
+        ));
+        assert!(!is_community_proxy_target(
+            "https://api.curse.tools.evil.test/v1/mods/1"
+        ));
+        assert!(!is_community_proxy_target("https://evil.test/a.jar"));
+        assert!(!is_community_proxy_target("not a url"));
+    }
+
+    #[test]
+    fn curse_tools_uses_its_own_address_and_name() {
+        let proxy = Access::CommunityProxy;
+        assert!(proxy.base().starts_with("https://api.curse.tools/"));
+        assert_eq!(proxy.service(), "curse.tools");
+        assert!(proxy.may_reach("https://edge.forgecdn.net/files/1/2/a.jar"));
+        assert!(!proxy.may_reach("https://api.curseforge.com/v1/mods/1"));
+    }
+
+    #[test]
+    fn curse_tools_still_honours_authors_who_opted_out() {
+        let opted_out = Project {
+            allow_mod_distribution: Some(false),
+            ..Project::default()
+        };
+        let mut offered = file(&[]);
+        offered.download_url =
+            Some("https://edge.forgecdn.net/files/9070/62/a.jar".to_string());
+        assert!(!can_download(&opted_out, &offered));
     }
 }

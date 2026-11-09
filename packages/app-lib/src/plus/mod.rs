@@ -12,13 +12,17 @@ pub mod discord;
 pub(crate) mod fault;
 pub(crate) mod guard;
 pub mod manifest;
+pub mod memory;
+pub mod mod_matching;
 pub mod news;
 pub mod operations;
 pub mod settings;
 pub mod setup;
 pub mod skin_gallery;
 pub mod skin_lookup;
+pub mod technic;
 pub mod theme_files;
+pub mod world_backups;
 
 #[cfg(test)]
 mod rollback_tests;

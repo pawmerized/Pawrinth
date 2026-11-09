@@ -14,7 +14,7 @@ Maintained by pawmerized. Fork of `modrinth/code` from commit `e5a5663` (v0.22.1
 
 ## CurseForge
 
-Uses only the official API. Search, details and downloads need an authorized key, so each user adds their own under Settings, Pawrinth, API configuration. It's kept in the system's credential store and no key ships in the app. Without one, the Discover page shows no projects and explains why. Results are ranked by popularity unless another order is picked, because CurseForge's API has no relevance ranking and returns matches in no useful order without one. CurseForge reports no likes for most projects, so cards only show a like count when there is one. See `pawrinth-docs/Modrinth Audit.md`.
+Uses the official API. Search, details and downloads need an authorized key, so each user adds their own under Settings, Pawrinth, API configuration. It's kept in the system's credential store and no key ships in the app. Without one, the Discover page shows no projects and explains why, unless curse.tools is turned on. Results are ranked by popularity unless another order is picked, because CurseForge's API has no relevance ranking and returns matches in no useful order without one. CurseForge reports no likes for most projects, so cards only show a like count when there is one. See `pawrinth-docs/Modrinth Audit.md`.
 
 **Mods, resource packs, shaders and data packs** install the way Modrinth content does. Browsing for an instance, Install puts the newest release that fits its Minecraft version and loader straight in, with its required dependencies, and says so in a notification. If nothing fits, or a required dependency can't be downloaded, the notification says why. Without an instance, Modrinth's own picker opens, where an instance can be chosen or created. A project's Versions tab installs a particular version, and Switch version on an installed file changes it.
 
@@ -27,7 +27,47 @@ Uses only the official API. Search, details and downloads need an authorized key
 
 Converted packs are kept in the app's cache folder for a week, so a failed install can be retried.
 
+**curse.tools.** The same settings page has an option, off by default, to send CurseForge requests through [curse.tools](https://api.curse.tools/), a free community proxy that answers like the official API without a key. It isn't run by CurseForge or Pawrinth, and the setting says so: it sees what you search for and install, and it can stop working at any time. While it's on, the user's own key isn't sent anywhere (`Access::CommunityProxy` in `curseforge.rs`), requests only go to curse.tools itself and to CurseForge's own download servers, and downloads are still checked against CurseForge's checksums. curse.tools' key returns download links even for projects whose authors don't allow other apps, so Pawrinth checks `allowModDistribution` itself and those projects stay blocked. A 404 on `/files` isn't used as the test, because that key never returns one for them. curse.tools uses one key for everyone, while CurseForge's terms make keys non-transferable, so it's an option for people who choose it rather than something Pawrinth relies on.
+
 **Exporting for CurseForge.** An instance's Export modpack window offers CurseForge `.zip` beside Modrinth `.mrpack` (`packages/app-lib/src/plus/curseforge_export.rs`), so friends on the CurseForge app can import it. The archive has a `manifest.json` in CurseForge's format with the Minecraft version and loader. Content installed from CurseForge is listed by project and file, and so is any other jar CurseForge recognises by its fingerprint. Everything else that's ticked, such as configs and files CurseForge doesn't know, goes in `overrides/`. Without a CurseForge key nothing can be looked up, so only files Pawrinth installed from CurseForge are listed and the rest go in `overrides/`. When it's done, the window says how many files were listed and names the ones packed inside the zip.
+
+## Technic
+
+Technic modpacks show as a third tab next to Modrinth and CurseForge on the Modpacks page (`packages/app-lib/src/plus/technic.rs`, `apps/app-frontend/src/features/plus-technic/`). They come from the Technic Platform's public API at `api.technicpack.net`, which asks which launcher build is calling, so requests say `build=pawrinth`. Technic answers too many requests in a row with 429, so a list only looks up the details of its first ten packs, two at a time, and remembers them for an hour. The rest show their name and icon until they're opened.
+
+**Installing.** A pack is downloaded the way the Technic launcher downloads it: one zip from the address its creator gave, or, for packs on a Solder server, every zip that server lists for the recommended build, each checked against its MD5. A file that doesn't match is downloaded once more. If it still doesn't match and came over HTTPS, it's kept and Pawrinth says which files didn't match, because a listed MD5 comes from the same server as the file and real packs have stale ones; over plain HTTP the install stops. The files are put together in order, with later ones replacing earlier ones, and the mod loader and its version are read from the pack's own `bin/modpack.jar` or `bin/version.json`, which is how Technic packs ship Forge, NeoForge, Fabric and Quilt. Pawrinth then writes an `.mrpack` whose overrides are the pack's files, without `bin/`, and installs it as a new instance through the normal install jobs. The converted pack holds the whole modpack, so it's deleted once the install finishes, and one that never got installed is deleted after a day. Dropbox share links are changed to download the file itself.
+
+- **Packs on plain HTTP.** About one pack in five downloads over HTTP, and zip packs come with no checksum at all, so nothing would catch a file swapped on the way. The pack page says so, and Install asks before downloading one.
+- **What can't be installed.** Packs that patch Minecraft's own jar instead of using a loader, mostly from 1.5.2 and earlier, are refused with an explanation, and so are packs with mods but no loader. Modrinth's loader data covers Forge back to 1.5.2.
+- **Not yet:** updating an installed Technic pack, and choosing a build other than the recommended one.
+
+**FTB isn't included.** In June 2023 Feed The Beast's legal advisers had them ask Prism Launcher, and MultiMC before it, to stop downloading FTB packs, and FTB said it has never let anyone but CurseForge distribute them ([Prism's post](https://prismlauncher.org/news/ftb-removal/)). FTB's [mod terms](https://www.feed-the-beast.com/policies/modpacks-mods-policy) also rule out using its mods to provide services to others. FTB packs that are published on CurseForge can be installed from there.
+
+## Recognising mods and duplicates
+
+Check mods on an instance's content page, and every pack install or launcher import, recognises mods that weren't installed through Pawrinth (`packages/app-lib/src/plus/mod_matching.rs`).
+
+- **Modrinth first.** A jar whose exact bytes are on Modrinth is already recognised by its SHA-1, the way the content tab always has, so it's never also linked to CurseForge.
+- **CurseForge.** Other jars are looked up by CurseForge's fingerprint, which needs a key or curse.tools. An exact match is only linked when the loaders CurseForge lists for that file agree with the jar's own metadata. Linking records the CurseForge project and file the way a CurseForge install does, so CurseForge updates manage the mod from then on. Nothing about the file changes. Fingerprints CurseForge doesn't know are only asked about once a session.
+- **What a jar says about itself.** `fabric.mod.json`, `quilt.mod.json`, `META-INF/mods.toml`, `META-INF/neoforge.mods.toml` and old `mcmod.info` give the mod ids, version, loader, supported Minecraft versions and required mods, plus the ids of mods bundled inside. Compatibility with the instance needs the loader to match and the Minecraft range to include the instance's version. Ranges Pawrinth can't read count as unknown, not compatible.
+- **Duplicates** are enabled jars that declare the same mod id or belong to the same Modrinth or CurseForge project, never files with similar names. The copy to keep is the compatible, newest, managed one. Removing another copy is only offered when the one kept is known to work with the instance, a snapshot is taken first, and Update history brings it back.
+- **The same mod on Modrinth.** A CurseForge file can be switched to Modrinth only when Modrinth has the same version for the instance's Minecraft version and loader, and both projects link the same source repository. Before switching, Pawrinth downloads the Modrinth jar and checks it declares the same mod, works with the instance and needs nothing that isn't installed. If the Modrinth install fails, the CurseForge file is put back. A version that isn't on Modrinth stays on CurseForge, and nothing is upgraded along the way.
+
+## Importing from the FTB App
+
+The import screen finds the FTB App's instances in `~/.ftba`, or wherever its `storage/settings.json` or `bin/settings.json` says they are, and lists them by pack name, Minecraft version and loader (`packages/app-lib/src/api/pack/import/ftb_app.rs`). The loader comes from `instance.json`'s `modLoader`, or from `version.json`'s targets in older instances. The icon is `folder.jpg`, or `.ftbapp/logo`, which is one byte for the image type followed by the image. Files are copied, never moved, so the FTB App's own instance stays exactly as it was, and the copy is a normal Pawrinth instance named after the pack. Nothing is downloaded from FTB. An instance with mods but no loader Pawrinth can read is refused rather than imported as vanilla.
+
+## Memory
+
+A pack's recommended memory becomes its instance's memory (`packages/app-lib/src/plus/memory.rs`). Recommendations come from Technic packs on Solder, whose builds list one, and from FTB App instances. Windows and other apps keep a quarter of the RAM, or on PCs with less than 16 GB, half of it up to 4 GB, so a recommendation larger than what's left is reduced, and the Java and memory settings say why. The amount stays automatic until someone changes it, including from anywhere else, and then it's never changed again unless they choose Use the recommended amount. Plans are checked again when Pawrinth starts, so a PC with more or less RAM gets a new amount. Instances without a recommendation keep Pawrinth's usual default.
+
+## World backups
+
+The Worlds tab's World backups window schedules backups for one instance, every hour, 6 hours, day or week, keeping 3 to 50 automatic backups per world (`packages/app-lib/src/plus/world_backups.rs`). Backups are zips of the whole world folder, every dimension included, in `world-backups/<instance>/<world>/` beside the instances, apart from content rollback and Minecraft's own `backups` folder.
+
+- **When.** Schedules are checked a minute after Pawrinth starts and every five minutes after that, so a backup missed while Pawrinth was closed happens soon after it opens. A world is only backed up again once something in it has changed, and never while Minecraft has it open, using Minecraft's own `session.lock`.
+- **Keeping.** The oldest automatic backups beyond the chosen number are removed. Backups made with Back up now are never removed automatically, and the five newest backups made before restores are kept.
+- **Restoring** needs the instance to be closed and asks first. The world as it is now is backed up, the backup is unpacked beside it with every path checked, and only then do the folders swap. If anything fails, the world is left as it was. A deleted world's backups are still listed, and restoring one brings it back.
 
 ## Pawrinth News
 
@@ -173,6 +213,8 @@ These are unresolved and need the owner's decision. Local builds are unaffected.
 ## Branding
 
 The paw logo is drawn on a 14 by 12 pixel grid in three greens, `#5cf7ae`, `#1bd96a` and `#0fa958`, on a dark slate gradient from `#21262e` to `#0f1115`. The vector is `packages/assets/branding/logo.svg`, and the app icons are made from `apps/app/icons/pawrinth-source.png`. Text uses Segoe UI.
+
+Interface settings can swap the paw for one of two original characters, Mochi the cat and Nova the unicorn (`apps/app-frontend/src/features/plus-logos/logos.ts`). Each is a 16 by 16 grid shaded the paw's way: the accent colour, lightened by 30% white on top edges and darkened by 20% black underneath, with darker accent shades for eyes and Nova's mane and a few fixed colours (white eye shine, pink, and a gold horn). In the app they follow the accent colour like the paw. Picking one also sets the window icon, drawn at 128 pixels in the paw icon's green on its dark rounded square. Tauri only sets a window's small icon, and the taskbar uses it because the window has no large one. The installer and shortcuts keep the paw, because Windows takes their icon from the exe, and a taskbar button pinned from a shortcut may too. A logo name a build doesn't know shows the paw.
 
 | File | Size | Use |
 | --- | --- | --- |

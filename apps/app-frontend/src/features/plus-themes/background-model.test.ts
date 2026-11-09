@@ -92,7 +92,9 @@ describe('overlay stylesheet', () => {
 
 	it('keeps headers solid while content scrolls under them', () => {
 		const css = overlayStylesheet({ '--surface-1': '#16181c', '--bad': 'var(--x)' }, 0.6)
-		expect(css).toContain('html.plus-has-background .sticky { --surface-1: rgb(22, 24, 28) !important;')
+		expect(css).toContain(
+			'html.plus-has-background .sticky { --surface-1: rgb(22, 24, 28) !important;',
+		)
 		expect(css).not.toContain('--bad')
 	})
 
