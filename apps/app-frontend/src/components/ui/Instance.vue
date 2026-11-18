@@ -10,6 +10,7 @@ import {
 import {
 	Avatar,
 	defineMessages,
+	formatLoaderLabel,
 	IconButton,
 	injectNotificationManager,
 	useRelativeTime,
@@ -21,6 +22,8 @@ import { useRouter } from 'vue-router'
 
 import { useAppEvent } from '@/composables/use-app-event'
 import { handleSevereError } from '@/composables/use-error.js'
+import { discoverLocation } from '@/features/plus-horizon/horizon-packs'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { trackEvent } from '@/helpers/analytics'
 import { install_existing_instance, install_pack_to_existing_instance } from '@/helpers/install'
 import { getInstanceIconUrl, kill, run } from '@/helpers/instance'
@@ -29,6 +32,7 @@ import { showInstanceInFolder } from '@/helpers/utils.js'
 
 const { handleError } = injectNotificationManager()
 const { formatMessage } = useVIntl()
+const loaderOf = useInstanceLoader()
 const formatRelativeTime = useRelativeTime()
 const messages = defineMessages({
 	instanceIcon: { id: 'app.instance.card.icon-alt', defaultMessage: 'Instance icon' },
@@ -136,10 +140,13 @@ const openFolder = async () => {
 
 const addContent = async () => {
 	if (props.instance.quarantined || installing.value || modLoading.value) return
-	await router.push({
-		path: `/browse/${props.instance.loader === 'vanilla' ? 'datapack' : 'mod'}`,
-		query: { i: props.instance.id },
-	})
+	await router.push(
+		discoverLocation(
+			loaderOf(props.instance),
+			props.instance.id,
+			props.instance.loader === 'vanilla' ? 'datapack' : 'mod',
+		),
+	)
 }
 
 defineExpose({
@@ -301,8 +308,8 @@ onMounted(() => {
 				</p>
 				<div class="flex items-center col-span-3 gap-1 text-secondary font-semibold mt-auto">
 					<GameIcon class="shrink-0" />
-					<span class="text-sm capitalize">
-						{{ instance.loader }} {{ instance.game_version }}
+					<span class="text-sm">
+						{{ formatLoaderLabel(loaderOf(instance)) }} {{ instance.game_version }}
 					</span>
 				</div>
 			</div>

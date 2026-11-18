@@ -59,6 +59,8 @@ export interface BrowseManagerContext {
 	getOrganizationLink?: (organizationId: string) => string
 	/** True when results couldn't be fetched, so an empty list isn't presented as "no results". */
 	loadFailed?: ComputedRef<boolean>
+	/** Replaces the default message when there are no results, for sources that know why. */
+	noResultsMessage?: ComputedRef<string | null>
 	/** Only set while browsing from an instance. */
 	instanceSync?: ComputedRef<{
 		enabled: boolean

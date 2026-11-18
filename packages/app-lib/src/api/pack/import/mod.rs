@@ -30,6 +30,7 @@ pub mod curseforge;
 pub mod ftb_app;
 pub mod gdlauncher;
 pub mod mmc;
+pub mod modrinth_app;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[cfg_attr(
@@ -43,6 +44,7 @@ pub enum ImportLauncherType {
     GDLauncher,
     Curseforge,
     FTBApp,
+    ModrinthApp,
     #[serde(other)]
     Unknown,
 }
@@ -56,6 +58,7 @@ impl fmt::Display for ImportLauncherType {
             ImportLauncherType::GDLauncher => write!(f, "GDLauncher"),
             ImportLauncherType::Curseforge => write!(f, "Curseforge"),
             ImportLauncherType::FTBApp => write!(f, "FTB App"),
+            ImportLauncherType::ModrinthApp => write!(f, "Modrinth App"),
             ImportLauncherType::Unknown => write!(f, "Unknown"),
         }
     }
@@ -73,6 +76,13 @@ pub async fn get_importable_instances(
         }
         ImportLauncherType::Curseforge => "Instances".to_string(),
         ImportLauncherType::FTBApp => String::new(),
+        ImportLauncherType::ModrinthApp => {
+            return Ok(modrinth_app::list_instances(&base_path)
+                .await?
+                .into_iter()
+                .map(|instance| instance.folder)
+                .collect());
+        }
         ImportLauncherType::MultiMC => {
             mmc::get_instances_subpath(base_path.clone().join("multimc.cfg"))
                 .await
@@ -91,6 +101,7 @@ pub async fn get_importable_instances(
                 ImportLauncherType::GDLauncher,
                 ImportLauncherType::Curseforge,
                 ImportLauncherType::FTBApp,
+                ImportLauncherType::ModrinthApp,
             ];
             for lt in types {
                 if let Ok(instances) =
@@ -205,6 +216,16 @@ async fn import_instance_inner(
             )
             .await
         }
+        ImportLauncherType::ModrinthApp => {
+            modrinth_app::import_modrinth_app(
+                base_path,
+                instance_folder,
+                instance_id,
+                reporter.clone(),
+                details.clone(),
+            )
+            .await
+        }
         ImportLauncherType::Unknown => {
             let types = [
                 ImportLauncherType::MultiMC,
@@ -213,6 +234,7 @@ async fn import_instance_inner(
                 ImportLauncherType::GDLauncher,
                 ImportLauncherType::Curseforge,
                 ImportLauncherType::FTBApp,
+                ImportLauncherType::ModrinthApp,
             ];
             let mut matched = false;
             for lt in types {
@@ -270,6 +292,12 @@ pub(crate) async fn initial_name(
     {
         return name;
     }
+    if launcher_type == ImportLauncherType::ModrinthApp
+        && let Some(name) =
+            modrinth_app::instance_name(base_path, instance_folder).await
+    {
+        return name;
+    }
     instance_folder.to_string()
 }
 
@@ -300,6 +328,7 @@ pub fn get_default_launcher_path(
             Some(dirs::document_dir()?.join("curseforge").join("minecraft"))
         }
         ImportLauncherType::FTBApp => ftb_app::default_instances_path(),
+        ImportLauncherType::ModrinthApp => modrinth_app::default_path(),
         ImportLauncherType::Unknown => None,
     };
     let path = path?;
@@ -377,6 +406,7 @@ pub async fn is_valid_importable_instance(
         ImportLauncherType::FTBApp => {
             ftb_app::is_valid_ftb_app(instance_path).await
         }
+        ImportLauncherType::ModrinthApp => instance_path.is_dir(),
         ImportLauncherType::Unknown => false,
     }
 }

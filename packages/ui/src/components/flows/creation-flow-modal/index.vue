@@ -29,6 +29,7 @@ const props = withDefaults(
 	defineProps<{
 		type?: FlowType
 		availableLoaders?: string[]
+		fixedVersionLoaders?: Record<string, string>
 		showSnapshotToggle?: boolean
 		disableClose?: boolean
 		isInitialSetup?: boolean
@@ -53,6 +54,7 @@ const props = withDefaults(
 	{
 		type: 'world',
 		availableLoaders: () => ['fabric', 'neoforge', 'forge', 'quilt'],
+		fixedVersionLoaders: () => ({}),
 		showSnapshotToggle: false,
 		disableClose: false,
 		isInitialSetup: false,
@@ -81,6 +83,7 @@ const ctx = createCreationFlowContext(
 	},
 	{
 		availableLoaders: props.availableLoaders,
+		fixedVersionLoaders: props.fixedVersionLoaders,
 		showSnapshotToggle: props.showSnapshotToggle,
 		disableClose: props.disableClose,
 		isInitialSetup: props.isInitialSetup,

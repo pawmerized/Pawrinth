@@ -18,6 +18,14 @@
 			dismissible
 			@dismiss="ctx.onDismissCrash?.()"
 		/>
+		<div
+			v-if="ctx.crashAnalysis?.value && !isFullscreen && ctx.crashActions?.value.length"
+			class="flex flex-wrap gap-2"
+		>
+			<Button v-for="action in ctx.crashActions.value" :key="action.label" @click="action.onClick">
+				{{ action.label }}
+			</Button>
+		</div>
 
 		<div class="flex flex-col gap-2">
 			<div class="flex items-center gap-2">

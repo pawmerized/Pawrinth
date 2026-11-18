@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import { computed, ref, watch } from 'vue'
 
+import { cornerRadius, currentCustomLogo } from './custom-logo'
 import { currentLogo, logoFrame, type LogoId, logoLayers } from './logos'
 
 const props = defineProps<{
@@ -11,6 +13,13 @@ const props = defineProps<{
 }>()
 
 const shown = computed(() => props.logo ?? currentLogo.value)
+const failed = ref(false)
+/** A chosen picture, unless a built-in logo was asked for or the picture is gone. */
+const custom = computed(() => (props.logo || failed.value ? null : currentCustomLogo.value))
+watch(
+	() => currentCustomLogo.value?.path,
+	() => (failed.value = false),
+)
 const layers = computed(() => logoLayers(shown.value))
 const transform = computed(() => {
 	const frame = logoFrame(shown.value)
@@ -19,7 +28,21 @@ const transform = computed(() => {
 </script>
 
 <template>
+	<img
+		v-if="custom"
+		:src="convertFileSrc(custom.path)"
+		alt="Pawrinth"
+		class="shrink-0 object-contain"
+		:style="{
+			width: `${custom.width}px`,
+			height: `${custom.height}px`,
+			borderRadius: cornerRadius(custom),
+		}"
+		draggable="false"
+		@error="failed = true"
+	/>
 	<svg
+		v-else
 		xmlns="http://www.w3.org/2000/svg"
 		:viewBox="markOnly ? '0 0 200 200' : '0 0 880 200'"
 		role="img"

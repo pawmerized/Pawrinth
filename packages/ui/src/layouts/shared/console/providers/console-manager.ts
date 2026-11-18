@@ -31,6 +31,8 @@ export interface ConsoleManagerContext {
 
 	crashAnalysis?: Ref<Mclogs.Insights.v1.InsightsResponse | null>
 	onDismissCrash?: () => void
+	/** A button under the crash analysis that goes to where the problem can be fixed. */
+	crashActions?: Ref<{ label: string; onClick: () => void }[]>
 }
 
 export const [injectConsoleManager, provideConsoleManager] = createContext<ConsoleManagerContext>(

@@ -51,6 +51,7 @@
 				@open-folder="() => instance && showInstanceInFolder(instance.id)"
 				@export="() => !instance?.quarantined && exportModal?.show()"
 				@create-shortcut="() => createShortcut()"
+				@server-pack="makeServerPack"
 				@report="reportSharedInstance"
 			/>
 		</div>
@@ -95,6 +96,7 @@ import {
 	ImageIcon,
 	PlayIcon,
 	PlusIcon,
+	ServerIcon,
 	StopCircleIcon,
 	TerminalSquareIcon,
 	UserPlusIcon,
@@ -109,6 +111,7 @@ import {
 	useVIntl,
 } from '@modrinth/ui'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
+import { open as chooseFolder } from '@tauri-apps/plugin-dialog'
 import { useOnline } from '@vueuse/core'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -129,6 +132,9 @@ import { useAppSettings } from '@/composables/use-app-settings.ts'
 import { handleSevereError } from '@/composables/use-error.js'
 import { useInstanceConsole } from '@/composables/useInstanceConsole'
 import InstanceSettingsModal from '@/features/instances/settings-modal/index.vue'
+import { isHorizonCandidate, plus_horizon_status } from '@/features/plus-horizon/horizon'
+import { discoverLocation } from '@/features/plus-horizon/horizon-packs'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { trackEvent } from '@/helpers/analytics'
 import { toError } from '@/helpers/errors'
 import {
@@ -148,9 +154,10 @@ import {
 	run,
 	sync_content_files,
 } from '@/helpers/instance'
+import { plus_server_pack_create } from '@/helpers/plus'
 import { useSharedInstanceErrors } from '@/helpers/shared-instance-errors'
 import type { GameInstance } from '@/helpers/types'
-import { createInstanceShortcut, showInstanceInFolder } from '@/helpers/utils.js'
+import { createInstanceShortcut, openPath, showInstanceInFolder } from '@/helpers/utils.js'
 import type { ServerStatus } from '@/helpers/worlds'
 import { provideInstanceBackup } from '@/providers/instance-backup'
 import { injectServerInstall } from '@/providers/server-install'
@@ -177,6 +184,21 @@ const route = useRoute()
 const { formatMessage } = useVIntl()
 
 const messages = defineMessages({
+	serverPack: { id: 'plus.server-pack.action', defaultMessage: 'Make a server pack' },
+	serverPackChoose: {
+		id: 'plus.server-pack.choose',
+		defaultMessage: 'Choose where to put the server folder',
+	},
+	serverPackMaking: {
+		id: 'plus.server-pack.making',
+		defaultMessage: 'Making a server pack for {name}…',
+	},
+	serverPackReady: { id: 'plus.server-pack.ready', defaultMessage: 'Server pack ready' },
+	serverPackSummary: {
+		id: 'plus.server-pack.summary',
+		defaultMessage:
+			'{mods, plural, one {# mod} other {# mods}} included.{left, plural, =0 {} other { Left out because they only work in the game client: {names}.}} Read README.txt in the folder before starting it.',
+	},
 	play: { id: 'app.instance.action.play', defaultMessage: 'Play' },
 	stop: { id: 'app.instance.action.stop', defaultMessage: 'Stop' },
 	addContent: { id: 'app.instance.action.add-content', defaultMessage: 'Add content' },
@@ -204,6 +226,7 @@ const messages = defineMessages({
 })
 
 const router = useRouter()
+const loaderOf = useInstanceLoader()
 const displayedInstanceRoute = shallowRef(router.currentRoute.value)
 watch(
 	() => router.currentRoute.value,
@@ -681,6 +704,14 @@ const startInstance = async (context: string) => {
 		return
 	}
 
+	if (isHorizonCandidate(instance.value)) {
+		const horizon = await plus_horizon_status(instanceId).catch(() => null)
+		if (horizon?.enabled && !horizon.ready) {
+			settingsModal.value?.showHorizon()
+			return
+		}
+	}
+
 	await launchInstance(context)
 }
 
@@ -714,13 +745,20 @@ function openSettings(tab?: number) {
 	settingsModal.value?.show(tab)
 }
 
+function openJavaSettings() {
+	settingsModal.value?.showJava()
+}
+
 async function browseContent(projectType?: string) {
 	const currentInstance = instance.value
 	if (!currentInstance || currentInstance.quarantined) return
-	await router.push({
-		path: `/browse/${projectType ?? (currentInstance.loader === 'vanilla' ? 'resourcepack' : 'mod')}`,
-		query: { i: currentInstance.id },
-	})
+	await router.push(
+		discoverLocation(
+			loaderOf(currentInstance),
+			currentInstance.id,
+			projectType ?? (currentInstance.loader === 'vanilla' ? 'resourcepack' : 'mod'),
+		),
+	)
 }
 
 async function browseServers() {
@@ -861,7 +899,49 @@ const handleRightClick = (event: MouseEvent) => {
 			icon: ClipboardCopyIcon,
 			action: () => void copyInstancePath(),
 		},
+		{
+			id: 'server_pack',
+			label: formatMessage(messages.serverPack),
+			icon: ServerIcon,
+			action: () => void makeServerPack(),
+		},
 	])
+}
+
+const makingServerPack = ref(false)
+
+/** Builds a server folder from this instance where the user chooses, then opens it. */
+async function makeServerPack() {
+	const current = instance.value
+	if (!current || makingServerPack.value) return
+	const parent = await chooseFolder({
+		directory: true,
+		multiple: false,
+		title: formatMessage(messages.serverPackChoose),
+	})
+	if (typeof parent !== 'string') return
+	makingServerPack.value = true
+	addNotification({
+		type: 'info',
+		title: formatMessage(messages.serverPackMaking, { name: current.name }),
+	})
+	try {
+		const report = await plus_server_pack_create(current.id, parent)
+		addNotification({
+			type: report.left_out.length > 0 ? 'warning' : 'success',
+			title: formatMessage(messages.serverPackReady),
+			text: formatMessage(messages.serverPackSummary, {
+				mods: report.mods,
+				left: report.left_out.length,
+				names: report.left_out.map((item) => item.file).join(', '),
+			}),
+		})
+		await openPath(report.folder)
+	} catch (error) {
+		handleError(toError(error))
+	} finally {
+		makingServerPack.value = false
+	}
 }
 
 const copyInstancePath = async () => {
@@ -886,6 +966,7 @@ provideInstancePage({
 	stop: stopInstance,
 	playServer: handlePlayServer,
 	openSettings,
+	openJavaSettings,
 	browseContent,
 	browseServers,
 	reviewSharedInstanceUpdate,

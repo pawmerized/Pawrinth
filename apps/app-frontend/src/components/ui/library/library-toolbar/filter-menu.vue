@@ -9,9 +9,11 @@ import {
 import { computed } from 'vue'
 
 import { useLibrary } from '@/components/ui/library/use-library'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 
 const { filters, instances } = useLibrary()
 const { formatMessage } = useVIntl()
+const loaderOf = useInstanceLoader()
 
 const messages = defineMessages({
 	instanceType: { id: 'app.library.filter.instance-type', defaultMessage: 'Instance type' },
@@ -46,7 +48,7 @@ const filterCategories = computed<DropdownFilterBarCategory[]>(() => [
 	{
 		key: 'loader',
 		label: formatMessage(messages.loader),
-		options: [...new Set(instances.value.map((instance) => instance.loader))]
+		options: [...new Set(instances.value.map((instance) => loaderOf(instance)))]
 			.map((loader) => ({
 				value: loader,
 				label: formatLoader(formatMessage, loader),

@@ -707,6 +707,9 @@
   "content.page-layout.busy-description": {
     "defaultMessage": "Please wait for the operation to complete before editing content."
   },
+  "content.page-layout.copy-to-instance": {
+    "defaultMessage": "Copy to…"
+  },
   "content.page-layout.empty.hint": {
     "defaultMessage": "Browse or upload {contentType} to get started"
   },

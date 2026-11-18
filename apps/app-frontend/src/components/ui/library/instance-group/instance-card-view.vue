@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { Avatar, truncatedTooltip } from '@modrinth/ui'
+import { DownloadIcon } from '@modrinth/assets'
+import { Avatar, defineMessages, formatLoaderLabel, truncatedTooltip, useVIntl } from '@modrinth/ui'
 import { computed, ref } from 'vue'
 
 import { useAppSettings } from '@/composables/use-app-settings.ts'
 import { useImageThumbnail } from '@/composables/use-image-thumbnail'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
+import { packUpdates } from '@/features/plus-updates/pack-updates'
 import { getInstanceIconUrl } from '@/helpers/instance'
 import type { GameInstance } from '@/helpers/types'
 
@@ -31,6 +34,18 @@ const thumbnail = useImageThumbnail(
 const iconSrc = computed(() =>
 	localIcon.value ? thumbnail.value : getInstanceIconUrl(props.instance.icon_path),
 )
+
+const { formatMessage } = useVIntl()
+const messages = defineMessages({
+	packUpdate: {
+		id: 'plus.library.pack-update',
+		defaultMessage: 'Modpack update available: {version}',
+	},
+})
+const packUpdate = computed(() => packUpdates.value.get(props.instance.id))
+
+const loaderOf = useInstanceLoader()
+const loaderLabel = computed(() => formatLoaderLabel(loaderOf(props.instance)))
 
 const nameRef = ref<HTMLElement | null>(null)
 const versionRef = ref<HTMLElement | null>(null)
@@ -62,6 +77,21 @@ const versionRef = ref<HTMLElement | null>(null)
 				no-shadow
 				pad-transparent-corners
 			/>
+			<span
+				v-if="packUpdate"
+				v-tooltip="formatMessage(messages.packUpdate, { version: packUpdate.latest })"
+				class="absolute z-[1] flex items-center justify-center rounded-full bg-brand text-[--color-accent-contrast]"
+				:class="
+					compactMode
+						? 'left-0 top-0 size-4 [&>svg]:size-3'
+						: 'left-1.5 top-1.5 size-7 [&>svg]:size-4'
+				"
+				role="img"
+				:aria-label="formatMessage(messages.packUpdate, { version: packUpdate.latest })"
+				data-pack-update
+			>
+				<DownloadIcon aria-hidden="true" />
+			</span>
 			<slot name="loading" :compact="compactMode" />
 			<div
 				class="absolute z-[1] flex items-center justify-center"
@@ -83,10 +113,10 @@ const versionRef = ref<HTMLElement | null>(null)
 			</p>
 			<p
 				ref="versionRef"
-				v-tooltip="truncatedTooltip(versionRef, `${instance.loader} ${instance.game_version}`)"
-				class="m-0 w-full truncate text-sm font-medium capitalize leading-[18px] text-primary"
+				v-tooltip="truncatedTooltip(versionRef, `${loaderLabel} ${instance.game_version}`)"
+				class="m-0 w-full truncate text-sm font-medium leading-[18px] text-primary"
 			>
-				{{ instance.loader }} {{ instance.game_version }}
+				{{ loaderLabel }} {{ instance.game_version }}
 			</p>
 		</div>
 		<slot name="overlay" :compact="compactMode" />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UploadIcon } from '@modrinth/assets'
 import {
 	Button,
 	defineMessages,
@@ -7,9 +8,13 @@ import {
 	Toggle,
 	useVIntl,
 } from '@modrinth/ui'
+import { convertFileSrc } from '@tauri-apps/api/core'
 import { useDebounceFn } from '@vueuse/core'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 
+import ModrinthSettingsImport from '@/features/plus-import/modrinth-settings-import.vue'
+import { readCustomLogo } from '@/features/plus-logos/custom-logo'
+import CustomLogoEditor from '@/features/plus-logos/custom-logo-editor.vue'
 import { LOGO_IDS, type LogoId, resolveLogo } from '@/features/plus-logos/logos'
 import PawrinthLogo from '@/features/plus-logos/pawrinth-logo.vue'
 import { openSetupWizard } from '@/features/plus-wizard/wizard-state'
@@ -33,6 +38,7 @@ const messages = defineMessages({
 	logoPaw: { id: 'plus.interface.logo.paw', defaultMessage: 'Paw' },
 	logoMochi: { id: 'plus.interface.logo.mochi', defaultMessage: 'Mochi' },
 	logoNova: { id: 'plus.interface.logo.nova', defaultMessage: 'Nova' },
+	logoCustom: { id: 'plus.interface.logo.custom', defaultMessage: 'Your own' },
 	scaleTitle: { id: 'plus.interface.scale', defaultMessage: 'Interface scale' },
 	scaleDescription: {
 		id: 'plus.interface.scale.description',
@@ -77,7 +83,26 @@ const logoNames = {
 	nova: messages.logoNova,
 } as const
 
-const chosenLogo = computed(() => resolveLogo(settings.value?.appearance.logo))
+const savedCustomLogo = computed(() => readCustomLogo(settings.value?.appearance.custom_logo))
+const customChosen = computed(
+	() => settings.value?.appearance.logo === 'custom' && !!savedCustomLogo.value,
+)
+const chosenLogo = computed(() =>
+	customChosen.value ? null : resolveLogo(settings.value?.appearance.logo),
+)
+const customLogoEditor = ref<InstanceType<typeof CustomLogoEditor> | null>(null)
+
+async function chooseCustomLogo(): Promise<void> {
+	if (!savedCustomLogo.value) {
+		await customLogoEditor.value?.choose()
+		return
+	}
+	try {
+		await patchPlusSettings({ appearance: { logo: 'custom' } })
+	} catch (error) {
+		handleError(error as Error)
+	}
+}
 
 async function chooseLogo(logo: LogoId): Promise<void> {
 	try {
@@ -132,7 +157,28 @@ function resetAll(): Promise<void> {
 						<PawrinthLogo :logo="logo" mark-only class="size-16" aria-hidden="true" />
 						<span class="font-semibold">{{ formatMessage(logoNames[logo]) }}</span>
 					</button>
+					<button
+						type="button"
+						class="flex w-28 cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-solid bg-surface-3 p-3 text-primary transition-[filter] hover:brightness-110 focus-visible:brightness-110"
+						:class="customChosen ? 'border-brand text-contrast' : 'border-surface-5'"
+						:aria-pressed="customChosen"
+						data-logo="custom"
+						@click="chooseCustomLogo"
+					>
+						<span class="flex size-16 items-center justify-center">
+							<img
+								v-if="savedCustomLogo"
+								:src="convertFileSrc(savedCustomLogo.path)"
+								alt=""
+								class="max-h-16 max-w-16 object-contain"
+								:class="{ 'rounded-xl': savedCustomLogo.rounded }"
+							/>
+							<UploadIcon v-else class="size-8" aria-hidden="true" />
+						</span>
+						<span class="font-semibold">{{ formatMessage(messages.logoCustom) }}</span>
+					</button>
 				</div>
+				<CustomLogoEditor ref="customLogoEditor" class="mt-3" />
 			</div>
 
 			<div>
@@ -222,5 +268,6 @@ function resetAll(): Promise<void> {
 				<Button @click="resetAll">{{ formatMessage(messages.resetAll) }}</Button>
 			</div>
 		</div>
+		<ModrinthSettingsImport class="mt-6" />
 	</section>
 </template>

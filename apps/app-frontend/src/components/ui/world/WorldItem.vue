@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
 	ClipboardCopyIcon,
+	CopyIcon,
 	EditIcon,
 	ExternalIcon,
 	EyeIcon,
@@ -73,7 +74,7 @@ const { addNotification } = injectNotificationManager()
 
 const emit = defineEmits<{
 	(e: 'play' | 'play-instance' | 'update' | 'stop' | 'refresh' | 'edit' | 'delete' | 'desync'): void
-	(e: 'open-folder', world: SingleplayerWorld): void
+	(e: 'open-folder' | 'copy-to-instance', world: SingleplayerWorld): void
 }>()
 
 const props = withDefaults(
@@ -187,6 +188,7 @@ const messages = defineMessages({
 		defaultMessage: 'Failed to create shortcut',
 	},
 	moreOptions: { id: 'instance.worlds.more-options', defaultMessage: 'More options' },
+	copyToInstance: { id: 'plus.copy.world-menu', defaultMessage: 'Copy to another instance' },
 	instanceLocked: {
 		id: 'instance.worlds.instance-locked',
 		defaultMessage: 'This instance has been locked',
@@ -386,6 +388,14 @@ const overflowOptions = computed((): ButtonMenuOption[] => [
 		icon: FolderOpenIcon,
 		shown: props.world.type === 'singleplayer',
 		action: () => (props.world.type === 'singleplayer' ? emit('open-folder', props.world) : {}),
+	},
+	{
+		id: 'copy-to-instance',
+		label: formatMessage(messages.copyToInstance),
+		icon: CopyIcon,
+		shown: props.world.type === 'singleplayer' && !props.instanceId,
+		action: () =>
+			props.world.type === 'singleplayer' ? emit('copy-to-instance', props.world) : {},
 	},
 	{
 		type: 'divider',

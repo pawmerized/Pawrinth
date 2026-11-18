@@ -43,11 +43,13 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAppEvent } from '@/composables/use-app-event'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
 import ProviderSwitch from '@/features/plus-curseforge/provider-switch.vue'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import {
 	hasSyncedFilter,
 	useInstanceFilterSync,
 } from '@/features/plus-install/instance-filter-sync'
 import { readInstanceTarget } from '@/features/plus-install/instance-target'
+import { hasInstalledName, loadInstalledIdentity } from '@/features/plus-mods/installed-names'
 import { get_project, get_search_results_v3, get_version_many } from '@/helpers/cache.js'
 import {
 	get_installed_project_ids as getInstalledProjectIds,
@@ -74,6 +76,7 @@ import { type BreadcrumbDefinition, injectBreadcrumbManager } from '@/shared/bre
 
 const { handleError } = injectNotificationManager()
 const { formatMessage } = useVIntl()
+const loaderOf = useInstanceLoader()
 const { installingServerProjects, playServerProject, showAddServerToInstanceModal } =
 	injectServerInstall()
 const { install: installVersion } = injectContentInstall()
@@ -174,6 +177,8 @@ const linkedInstanceProjectQuery = useQuery(
 	})),
 )
 const installedProjectIds: Ref<string[] | null> = ref(null)
+/** Mods from CurseForge count too, matched by name, so they aren't installed twice. */
+const installedNames = ref(new Set<string>())
 const instanceHideInstalled = ref(route.query.ai === 'true')
 const newlyInstalled = ref<string[]>([])
 const hiddenInstanceProjectIds = ref<Set<string>>(new Set())
@@ -350,6 +355,9 @@ async function refreshInstalledProjectIds() {
 	}
 
 	const targetInstanceId = route.query.i as string
+	void loadInstalledIdentity(targetInstanceId).then((identity) => {
+		if (route.query.i === targetInstanceId) installedNames.value = new Set(identity.names)
+	})
 	const ids = await queryClient
 		.fetchQuery({
 			queryKey: instanceKeys.installedProjectIds(targetInstanceId, 'content'),
@@ -819,7 +827,7 @@ const installContext = computed(() => {
 	if (instance.value) {
 		return {
 			name: instance.value.name,
-			loader: instance.value.loader,
+			loader: loaderOf(instance.value),
 			gameVersion: instance.value.game_version,
 			iconSrc: getInstanceIconUrl(instance.value.icon_path),
 			backUrl: `/instance/${encodeURIComponent(instance.value.id)}${isFromWorlds.value ? '/worlds' : ''}`,
@@ -1182,7 +1190,11 @@ async function search(requestParams: string) {
 				isServerContext.value && projectType.value !== 'modpack'
 					? serverContentProjectIds.value
 					: new Set([...newlyInstalled.value, ...(installedProjectIds.value ?? [])])
-			mapped.installed = installedIds.has(hit.project_id)
+			mapped.installed =
+				installedIds.has(hit.project_id) ||
+				(!isServerContext.value &&
+					projectType.value !== 'modpack' &&
+					hasInstalledName(installedNames.value, hit.slug, hit.name))
 		}
 
 		return mapped

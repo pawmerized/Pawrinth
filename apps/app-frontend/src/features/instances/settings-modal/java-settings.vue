@@ -24,7 +24,10 @@ import { computed, nextTick, readonly, ref, watch } from 'vue'
 import JavaDetectionModal from '@/components/ui/JavaDetectionModal.vue'
 import useJavaTest from '@/composables/useJavaTest'
 import useMemorySlider from '@/composables/useMemorySlider'
+import { checkArgs, isBlocked, splitArgs } from '@/features/plus-java/java-args'
+import JavaArgsHelp from '@/features/plus-java/java-args-help.vue'
 import { edit, get_optimal_jre_key } from '@/helpers/instance'
+import { get_jre } from '@/helpers/jre.js'
 import {
 	plus_memory_set_manual,
 	plus_memory_status,
@@ -154,6 +157,35 @@ watch(overrideJavaArgs, (enabled) => {
 	}
 })
 
+const customJavaMajor = ref<number | null>(null)
+watch(
+	javaTestPath,
+	async (path) => {
+		customJavaMajor.value = path
+			? ((await get_jre(path).catch(() => null))?.parsed_version ?? null)
+			: null
+	},
+	{ immediate: true },
+)
+const argsContext = computed(() => ({
+	javaMajor: overrideJavaInstall.value
+		? customJavaMajor.value
+		: (optimalJava?.parsed_version ?? null),
+	memoryMb: overrideMemorySettings.value ? memory.value.maximum : globalSettings.memory.maximum,
+	loader: instance.value.loader,
+}))
+/** Arguments Java would refuse aren't saved, so the game keeps the last ones that work. */
+const argsBlocked = computed(
+	() =>
+		overrideJavaArgs.value && isBlocked(checkArgs(splitArgs(javaArgs.value), argsContext.value)),
+)
+let savedJavaArgs = instance.value.extra_launch_args ?? null
+
+function updateJavaArgs(text: string): void {
+	overrideJavaArgs.value = true
+	javaArgs.value = text
+}
+
 watch(overrideEnvVars, (enabled) => {
 	if (!enabled) {
 		envVars.value = serializeEnvVars(globalSettings.custom_env_vars)
@@ -173,7 +205,9 @@ const editInstanceObject = computed(() => {
 				? javaPath.value.replace('java.exe', 'javaw.exe')
 				: null,
 		extra_launch_args: overrideJavaArgs.value
-			? javaArgs.value.trim().split(/\s+/).filter(Boolean)
+			? argsBlocked.value
+				? savedJavaArgs
+				: splitArgs(javaArgs.value)
 			: null,
 		custom_env_vars: overrideEnvVars.value ? parseEnvVars(envVars.value) : null,
 		memory: overrideMemorySettings.value ? memory.value : null,
@@ -192,7 +226,10 @@ watch(
 		memory,
 	],
 	async () => {
-		await edit(instance.value.id, editInstanceObject.value).catch(handleError)
+		const changes = editInstanceObject.value
+		await edit(instance.value.id, changes)
+			.then(() => (savedJavaArgs = changes.extra_launch_args))
+			.catch(handleError)
 	},
 	{ deep: true },
 )
@@ -465,6 +502,12 @@ const messages = defineMessages({
 					wrapper-class="w-full"
 				/>
 			</div>
+			<JavaArgsHelp
+				:args="javaArgs"
+				:context="argsContext"
+				:own="overrideJavaArgs"
+				@update="updateJavaArgs"
+			/>
 		</section>
 
 		<section class="flex flex-col">

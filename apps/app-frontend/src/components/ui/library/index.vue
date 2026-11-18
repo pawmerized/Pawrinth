@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { StarIcon } from '@modrinth/assets'
 import { ContextMenu, defineMessages, useVIntl } from '@modrinth/ui'
-import { computed, nextTick, onDeactivated, onUnmounted, ref, toRef, watch } from 'vue'
+import { computed, nextTick, onActivated, onDeactivated, onUnmounted, ref, toRef, watch } from 'vue'
 import Draggable from 'vuedraggable'
 
 import IconEditorModal from '@/components/ui/instance_settings/InstanceIconEditorModal.vue'
@@ -16,6 +16,7 @@ import {
 	provideLibrary,
 } from '@/components/ui/library/use-library'
 import ConfirmDeleteInstanceModal from '@/components/ui/modal/ConfirmDeleteInstanceModal.vue'
+import { refreshPackUpdates } from '@/features/plus-updates/pack-updates'
 import { FAVORITES_GROUP_ID } from '@/helpers/instance-groups'
 import type { GameInstance } from '@/helpers/types'
 
@@ -24,6 +25,9 @@ import { libraryScrollTop } from './view-state'
 const props = defineProps<{
 	instances: GameInstance[]
 }>()
+
+void refreshPackUpdates()
+onActivated(() => void refreshPackUpdates())
 
 const { formatMessage } = useVIntl()
 const messages = defineMessages({

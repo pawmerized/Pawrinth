@@ -18,6 +18,7 @@ import { useDebounceFn } from '@vueuse/core'
 import { computed, inject, nextTick, ref, watch } from 'vue'
 
 import { useTheme } from '@/composables/use-theme'
+import ModrinthSettingsImport from '@/features/plus-import/modrinth-settings-import.vue'
 import { patchPlusSettings, usePlusSettings } from '@/features/plus-settings/use-plus-settings'
 import {
 	applyCustomTheme,
@@ -361,6 +362,7 @@ watch(
 				</h3>
 				<p class="m-0">{{ formatMessage(messages.welcomeText) }}</p>
 				<p class="m-0 text-sm text-secondary">{{ formatMessage(messages.welcomeFork) }}</p>
+				<ModrinthSettingsImport compact class="mt-4" />
 			</section>
 
 			<section v-else-if="step === 'appearance'" class="flex flex-col gap-4">

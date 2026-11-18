@@ -36,6 +36,7 @@ import {
 	watchEffect,
 } from 'vue'
 
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project_v3_many } from '@/helpers/cache.js'
 import { toError } from '@/helpers/errors'
@@ -188,6 +189,7 @@ const instanceActionMessages = defineMessages({
 function createLibraryState(instances: Ref<GameInstance[]>) {
 	const { handleError } = injectNotificationManager()
 	const { formatMessage } = useVIntl()
+	const loaderOf = useInstanceLoader()
 
 	const search = librarySearch
 	const filters = useStorage<LibraryFilters>(
@@ -420,7 +422,7 @@ function createLibraryState(instances: Ref<GameInstance[]>) {
 				filters.value.gameVersion.length === 0 ||
 				filters.value.gameVersion.includes(instance.game_version)
 			const loaderMatches =
-				filters.value.loader.length === 0 || filters.value.loader.includes(instance.loader)
+				filters.value.loader.length === 0 || filters.value.loader.includes(loaderOf(instance))
 
 			return instanceTypeMatches && gameVersionMatches && loaderMatches
 		}),
@@ -437,8 +439,8 @@ function createLibraryState(instances: Ref<GameInstance[]>) {
 				break
 			case 'Loader':
 				visibleInstances.sort((a, b) =>
-					formatLoader(formatMessage, a.loader).localeCompare(
-						formatLoader(formatMessage, b.loader),
+					formatLoader(formatMessage, loaderOf(a)).localeCompare(
+						formatLoader(formatMessage, loaderOf(b)),
 					),
 				)
 				break
@@ -489,7 +491,7 @@ function createLibraryState(instances: Ref<GameInstance[]>) {
 					break
 				case 'Loader':
 					{
-						const name = formatLoader(formatMessage, instance.loader)
+						const name = formatLoader(formatMessage, loaderOf(instance))
 						addToGroup(`Loader:${name}`, name, instance)
 					}
 					break

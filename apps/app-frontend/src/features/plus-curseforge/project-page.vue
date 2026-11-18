@@ -9,6 +9,7 @@ import {
 	commonMessages,
 	defineMessages,
 	IconButton,
+	injectNotificationManager,
 	LoadingIndicator,
 	NavTabs,
 	NewModal,
@@ -26,20 +27,24 @@ import { useQuery } from '@tanstack/vue-query'
 import { computed, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { SwapIcon } from '@/assets/icons/index.js'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { injectSettingsActions } from '@/features/settings/settings-actions'
 import { getInstanceIconUrl } from '@/helpers/instance'
 import {
 	type CfCategory,
 	type CfDataMode,
 	type CfFile,
+	type CfInstalledOrigin,
 	type CfProject,
+	plus_cf_all_files,
+	plus_cf_apply_updates,
 	plus_cf_changelog,
 	plus_cf_classes,
 	plus_cf_data_mode,
 	plus_cf_description,
-	plus_cf_files,
 	plus_cf_install_options,
-	plus_cf_installed_projects,
+	plus_cf_installed_file,
 	plus_cf_project,
 } from '@/helpers/plus'
 import { get_game_versions, get_loaders } from '@/helpers/tags'
@@ -58,12 +63,14 @@ import {
 	toProjectView,
 	toVersionView,
 } from './project-adapter'
-import { classInfo } from './provider-mapping'
+import { classInfo, LOADER_TYPE_IDS } from './provider-mapping'
 
 const route = useRoute()
 const router = useRouter()
 const settingsActions = injectSettingsActions()
+const { handleError } = injectNotificationManager()
 const { formatMessage } = useVIntl()
+const loaderOf = useInstanceLoader()
 
 const messages = defineMessages({
 	provider: { id: 'plus.curseforge.provider', defaultMessage: 'CurseForge' },
@@ -97,7 +104,10 @@ const messages = defineMessages({
 		id: 'plus.project.no-compatible.text',
 		defaultMessage: 'This project has no version for {target}.',
 	},
-	changelog: { id: 'plus.curseforge.project.changelog', defaultMessage: 'Changelog' },
+	alreadyInstalled: {
+		id: 'app.project.versions.already-installed',
+		defaultMessage: 'Already installed',
+	},
 	noChangelog: {
 		id: 'plus.curseforge.install.no-changelog',
 		defaultMessage: "This version doesn't have a changelog.",
@@ -170,6 +180,7 @@ const gameVersions = shallowRef<unknown[]>([])
 const plannedFile = shallowRef<CfFile | null>(null)
 const plannedChecked = ref(false)
 const installedHere = ref(false)
+const installedFile = ref<CfInstalledOrigin | null>(null)
 const error = ref<string | null>(null)
 const loading = ref(true)
 const modpackInstall = injectModpackInstall()
@@ -202,11 +213,37 @@ const backUrl = computed(() => {
 		? back
 		: `${browsePath.value}${querySuffix.value}`
 })
+/** Like Modrinth's, the Versions tab opens filtered to the instance's version and loader. */
+const versionsQuery = computed(() => {
+	const params = new URLSearchParams(querySuffix.value.slice(1))
+	if (instance.value) {
+		const loader = instance.value.loader
+		if (classInfo(classSlug.value).projectType === 'mod' && loader !== 'vanilla') {
+			params.append('l', loader)
+		}
+		params.append('g', instance.value.game_version)
+	}
+	const text = params.toString()
+	return text ? `?${text}` : ''
+})
+
+/** Clicking a version opens its changelog, the way Modrinth's rows open the version's page. */
+function changelogLink(version: { id: string }): string {
+	const params = new URLSearchParams()
+	for (const [key, value] of Object.entries(route.query)) {
+		for (const item of Array.isArray(value) ? value : [value]) {
+			if (typeof item === 'string' && key !== 'changelog') params.append(key, item)
+		}
+	}
+	params.set('changelog', version.id)
+	return `${route.path}?${params.toString()}`
+}
+
 const tabLinks = computed(() => {
 	const base = `/curseforge/project/${projectId.value}`
 	return [
 		{ label: formatMessage(messages.description), href: `${base}${querySuffix.value}` },
-		{ label: formatMessage(messages.versions), href: `${base}/versions${querySuffix.value}` },
+		{ label: formatMessage(messages.versions), href: `${base}/versions${versionsQuery.value}` },
 		{
 			label: formatMessage(messages.gallery),
 			href: `${base}/gallery${querySuffix.value}`,
@@ -218,7 +255,7 @@ const installContext = computed(() =>
 	instance.value
 		? {
 				name: instance.value.name,
-				loader: instance.value.loader,
+				loader: loaderOf(instance.value),
 				gameVersion: instance.value.game_version,
 				iconSrc: getInstanceIconUrl(instance.value.icon_path),
 				backUrl: backUrl.value,
@@ -255,11 +292,11 @@ useBreadcrumb({
 async function loadPlannedVersion(): Promise<void> {
 	plannedFile.value = null
 	plannedChecked.value = false
+	installedFile.value = null
 	if (!instanceId.value || !project.value || !canInstall.value || isModpack.value) return
 	try {
-		installedHere.value = (await plus_cf_installed_projects(instanceId.value)).includes(
-			project.value.id,
-		)
+		installedFile.value = await plus_cf_installed_file(instanceId.value, project.value.id)
+		installedHere.value = installedFile.value !== null
 		const options = await plus_cf_install_options(instanceId.value, project.value.id, false, null)
 		plannedFile.value =
 			options.files.find((option) => option.file.id === options.recommended_file_id)?.file ?? null
@@ -290,8 +327,9 @@ async function load(): Promise<void> {
 		classes.value = loadedClasses
 		loaders.value = loadedLoaders
 		gameVersions.value = loadedGameVersions
-		files.value = await plus_cf_files(projectId.value, null, null).catch(() => [])
+		files.value = await plus_cf_all_files(projectId.value, null, null).catch(() => [])
 		void loadPlannedVersion()
+		void loadInstanceFiles()
 	} catch (cause) {
 		error.value = errorText(cause)
 	} finally {
@@ -300,7 +338,45 @@ async function load(): Promise<void> {
 }
 
 watch(projectId, () => void load(), { immediate: true })
+watch(
+	[() => route.query.changelog, files],
+	([fileId]) => {
+		const file = files.value.find((item) => String(item.id) === fileId)
+		if (file) void openChangelog(file)
+	},
+	{ immediate: true },
+)
+
+function closeChangelog(): void {
+	if (route.query.changelog === undefined) return
+	const query = { ...route.query }
+	delete query.changelog
+	void router.replace({ query })
+}
 watch(instanceId, () => void loadPlannedVersion())
+watch(instance, () => void loadInstanceFiles())
+
+/**
+ * A big project's newest files can all be for other Minecraft versions, so the
+ * instance's own matching files are fetched too, and the list has all of them.
+ */
+async function loadInstanceFiles(): Promise<void> {
+	const current = project.value
+	const target = instance.value
+	if (!current || !target) return
+	const loaderType =
+		classInfo(classSlug.value).projectType === 'mod' ? LOADER_TYPE_IDS[target.loader] : undefined
+	const matching = await plus_cf_all_files(
+		current.id,
+		target.game_version,
+		loaderType ?? null,
+	).catch(() => [])
+	if (project.value?.id !== current.id || matching.length === 0) return
+	const known = new Set(files.value.map((file) => file.id))
+	files.value = [...files.value, ...matching.filter((file) => !known.has(file.id))].sort(
+		(a, b) => Date.parse(b.fileDate) - Date.parse(a.fileDate),
+	)
+}
 watch(curseforgeKeyRevision, () => void load())
 
 function goToCategory(name: string): void {
@@ -333,10 +409,49 @@ async function install(fileId: number | null = null): Promise<void> {
 	try {
 		if (await installContent(current, { instanceId: instanceId.value || null, fileId })) {
 			installedHere.value = true
+			if (instanceId.value) {
+				installedFile.value = await plus_cf_installed_file(instanceId.value, current.id).catch(
+					() => null,
+				)
+			}
 		}
 	} finally {
 		installing.value = false
 	}
+}
+
+/** Installs the file, or switches to it when another file of the project is installed. */
+async function chooseVersion(fileId: number): Promise<void> {
+	const current = project.value
+	const installed = installedFile.value
+	if (!installed || !instanceId.value || !current) {
+		await install(fileId)
+		return
+	}
+	if (installed.file_id === fileId || busy.value) return
+	installing.value = true
+	try {
+		await plus_cf_apply_updates(instanceId.value, [
+			{ relative_path: installed.relative_path, project_id: current.id, file_id: fileId },
+		])
+		installedFile.value = await plus_cf_installed_file(instanceId.value, current.id)
+	} catch (cause) {
+		handleError(cause as Error)
+	} finally {
+		installing.value = false
+	}
+}
+
+function versionActionLabel(fileId: string): string {
+	if (!installedFile.value) return formatMessage(commonMessages.installButton)
+	return String(installedFile.value.file_id) === fileId
+		? formatMessage(messages.alreadyInstalled)
+		: formatMessage(commonMessages.switchToVersionButton)
+}
+
+function fileWebsite(fileId: string): string | null {
+	const website = project.value?.links.websiteUrl
+	return website ? `${website.replace(/\/+$/, '')}/files/${fileId}` : null
 }
 
 async function openChangelog(file: CfFile): Promise<void> {
@@ -501,22 +616,34 @@ async function openChangelog(file: CfFile): Promise<void> {
 					:game-versions="gameVersions"
 					:versions="versionViews"
 					:project="{ id: String(project.id), slug: project.slug, project_type: view.project_type }"
+					:version-link="changelogLink"
 				>
 					<template #actions="{ version }">
-						<Button type="quiet" @click.stop="openChangelog(version.curseforge)">
-							{{ formatMessage(messages.changelog) }}
-						</Button>
 						<IconButton
 							v-if="canInstall"
-							v-tooltip="formatMessage(commonMessages.installButton)"
+							v-tooltip="versionActionLabel(version.id)"
 							type="quiet"
-							color="green"
-							:disabled="busy"
-							:label="formatMessage(commonMessages.installButton)"
-							@click.stop="install(version.curseforge.id)"
+							:color="
+								installedFile && String(installedFile.file_id) === version.id ? undefined : 'green'
+							"
+							:disabled="busy || (!!installedFile && String(installedFile.file_id) === version.id)"
+							:label="versionActionLabel(version.id)"
+							@click.stop="chooseVersion(Number(version.id))"
 						>
-							<DownloadIcon />
+							<DownloadIcon v-if="!installedFile" />
+							<SwapIcon v-else-if="String(installedFile.file_id) !== version.id" />
+							<CheckIcon v-else />
 						</IconButton>
+						<ButtonLink
+							v-if="fileWebsite(version.id) && mode !== 'sample'"
+							v-tooltip="formatMessage(commonMessages.openInBrowserButton)"
+							type="quiet"
+							:href="fileWebsite(version.id)"
+							target="_blank"
+							class="!w-9 !px-0 !rounded-full"
+						>
+							<ExternalIcon />
+						</ButtonLink>
 					</template>
 				</ProjectPageVersions>
 			</template>
@@ -527,7 +654,12 @@ async function openChangelog(file: CfFile): Promise<void> {
 				<p v-else class="m-0 text-secondary">{{ formatMessage(messages.noDescription) }}</p>
 			</Card>
 
-			<NewModal ref="changelogModal" :header="changelogTitle" max-width="640px">
+			<NewModal
+				ref="changelogModal"
+				:header="changelogTitle"
+				max-width="640px"
+				:on-hide="closeChangelog"
+			>
 				<!-- eslint-disable-next-line vue/no-v-html -- sanitized with configuredXss -->
 				<div v-if="changelogHtml" class="markdown-body" v-html="changelogHtml" />
 				<p v-else class="m-0 text-secondary">{{ formatMessage(messages.noChangelog) }}</p>

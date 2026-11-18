@@ -10,6 +10,8 @@ import { useRouter } from 'vue-router'
 import type UnknownPackWarningModal from '@/components/ui/install_flow/UnknownPackWarningModal.vue'
 import type ModpackAlreadyInstalledModal from '@/components/ui/modal/ModpackAlreadyInstalledModal.vue'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
+import { plus_horizon_set_enabled } from '@/features/plus-horizon/horizon'
+import { reloadPlusSettings } from '@/features/plus-settings/use-plus-settings'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project, get_search_results } from '@/helpers/cache.js'
 import { import_instance } from '@/helpers/import.js'
@@ -169,14 +171,20 @@ export function setupCreationModal(
 			const iconPath = config.instanceIconPath.value ?? null
 			const name = config.instanceName.value.trim() || config.autoInstanceName.value
 
+			const horizon = loader === 'horizon'
 			const job = await install_create_instance({
 				name,
 				gameVersion: config.selectedGameVersion.value!,
-				loader: loader as InstanceLoader,
+				loader: (horizon ? 'vanilla' : loader) as InstanceLoader,
 				loaderVersion,
 				iconPath,
 				iconConfig: iconPath ? getGeneratedIconConfig?.(iconPath) : null,
 			})
+			const instanceId = installJobInstanceId(job)
+			if (horizon && instanceId) {
+				await plus_horizon_set_enabled(instanceId, true)
+				await reloadPlusSettings().catch(() => {})
+			}
 			await navigateToCreatedInstance(job)
 
 			trackEvent('InstanceCreate', {

@@ -7,7 +7,10 @@
 //! Technic packs are hosted by their creators. Downloads over plain HTTP are only made
 //! when someone agrees to it for that pack, because nothing else checks those files.
 
-use super::curseforge_pack::{display_name, pack_dependencies};
+use super::curseforge_pack::{
+    OverrideEntry, Previous, display_name, file_sha1, overrides_to_keep,
+    pack_dependencies, sha1_hex,
+};
 use crate::ErrorKind;
 use crate::api::pack::install_from::{CreatePackLocation, PackFormat};
 use crate::event::LoadingBarType;
@@ -22,10 +25,10 @@ use futures::StreamExt;
 use path_util::SafeRelativeUtf8UnixPathBuf;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Deserializer, Serialize};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::future::Future;
 use std::io::{Read, Write};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::pin::Pin;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, LazyLock, Mutex};
@@ -38,14 +41,28 @@ const INDEX_NAME: &str = "modrinth.index.json";
 const RECORD_NAME: &str = "pawrinth-technic.json";
 const ICON_NAME: &str = "icon.png";
 const PACKS_FOLDER: &str = "technic-packs";
+/// Where what's known about each installed pack is kept, beside the instances.
+const INSTALLED_FOLDER: &str = "technic-packs";
 const PACK_OVERRIDES: &str = "overrides";
 /// A converted pack holds the whole modpack, so it's removed once it's installed, and
 /// one that never got installed is removed after this long.
 const KEEP_CONVERTED_PACKS: Duration = Duration::from_secs(24 * 60 * 60);
 const MAX_ATTEMPTS: u32 = 3;
-/// Technic answers too many requests in a row with 429, so a list only looks up the
-/// details of its first few packs, a couple at a time, and remembers them.
-const DETAILED_RESULTS: usize = 10;
+/// Technic answers too many requests in a row with 429, so a list is shown a page at a
+/// time, and only that page's packs are looked up, a couple at a time, and remembered.
+const MAX_PAGE_SIZE: usize = 20;
+/// Search returns 15 packs unless asked for more, and never more than 50. Trending is
+/// always 20, and the API has no list of every pack.
+const SEARCH_RESULTS: &str = "50";
+/// With no list of every pack, the list people browse is gathered from broad
+/// searches. Each returns a different 50 of Technic's packs, so these find about 550.
+const CATALOG_SEARCHES: [&str; 12] =
+    ["a", "e", "i", "o", "u", "r", "s", "t", "n", "l", "c", "d"];
+const CATALOG_CONCURRENCY: usize = 3;
+const CATALOG_KEPT_FOR: Duration = Duration::from_secs(60 * 60);
+/// A list missing some searches, because Technic limited requests, is gathered again
+/// sooner.
+const PARTIAL_CATALOG_KEPT_FOR: Duration = Duration::from_secs(5 * 60);
 const DETAIL_CONCURRENCY: usize = 2;
 const DETAILS_KEPT_FOR: Duration = Duration::from_secs(60 * 60);
 const DOWNLOAD_CONCURRENCY: usize = 4;
@@ -55,7 +72,8 @@ const MAX_QUERY_CHARS: usize = 100;
 const MAX_SLUG_CHARS: usize = 100;
 const MAX_SUMMARY_CHARS: usize = 300;
 const MAX_UPDATES: usize = 10;
-/// A loader profile is a few megabytes at most, so anything far bigger isn't one.
+/// A loader profile is a few megabytes at most, so anything far bigger isn't one, and
+/// a profile inside the jar is never unpacked past this.
 const MAX_PROFILE_BYTES: u64 = 64 * 1024 * 1024;
 
 fn lenient_number<'de, D>(deserializer: D) -> Result<Option<u64>, D::Error>
@@ -78,6 +96,8 @@ struct SearchResponse {
 #[derive(Clone, Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
 struct SearchHit {
+    /// Technic numbers packs as they're made, so a higher id is a newer pack.
+    id: Option<String>,
     name: String,
     slug: String,
     icon_url: Option<String>,
@@ -166,6 +186,14 @@ pub struct PackSummary {
     pub game_version: Option<String>,
     pub installs: Option<u64>,
     pub ratings: Option<u64>,
+    pub tags: Vec<String>,
+}
+
+/// One page of a list, and how many packs the whole list has.
+#[derive(Clone, Debug, Serialize)]
+pub struct PackPage {
+    pub packs: Vec<PackSummary>,
+    pub total: usize,
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -217,10 +245,12 @@ pub struct PreparedPack {
     /// The memory the pack's creator recommends, which the new instance starts with
     /// when this PC can spare it.
     pub recommended_memory_mb: Option<u32>,
+    /// For an update: files someone changed or added, which the update leaves alone.
+    pub kept: Vec<String>,
 }
 
 /// Written into the converted pack, so installing it knows what it is.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 struct PackRecord {
     slug: String,
     name: String,
@@ -228,6 +258,50 @@ struct PackRecord {
     file_name: String,
     #[serde(default)]
     memory_mb: Option<u32>,
+    #[serde(default)]
+    for_instance: Option<String>,
+    /// Every file in this version of the pack, with its SHA-1.
+    #[serde(default)]
+    files: BTreeMap<String, String>,
+    /// For an update: files the last version put there, which this version dropped
+    /// and nobody changed, so they're removed.
+    #[serde(default)]
+    stale: Vec<String>,
+    /// For an update: mods someone had turned off, which stay off.
+    #[serde(default)]
+    keep_disabled: Vec<String>,
+    #[serde(default)]
+    allowed_insecure: bool,
+}
+
+/// What's remembered about an instance installed from a Technic pack, so the pack
+/// can be updated without replacing what someone changed.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+struct InstalledPack {
+    instance_id: String,
+    slug: String,
+    name: String,
+    version: String,
+    files: BTreeMap<String, String>,
+    /// Whether someone agreed to this pack downloading over plain HTTP.
+    #[serde(default)]
+    allowed_insecure: bool,
+}
+
+/// An instance installed from a Technic pack, as the app shows it.
+#[derive(Clone, Debug, Serialize)]
+pub struct InstalledInfo {
+    pub instance_id: String,
+    pub slug: String,
+    pub name: String,
+    pub version: String,
+}
+
+struct UpdatePlan {
+    skipped: HashSet<usize>,
+    kept: Vec<String>,
+    stale: Vec<String>,
+    keep_disabled: Vec<String>,
 }
 
 #[derive(Clone)]
@@ -504,13 +578,24 @@ fn summary_of(hit: &SearchHit, details: Option<&ApiPack>) -> PackSummary {
             .and_then(|pack| non_empty(pack.minecraft.as_deref())),
         installs: details.and_then(|pack| pack.installs),
         ratings: details.and_then(|pack| pack.ratings),
+        tags: details.map(pack_tags).unwrap_or_default(),
     }
+}
+
+fn pack_tags(pack: &ApiPack) -> Vec<String> {
+    pack.tags
+        .as_deref()
+        .unwrap_or_default()
+        .split(',')
+        .map(str::trim)
+        .filter(|tag| !tag.is_empty())
+        .map(str::to_string)
+        .collect()
 }
 
 /// Details for a pack in a list, from memory or from Technic while it isn't limiting
 /// requests. Lists only look up their first few packs.
 async fn list_details(
-    position: usize,
     slug: String,
     limited: Arc<AtomicBool>,
     state: Arc<State>,
@@ -518,7 +603,7 @@ async fn list_details(
     if let Some(pack) = remembered(&slug) {
         return Some(pack);
     }
-    if position >= DETAILED_RESULTS || limited.load(Ordering::Relaxed) {
+    if limited.load(Ordering::Relaxed) {
         return None;
     }
     match fetch_json::<ApiPack>(&pack_url(&slug), "Technic", &state).await {
@@ -534,39 +619,124 @@ async fn list_details(
     }
 }
 
-/// Packs matching a search, or Technic's trending packs when there's no search.
-pub async fn browse(query: Option<String>) -> crate::Result<Vec<PackSummary>> {
+static CATALOG: LazyLock<Mutex<Option<(Instant, bool, Vec<SearchHit>)>>> =
+    LazyLock::new(|| Mutex::new(None));
+
+/// Each pack once, in the order given, leaving out any with an unusable slug.
+fn merged(lists: impl IntoIterator<Item = Vec<SearchHit>>) -> Vec<SearchHit> {
+    let mut seen = std::collections::HashSet::new();
+    lists
+        .into_iter()
+        .flatten()
+        .filter(|hit| valid_slug(&hit.slug) && seen.insert(hit.slug.clone()))
+        .collect()
+}
+
+/// `newest` and `name` reorder the list. Anything else keeps Technic's own order:
+/// trending packs first, then each search's best matches.
+fn sorted(mut hits: Vec<SearchHit>, sort: Option<&str>) -> Vec<SearchHit> {
+    match sort {
+        Some("newest") => hits.sort_by_key(|hit| {
+            std::cmp::Reverse(
+                hit.id.as_deref().and_then(|id| id.parse::<u64>().ok()),
+            )
+        }),
+        Some("name") => {
+            hits.sort_by_cached_key(|hit| hit.name.trim().to_lowercase())
+        }
+        _ => {}
+    }
+    hits
+}
+
+/// Owns its state, because a Tauri command's future can't hold borrowed data across
+/// the stream.
+async fn catalog_search(
+    query: String,
+    state: Arc<State>,
+) -> Option<SearchResponse> {
+    let url = api_url("/search", &[("q", &query), ("limit", SEARCH_RESULTS)]);
+    get_json(&url, "Technic", &state).await.ok()
+}
+
+/// Technic's trending packs, then everything the broad searches found, remembered for
+/// an hour so only the first visit waits for it.
+async fn catalog(state: Arc<State>) -> crate::Result<Vec<SearchHit>> {
+    if let Ok(cached) = CATALOG.lock()
+        && let Some((gathered, complete, hits)) = cached.as_ref()
+        && gathered.elapsed()
+            < if *complete {
+                CATALOG_KEPT_FOR
+            } else {
+                PARTIAL_CATALOG_KEPT_FOR
+            }
+    {
+        return Ok(hits.clone());
+    }
+    let trending_url = api_url("/trending", &[]);
+    let trending: SearchResponse =
+        get_json(&trending_url, "Technic", &state).await?;
+    let searches: Vec<Option<SearchResponse>> =
+        futures::stream::iter(CATALOG_SEARCHES.map(String::from))
+            .map(|query| catalog_search(query, state.clone()))
+            .buffered(CATALOG_CONCURRENCY)
+            .collect()
+            .await;
+    let complete = searches.iter().all(Option::is_some);
+    let hits = merged(
+        std::iter::once(trending.modpacks)
+            .chain(searches.into_iter().flatten().map(|found| found.modpacks)),
+    );
+    if let Ok(mut cached) = CATALOG.lock() {
+        *cached = Some((Instant::now(), complete, hits.clone()));
+    }
+    Ok(hits)
+}
+
+/// A page of the packs matching a search, or of the packs Pawrinth gathered from
+/// Technic when there's no search, in the order `sort` names.
+pub async fn browse(
+    query: Option<String>,
+    offset: usize,
+    limit: usize,
+    sort: Option<String>,
+) -> crate::Result<PackPage> {
     let state = State::get().await?;
     let query = query
         .map(|query| query.trim().chars().take(MAX_QUERY_CHARS).collect())
         .filter(|query: &String| !query.is_empty());
-    let url = match &query {
-        Some(query) => api_url("/search", &[("q", query)]),
-        None => api_url("/trending", &[]),
+    let hits = match &query {
+        Some(query) => {
+            let url =
+                api_url("/search", &[("q", query), ("limit", SEARCH_RESULTS)]);
+            let response: SearchResponse =
+                get_json(&url, "Technic", &state).await?;
+            merged([response.modpacks])
+        }
+        None => sorted(catalog(state.clone()).await?, sort.as_deref()),
     };
-    let response: SearchResponse = get_json(&url, "Technic", &state).await?;
-    let mut seen = std::collections::HashSet::new();
-    let hits: Vec<SearchHit> = response
-        .modpacks
+    let total = hits.len();
+    let page: Vec<SearchHit> = hits
         .into_iter()
-        .filter(|hit| valid_slug(&hit.slug) && seen.insert(hit.slug.clone()))
+        .skip(offset)
+        .take(limit.clamp(1, MAX_PAGE_SIZE))
         .collect();
 
     let limited = Arc::new(AtomicBool::new(false));
-    let details: Vec<Option<ApiPack>> =
-        futures::stream::iter(hits.clone().into_iter().enumerate())
-            .map(|(position, hit)| {
-                list_details(position, hit.slug, limited.clone(), state.clone())
-            })
-            .buffered(DETAIL_CONCURRENCY)
-            .collect()
-            .await;
+    let details: Vec<Option<ApiPack>> = futures::stream::iter(page.clone())
+        .map(|hit| list_details(hit.slug, limited.clone(), state.clone()))
+        .buffered(DETAIL_CONCURRENCY)
+        .collect()
+        .await;
 
-    Ok(hits
-        .iter()
-        .zip(details.iter())
-        .map(|(hit, details)| summary_of(hit, details.as_ref()))
-        .collect())
+    Ok(PackPage {
+        packs: page
+            .iter()
+            .zip(details.iter())
+            .map(|(hit, details)| summary_of(hit, details.as_ref()))
+            .collect(),
+        total,
+    })
 }
 
 fn is_insecure(pack: &ApiPack) -> bool {
@@ -593,15 +763,7 @@ fn details_of(slug: &str, pack: &ApiPack) -> PackDetails {
         runs: pack.runs,
         ratings: pack.ratings,
         official: pack.is_official,
-        tags: pack
-            .tags
-            .as_deref()
-            .unwrap_or_default()
-            .split(',')
-            .map(str::trim)
-            .filter(|tag| !tag.is_empty())
-            .map(str::to_string)
-            .collect(),
+        tags: pack_tags(pack),
         page_url: pack
             .platform_url
             .clone()
@@ -650,19 +812,21 @@ fn check_transport(
     }
 }
 
-async fn solder_plan(
+/// The build a Solder server wants installed: its recommended one, or its newest.
+/// Returns the pack's address on that server too.
+async fn solder_build(
     pack: &ApiPack,
     name: &str,
     solder: &str,
     allow_insecure: bool,
     state: &State,
-) -> crate::Result<Plan> {
+) -> crate::Result<(String, String)> {
     check_transport(solder, allow_insecure, name)?;
     let base = format!("{}/", solder.trim().trim_end_matches('/'));
     let slug = urlencoding::encode(&pack.name).into_owned();
+    let address = format!("{base}modpack/{slug}");
     let listing: SolderPack =
-        get_json(&format!("{base}modpack/{slug}"), "the pack's server", state)
-            .await?;
+        get_json(&address, "the pack's server", state).await?;
     let Some(build) = non_empty(listing.recommended.as_deref())
         .or_else(|| non_empty(listing.latest.as_deref()))
         .or_else(|| listing.builds.last().cloned())
@@ -671,12 +835,21 @@ async fn solder_plan(
             "{name} has no build to download"
         )));
     };
-    let contents: SolderBuild = get_json(
-        &format!("{base}modpack/{slug}/{}", urlencoding::encode(&build)),
-        "the pack's server",
-        state,
-    )
-    .await?;
+    Ok((address, build))
+}
+
+async fn solder_plan(
+    pack: &ApiPack,
+    name: &str,
+    solder: &str,
+    allow_insecure: bool,
+    state: &State,
+) -> crate::Result<Plan> {
+    let (address, build) =
+        solder_build(pack, name, solder, allow_insecure, state).await?;
+    let build_address = format!("{address}/{}", urlencoding::encode(&build));
+    let contents: SolderBuild =
+        get_json(&build_address, "the pack's server", state).await?;
     if contents.mods.is_empty() {
         bail!(ErrorKind::InputError(format!(
             "{name}'s build {build} has no files"
@@ -941,6 +1114,90 @@ fn collect_entries(paths: &[PathBuf]) -> crate::Result<Collected> {
     Ok(collected)
 }
 
+/// The SHA-1 of every entry, in the same order, so an update can tell what someone
+/// changed since the pack put it there.
+fn hash_entries(
+    paths: &[PathBuf],
+    entries: &[Entry],
+) -> crate::Result<Vec<String>> {
+    let mut archives = paths
+        .iter()
+        .map(|path| {
+            Ok(zip::ZipArchive::new(std::io::BufReader::new(
+                std::fs::File::open(path)?,
+            ))?)
+        })
+        .collect::<crate::Result<Vec<_>>>()?;
+    entries
+        .iter()
+        .map(|entry| {
+            Ok(sha1_hex(archives[entry.source].by_index(entry.index)?)?)
+        })
+        .collect()
+}
+
+/// What updating leaves alone and cleans up. Files someone changed stay, worlds the
+/// instance already has are never touched, and a file the last version put there is
+/// only removed when this version dropped it and it's still exactly what the pack
+/// installed. Jars in content folders belong to the pack, which replaces them.
+fn plan_update(
+    entries: &[Entry],
+    hashes: &[String],
+    installed: &InstalledPack,
+    instance_dir: &Path,
+) -> UpdatePlan {
+    let overrides: Vec<OverrideEntry> = entries
+        .iter()
+        .zip(hashes)
+        .enumerate()
+        .map(|(index, (entry, sha1))| OverrideEntry {
+            index,
+            relative: entry.relative.clone(),
+            sha1: sha1.clone(),
+        })
+        .collect();
+    let previous = Previous {
+        overrides: installed.files.clone(),
+        instance_dir: instance_dir.to_path_buf(),
+        keep_disabled: Vec::new(),
+    };
+    let (skipped, kept) = overrides_to_keep(&overrides, &previous);
+    let current: HashSet<String> = entries
+        .iter()
+        .map(|entry| entry.relative.to_lowercase())
+        .collect();
+    let managed = crate::state::content_store::is_managed_content_path;
+    let stale = installed
+        .files
+        .iter()
+        .filter(|(path, sha1)| {
+            !current.contains(&path.to_lowercase())
+                && !managed(path)
+                && !path.starts_with("saves/")
+                && file_sha1(&instance_dir.join(path)).as_deref()
+                    == Some(sha1.as_str())
+        })
+        .map(|(path, _)| path.clone())
+        .collect();
+    let keep_disabled = installed
+        .files
+        .keys()
+        .filter(|path| {
+            managed(path)
+                && current.contains(&path.to_lowercase())
+                && !instance_dir.join(path).exists()
+                && instance_dir.join(format!("{path}.disabled")).exists()
+        })
+        .cloned()
+        .collect();
+    UpdatePlan {
+        skipped,
+        kept,
+        stale,
+        keep_disabled,
+    }
+}
+
 fn read_entry(
     paths: &[PathBuf],
     (source, index): (usize, usize),
@@ -967,14 +1224,14 @@ fn profile_from_jar(jar: &[u8]) -> crate::Result<Option<VersionProfile>> {
             )
         })?;
     let mut text = String::new();
-    if let Ok(mut entry) = archive.by_name("version.json") {
-        entry.read_to_string(&mut text)?;
+    if let Ok(entry) = archive.by_name("version.json") {
+        entry.take(MAX_PROFILE_BYTES).read_to_string(&mut text)?;
         return Ok(
             serde_json::from_str(text.trim_start_matches('\u{feff}')).ok()
         );
     }
-    if let Ok(mut entry) = archive.by_name("install_profile.json") {
-        entry.read_to_string(&mut text)?;
+    if let Ok(entry) = archive.by_name("install_profile.json") {
+        entry.take(MAX_PROFILE_BYTES).read_to_string(&mut text)?;
         let profile: Option<InstallProfile> =
             serde_json::from_str(text.trim_start_matches('\u{feff}')).ok();
         return Ok(profile.and_then(|profile| profile.version_info));
@@ -1165,17 +1422,69 @@ fn write_pack(
     Ok(destination)
 }
 
-/// Downloads a Technic pack and gets it ready to install as a new instance. Packs that
-/// download over plain HTTP need `allow_insecure`.
+fn installed_path(instance_id: &str, state: &State) -> PathBuf {
+    state
+        .directories
+        .config_dir
+        .join(INSTALLED_FOLDER)
+        .join(format!(
+            "{}.json",
+            super::world_backups::instance_folder(instance_id)
+        ))
+}
+
+async fn read_installed(path: &Path) -> Option<InstalledPack> {
+    serde_json::from_slice(&tokio::fs::read(path).await.ok()?).ok()
+}
+
+async fn previous_install(
+    instance_id: &str,
+    slug: &str,
+    state: &State,
+) -> crate::Result<(InstalledPack, PathBuf)> {
+    let Some(installed) =
+        read_installed(&installed_path(instance_id, state)).await
+    else {
+        bail!(ErrorKind::InputError(
+            "this instance wasn't installed from a Technic modpack Pawrinth can update"
+                .to_string()
+        ));
+    };
+    if installed.instance_id != instance_id || installed.slug != slug {
+        bail!(ErrorKind::InputError(
+            "this instance was installed from a different modpack".to_string()
+        ));
+    }
+    if crate::state::instance_has_running_process(instance_id, state).await? {
+        bail!(ErrorKind::InputError(
+            "stop this instance before updating it".to_string()
+        ));
+    }
+    Ok((
+        installed,
+        crate::api::instance::get_full_path(instance_id).await?,
+    ))
+}
+
+/// Downloads a Technic pack and gets it ready to install. Packs that download over
+/// plain HTTP need `allow_insecure`. With an instance, it's prepared as an update of
+/// the pack that instance already has.
 pub async fn prepare(
     slug: String,
     allow_insecure: bool,
+    instance_id: Option<String>,
 ) -> crate::Result<PreparedPack> {
     let state = State::get().await?;
     remove_old_packs(&state).await;
     let pack = fresh_details(&slug, &state).await?;
     let name = non_empty(Some(&pack.display_name))
         .unwrap_or_else(|| pack.name.clone());
+    let previous = match &instance_id {
+        Some(instance_id) => {
+            Some(previous_install(instance_id, &pack.name, &state).await?)
+        }
+        None => None,
+    };
     let plan = match (
         non_empty(pack.solder.as_deref()),
         non_empty(pack.url.as_deref()),
@@ -1202,12 +1511,22 @@ pub async fn prepare(
         .map(|(download, _)| download.path().to_path_buf())
         .collect();
     let read_paths = paths.clone();
-    let (collected, profile) = tokio::task::spawn_blocking(move || {
-        let collected = collect_entries(&read_paths)?;
-        let profile = read_profile(&read_paths, &collected)?;
-        crate::Result::Ok((collected, profile))
-    })
-    .await??;
+    let (collected, profile, hashes, update) =
+        tokio::task::spawn_blocking(move || {
+            let collected = collect_entries(&read_paths)?;
+            let profile = read_profile(&read_paths, &collected)?;
+            let hashes = hash_entries(&read_paths, &collected.entries)?;
+            let update = previous.map(|(installed, instance_dir)| {
+                plan_update(
+                    &collected.entries,
+                    &hashes,
+                    &installed,
+                    &instance_dir,
+                )
+            });
+            crate::Result::Ok((collected, profile, hashes, update))
+        })
+        .await??;
 
     let Some(game_version) = plan.game_version.clone().or_else(|| {
         profile
@@ -1238,14 +1557,54 @@ pub async fn prepare(
         &state,
     )
     .await;
-    let token = token_for(&pack.name, &plan.version);
+    let token = match &instance_id {
+        Some(instance_id) => format!(
+            "{}-{}",
+            token_for(&pack.name, &plan.version)
+                .chars()
+                .take(54)
+                .collect::<String>(),
+            instance_id
+                .chars()
+                .filter(char::is_ascii_alphanumeric)
+                .take(40)
+                .collect::<String>()
+        ),
+        None => token_for(&pack.name, &plan.version),
+    };
+    let (skipped, kept, stale, keep_disabled) = match update {
+        Some(update) => (
+            update.skipped,
+            update.kept,
+            update.stale,
+            update.keep_disabled,
+        ),
+        None => Default::default(),
+    };
     let record = PackRecord {
         slug: pack.name.clone(),
         name: name.clone(),
         version: plan.version.clone(),
         file_name: format!("{}.mrpack", display_name(&name)),
         memory_mb: plan.memory_mb,
+        for_instance: instance_id.clone(),
+        files: collected
+            .entries
+            .iter()
+            .zip(&hashes)
+            .map(|(entry, sha1)| (entry.relative.clone(), sha1.clone()))
+            .collect(),
+        stale,
+        keep_disabled,
+        allowed_insecure: allow_insecure && is_insecure(&pack),
     };
+    let written_entries: Vec<Entry> = collected
+        .entries
+        .iter()
+        .enumerate()
+        .filter(|(index, _)| !skipped.contains(index))
+        .map(|(_, entry)| entry.clone())
+        .collect();
     let index = PackFormat {
         game: "minecraft".to_string(),
         format_version: 1,
@@ -1271,7 +1630,7 @@ pub async fn prepare(
     tokio::task::spawn_blocking(move || {
         write_pack(
             &paths,
-            &collected.entries,
+            &written_entries,
             &index,
             &written_record,
             icon.as_deref(),
@@ -1293,6 +1652,7 @@ pub async fn prepare(
         total_bytes,
         unverified,
         recommended_memory_mb: plan.memory_mb,
+        kept,
     })
 }
 
@@ -1338,12 +1698,20 @@ async fn read_record(path: &Path) -> crate::Result<PackRecord> {
     .await?
 }
 
-/// Starts installing a prepared pack as a new instance. Progress shows in the download
-/// manager.
-pub async fn install(token: String) -> crate::Result<InstallJobSnapshot> {
+/// Starts installing a prepared pack, as a new instance or as an update of the
+/// instance it was prepared for. Progress shows in the download manager.
+pub async fn install(
+    token: String,
+    instance_id: Option<String>,
+) -> crate::Result<InstallJobSnapshot> {
     let state = State::get().await?;
     let path = prepared_pack_path(&token, &state).await?;
     let record = read_record(&path).await?;
+    if record.for_instance != instance_id {
+        bail!(ErrorKind::InputError(
+            "this modpack was prepared for a different instance".to_string()
+        ));
+    }
     let link = InstanceLink::ImportedModpack {
         project_id: None,
         version_id: None,
@@ -1351,15 +1719,144 @@ pub async fn install(token: String) -> crate::Result<InstallJobSnapshot> {
         version_number: Some(record.version.clone()),
         filename: Some(record.file_name.clone()),
     };
-    crate::install::create_modpack_instance(
-        CreatePackLocation::FromFile { path },
-        Some(InstallPostInstallEdit {
-            name: Some(record.name),
-            icon_path: None,
-            link: Some(link),
-        }),
-    )
-    .await
+    let location = CreatePackLocation::FromFile { path };
+    match instance_id {
+        None => {
+            crate::install::create_modpack_instance(
+                location,
+                Some(InstallPostInstallEdit {
+                    name: Some(record.name),
+                    icon_path: None,
+                    link: Some(link),
+                }),
+            )
+            .await
+        }
+        Some(instance_id) => {
+            crate::install::install_pack_to_existing_instance(
+                instance_id,
+                location,
+                Some(InstallPostInstallEdit {
+                    name: None,
+                    icon_path: None,
+                    link: Some(link),
+                }),
+            )
+            .await
+        }
+    }
+}
+
+/// After a pack is installed or updated: removes what the new version dropped, turns
+/// back off what someone had turned off, and remembers what the pack installed.
+async fn settle(
+    instance_id: &str,
+    record: PackRecord,
+    state: &State,
+) -> crate::Result<()> {
+    let instance_dir = crate::api::instance::get_full_path(instance_id).await?;
+    for path in &record.stale {
+        if SafeRelativeUtf8UnixPathBuf::try_from(path.clone()).is_ok() {
+            let _ = tokio::fs::remove_file(instance_dir.join(path)).await;
+        }
+    }
+    for path in &record.keep_disabled {
+        if instance_dir.join(path).exists() {
+            crate::state::instances::commands::toggle_disable_project(
+                instance_id,
+                path,
+                Some(false),
+                state,
+            )
+            .await?;
+        }
+    }
+    let installed = InstalledPack {
+        instance_id: instance_id.to_string(),
+        slug: record.slug,
+        name: record.name,
+        version: record.version,
+        files: record.files,
+        allowed_insecure: record.allowed_insecure,
+    };
+    let path = installed_path(instance_id, state);
+    if let Some(folder) = path.parent() {
+        tokio::fs::create_dir_all(folder).await?;
+    }
+    tokio::fs::write(&path, serde_json::to_vec(&installed)?).await?;
+    Ok(())
+}
+
+/// Every instance installed from a Technic pack that can be updated. What's
+/// remembered about instances that have since been deleted is forgotten here.
+pub async fn installed_packs() -> crate::Result<Vec<InstalledInfo>> {
+    let state = State::get().await?;
+    let folder = state.directories.config_dir.join(INSTALLED_FOLDER);
+    let mut packs = Vec::new();
+    let Ok(mut entries) = tokio::fs::read_dir(&folder).await else {
+        return Ok(packs);
+    };
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let Some(installed) = read_installed(&entry.path()).await else {
+            continue;
+        };
+        if crate::state::get_instance(&installed.instance_id, &state.pool)
+            .await?
+            .is_none()
+        {
+            let _ = tokio::fs::remove_file(entry.path()).await;
+            continue;
+        }
+        packs.push(InstalledInfo {
+            instance_id: installed.instance_id,
+            slug: installed.slug,
+            name: installed.name,
+            version: installed.version,
+        });
+    }
+    Ok(packs)
+}
+
+/// The version Technic would install now for the pack an instance has, or `None` when
+/// it can't be found out. A pack on a plain HTTP server is only asked when someone
+/// agreed to that server when installing it.
+pub(super) async fn latest_version(instance_id: String) -> Option<String> {
+    let state = State::get().await.ok()?;
+    let installed =
+        read_installed(&installed_path(&instance_id, &state)).await?;
+    let pack = match remembered(&installed.slug) {
+        Some(pack) => pack,
+        None => fresh_details(&installed.slug, &state).await.ok()?,
+    };
+    match non_empty(pack.solder.as_deref()) {
+        Some(solder) => solder_build(
+            &pack,
+            &installed.name,
+            &solder,
+            installed.allowed_insecure,
+            &state,
+        )
+        .await
+        .ok()
+        .map(|(_, build)| build),
+        None => non_empty(pack.version.as_deref()),
+    }
+}
+
+/// The folder Pawrinth converted a pack into, when `path` is a pack in one. The path
+/// comes from the webview, so `..` anywhere means it isn't, since `packs/..` would
+/// otherwise pass as a folder inside the packs folder.
+fn converted_pack_folder<'a>(path: &'a Path, packs: &Path) -> Option<&'a Path> {
+    if path.components().any(|part| {
+        !matches!(
+            part,
+            Component::Normal(_) | Component::Prefix(_) | Component::RootDir
+        )
+    }) {
+        return None;
+    }
+    path.parent()
+        .filter(|folder| folder.parent() == Some(packs))
 }
 
 /// Runs at the end of an install job. A converted Technic pack holds the whole modpack,
@@ -1373,29 +1870,155 @@ pub(crate) async fn finish_install(
         return;
     };
     let packs = packs_dir(state);
-    let Some(folder) = path
-        .parent()
-        .filter(|folder| folder.parent() == Some(packs.as_path()))
-    else {
+    let Some(folder) = converted_pack_folder(path, &packs) else {
         return;
     };
-    if let Ok(record) = read_record(path).await
-        && let Some(memory_mb) = record.memory_mb
-        && let Err(error) = super::memory::recommend(
-            instance_id,
-            memory_mb,
-            super::settings::MemorySource::Technic,
-        )
-        .await
-    {
-        tracing::warn!("Couldn't apply the pack's recommended memory: {error}");
+    if let Ok(record) = read_record(path).await {
+        if let Some(memory_mb) = record.memory_mb
+            && let Err(error) = super::memory::recommend(
+                instance_id,
+                memory_mb,
+                super::settings::MemorySource::Technic,
+            )
+            .await
+        {
+            tracing::warn!(
+                "Couldn't apply the pack's recommended memory: {error}"
+            );
+        }
+        if let Err(error) = settle(instance_id, record, state).await {
+            tracing::warn!(
+                "Couldn't remember what this Technic pack installed: {error}"
+            );
+        }
     }
+    super::pack_updates::forget();
     let _ = tokio::fs::remove_dir_all(folder).await;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn sha1_of(text: &str) -> String {
+        sha1_hex(text.as_bytes()).unwrap()
+    }
+
+    #[test]
+    fn an_update_keeps_changes_and_removes_only_what_the_pack_dropped() {
+        let instance = tempfile::tempdir().unwrap();
+        let write = |relative: &str, text: &str| {
+            let path = instance.path().join(relative);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, text).unwrap();
+        };
+        write("config/untouched.cfg", "v1");
+        write("config/changed.cfg", "mine");
+        write("config/dropped.cfg", "v1");
+        write("config/dropped-but-changed.cfg", "mine");
+        write("mods/off.jar.disabled", "jar v1");
+        write("saves/World/level.dat", "my world");
+        let installed = InstalledPack {
+            instance_id: "local:a".to_string(),
+            slug: "pack".to_string(),
+            name: "Pack".to_string(),
+            version: "1".to_string(),
+            files: [
+                ("config/untouched.cfg", "v1"),
+                ("config/changed.cfg", "v1"),
+                ("config/dropped.cfg", "v1"),
+                ("config/dropped-but-changed.cfg", "v1"),
+                ("mods/off.jar", "jar v1"),
+                ("mods/gone.jar", "jar v1"),
+            ]
+            .into_iter()
+            .map(|(path, text)| (path.to_string(), sha1_of(text)))
+            .collect(),
+            allowed_insecure: false,
+        };
+        let new_files = [
+            ("config/untouched.cfg", "v2"),
+            ("config/changed.cfg", "v2"),
+            ("config/new.cfg", "v2"),
+            ("mods/off.jar", "jar v2"),
+            ("saves/World/level.dat", "pack world"),
+        ];
+        let entries: Vec<Entry> = new_files
+            .iter()
+            .enumerate()
+            .map(|(index, (path, text))| Entry {
+                source: 0,
+                index,
+                relative: path.to_string(),
+                size: text.len() as u64,
+            })
+            .collect();
+        let hashes: Vec<String> =
+            new_files.iter().map(|(_, text)| sha1_of(text)).collect();
+
+        let plan = plan_update(&entries, &hashes, &installed, instance.path());
+
+        assert_eq!(plan.skipped, HashSet::from([1, 4]));
+        assert_eq!(plan.kept, ["config/changed.cfg", "saves/World"]);
+        assert_eq!(plan.stale, ["config/dropped.cfg"]);
+        assert_eq!(plan.keep_disabled, ["mods/off.jar"]);
+    }
+
+    fn hit(id: Option<&str>, name: &str, slug: &str) -> SearchHit {
+        SearchHit {
+            id: id.map(str::to_string),
+            name: name.to_string(),
+            slug: slug.to_string(),
+            icon_url: None,
+        }
+    }
+
+    #[test]
+    fn gathered_lists_keep_each_pack_once_in_order() {
+        let trending = vec![hit(Some("5"), "Tekkit", "tekkit")];
+        let search = vec![
+            hit(Some("5"), "Tekkit", "tekkit"),
+            hit(Some("9"), "Attack", "attack"),
+            hit(None, "Bad", "../bad"),
+        ];
+        let slugs: Vec<_> = merged([trending, search])
+            .into_iter()
+            .map(|hit| hit.slug)
+            .collect();
+        assert_eq!(slugs, ["tekkit", "attack"]);
+    }
+
+    #[test]
+    fn packs_sort_by_newest_or_name_or_keep_technics_order() {
+        let packs = vec![
+            hit(Some("5"), "tekkit", "tekkit"),
+            hit(None, "Zed", "zed"),
+            hit(Some("9"), "Attack", "attack"),
+        ];
+        let order = |sort| -> Vec<String> {
+            sorted(packs.clone(), sort)
+                .into_iter()
+                .map(|hit| hit.slug)
+                .collect()
+        };
+        assert_eq!(order(None), ["tekkit", "zed", "attack"]);
+        assert_eq!(order(Some("newest")), ["attack", "tekkit", "zed"]);
+        assert_eq!(order(Some("name")), ["attack", "tekkit", "zed"]);
+    }
+
+    #[test]
+    fn only_a_folder_inside_the_packs_folder_is_removed() {
+        let packs = std::env::temp_dir().join("caches").join("technic-packs");
+        let pack = packs.join("abc").join("pack.mrpack");
+        assert_eq!(
+            converted_pack_folder(&pack, &packs),
+            Some(packs.join("abc").as_path())
+        );
+        let escaping = packs.join("..").join("pack.mrpack");
+        assert_eq!(converted_pack_folder(&escaping, &packs), None);
+        let elsewhere = std::env::temp_dir().join("pack.mrpack");
+        assert_eq!(converted_pack_folder(&elsewhere, &packs), None);
+    }
 
     fn profile(id: Option<&str>, libraries: &[&str]) -> VersionProfile {
         VersionProfile {
@@ -1774,6 +2397,7 @@ mod tests {
             version: "1.0".to_string(),
             file_name: "Pack.mrpack".to_string(),
             memory_mb: Some(5120),
+            ..PackRecord::default()
         };
         let index = PackFormat {
             game: "minecraft".to_string(),

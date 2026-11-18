@@ -5,6 +5,8 @@ import { getVersion } from '@tauri-apps/api/app'
 import { openUrl } from '@tauri-apps/plugin-opener'
 import { onMounted, ref } from 'vue'
 
+import PolicyLinks from './policy-links.vue'
+
 const REPOSITORY_URL = 'https://github.com/pawmerized/Pawrinth'
 const UPSTREAM_URL = 'https://github.com/modrinth/code'
 const DISCORD_INVITE_URL = 'https://discord.gg/HDVG4TmuB7'
@@ -65,6 +67,7 @@ const messages = defineMessages({
 				{{ formatMessage(messages.releases) }}
 				<ExternalIcon aria-hidden="true" />
 			</Button>
+			<PolicyLinks />
 			<Button native-type="button" @click="openUrl(DISCORD_INVITE_URL)">
 				<DiscordIcon aria-hidden="true" />
 				{{ formatMessage(messages.discord) }}

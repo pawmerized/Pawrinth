@@ -13,6 +13,7 @@ import { computed, ref, watch } from 'vue'
 import { cleanDisplayName } from '@/features/plus-privacy/privacy-model'
 import { usePrivacy } from '@/features/plus-privacy/use-privacy'
 
+import PolicyLinks from './policy-links.vue'
 import { patchPlusSettings } from './use-plus-settings'
 
 const { formatMessage } = useVIntl()
@@ -143,6 +144,10 @@ const saveName = useDebounceFn((value: string) => {
 			<Admonition type="info" :header="formatMessage(messages.limitsHeader)">
 				{{ formatMessage(messages.limitsText) }}
 			</Admonition>
+
+			<div class="flex flex-wrap gap-2">
+				<PolicyLinks />
+			</div>
 		</div>
 	</section>
 </template>

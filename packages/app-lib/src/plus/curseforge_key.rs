@@ -5,12 +5,12 @@
 //! CurseForge's terms make a key non-transferable, so builds don't ship one. A project
 //! key would be another `KeySource` here, once CurseForge allows that in writing.
 
-use super::curseforge::{MINECRAFT_GAME_ID, api_base, http_client};
+use super::curseforge::{MINECRAFT_GAME_ID, api_base, keyed_client};
 use crate::{ErrorKind, State};
 use reqwest::header::HeaderValue;
 use secrecy::{ExposeSecret, SecretString};
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::sync::Mutex;
 
 const CREDENTIAL_ACCOUNT: &str = "curseforge-api-key";
@@ -109,7 +109,11 @@ pub struct KeyOutcome {
 
 /// CurseForge's answer about the current key. An answer that couldn't be had isn't
 /// kept, so a network problem can't turn into a lasting verdict.
-static VALIDITY: Mutex<Option<bool>> = Mutex::const_new(None);
+/// What CurseForge last said about the key, and when. "Couldn't tell" is kept for a while too,
+/// so that while CurseForge is down every page doesn't wait for it again.
+static VALIDITY: Mutex<Option<(Option<bool>, Instant)>> =
+    Mutex::const_new(None);
+const ASK_AGAIN_AFTER: Duration = Duration::from_secs(60);
 
 fn store_error(action: &str) -> crate::Error {
     ErrorKind::InputError(format!(
@@ -201,7 +205,7 @@ async fn check_with_curseforge(key: &ApiKey) -> KeyCheck {
     let Ok(header) = key.header_value() else {
         return KeyCheck::Malformed;
     };
-    let response = http_client()
+    let response = keyed_client()
         .get(format!("{}/games/{MINECRAFT_GAME_ID}", api_base()))
         .header("x-api-key", header)
         .timeout(CHECK_TIMEOUT)
@@ -225,15 +229,29 @@ fn as_validity(check: KeyCheck) -> Option<bool> {
 /// Asks CurseForge the first time, then remembers until the key changes.
 pub(super) async fn validity(key: &ApiKey) -> Option<bool> {
     let mut known = VALIDITY.lock().await;
-    if known.is_none() {
-        *known = as_validity(check_with_curseforge(key).await);
+    if let Some(answer) = remembered(*known, Instant::now()) {
+        return answer;
     }
-    *known
+    let answer = as_validity(check_with_curseforge(key).await);
+    *known = Some((answer, Instant::now()));
+    answer
+}
+
+/// A clear answer is kept until the key changes; "couldn't tell" only for a minute.
+fn remembered(
+    known: Option<(Option<bool>, Instant)>,
+    now: Instant,
+) -> Option<Option<bool>> {
+    match known? {
+        (Some(valid), _) => Some(Some(valid)),
+        (None, at) if now.duration_since(at) < ASK_AGAIN_AFTER => Some(None),
+        (None, _) => None,
+    }
 }
 
 /// CurseForge turned the key down partway through, for example because it was revoked.
 pub(super) async fn mark_rejected() {
-    *VALIDITY.lock().await = Some(false);
+    *VALIDITY.lock().await = Some((Some(false), Instant::now()));
 }
 
 fn outcome(check: KeyCheck, saved: bool, key: Option<&ApiKey>) -> KeyOutcome {
@@ -289,7 +307,7 @@ pub async fn save(raw: &str) -> crate::Result<KeyOutcome> {
     .await
     .map_err(|_| store_error("save"))?
     .map_err(|_| store_error("save"))?;
-    *VALIDITY.lock().await = as_validity(check);
+    *VALIDITY.lock().await = Some((as_validity(check), Instant::now()));
     Ok(outcome(check, true, Some(&key)))
 }
 
@@ -309,7 +327,7 @@ pub async fn test(raw: Option<&str>) -> crate::Result<KeyOutcome> {
         .into());
     };
     let check = check_with_curseforge(&key).await;
-    *VALIDITY.lock().await = as_validity(check);
+    *VALIDITY.lock().await = Some((as_validity(check), Instant::now()));
     Ok(outcome(check, false, Some(&key)))
 }
 
@@ -331,6 +349,19 @@ mod tests {
 
     fn key() -> ApiKey {
         ApiKey::parse(EXAMPLE).unwrap()
+    }
+
+    #[test]
+    fn an_unclear_key_check_is_kept_for_a_minute() {
+        let now = Instant::now();
+        let earlier = now.checked_sub(Duration::from_secs(120)).unwrap();
+        assert_eq!(remembered(None, now), None);
+        assert_eq!(
+            remembered(Some((Some(true), earlier)), now),
+            Some(Some(true))
+        );
+        assert_eq!(remembered(Some((None, now)), now), Some(None));
+        assert_eq!(remembered(Some((None, earlier)), now), None);
     }
 
     #[test]

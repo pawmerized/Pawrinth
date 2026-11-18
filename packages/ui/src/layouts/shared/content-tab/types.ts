@@ -152,6 +152,8 @@ export type ManagedContentCardData =
 	| (ManagedContentCardBase & {
 			kind: 'modpack'
 			versionNumber?: string
+			/** A newer version of the pack is out, so the action offers it. */
+			updateAvailable?: boolean
 			versionLink?: string | RouteLocationRaw
 			updatedAt?: string
 	  })

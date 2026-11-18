@@ -110,6 +110,14 @@ export default new createRouter({
 			},
 		},
 		{
+			path: '/horizon/:kind',
+			name: 'Discover on Horizon',
+			component: () => import('@/features/plus-horizon/browse-page.vue'),
+			meta: {
+				saveScroll: true,
+			},
+		},
+		{
 			path: '/technic/pack/:slug',
 			name: 'Technic pack',
 			component: () => import('@/features/plus-technic/pack-page.vue'),

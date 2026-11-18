@@ -2,6 +2,8 @@ import { defineMessages, injectNotificationManager, useVIntl } from '@modrinth/u
 import type { Ref } from 'vue'
 
 import { readInstanceTarget } from '@/features/plus-install/instance-target'
+import { loaderName } from '@/features/plus-install/loader-names'
+import { hasInstalledName, loadInstalledIdentity } from '@/features/plus-mods/installed-names'
 import { get } from '@/helpers/instance'
 import {
 	type CfCategory,
@@ -42,6 +44,11 @@ const messages = defineMessages({
 			"This version says it doesn't work with {count, plural, one {# project} other {# projects}} already in the instance.",
 	},
 	switchedTitle: { id: 'plus.curseforge.direct.switched', defaultMessage: 'Switched {name}' },
+	alreadyElsewhere: {
+		id: 'plus.curseforge.direct.already-elsewhere',
+		defaultMessage:
+			'{instance} already has this mod, installed from another site. Remove that copy first to use the CurseForge one.',
+	},
 	switchedText: {
 		id: 'plus.curseforge.direct.switched.text',
 		defaultMessage: 'It now uses {version}.',
@@ -74,13 +81,6 @@ const messages = defineMessages({
 		defaultMessage: "{instance} has no mod loader, so mods can't run in it.",
 	},
 })
-
-const LOADER_NAMES: Record<string, string> = {
-	fabric: 'Fabric',
-	forge: 'Forge',
-	neoforge: 'NeoForge',
-	quilt: 'Quilt',
-}
 
 /**
  * Installs CurseForge content the way Modrinth content is installed: straight into the
@@ -127,7 +127,7 @@ export function useCurseforgeInstall(classes: Ref<readonly CfCategory[]>) {
 				if (chosen === null) {
 					const targetName =
 						isMod && target.loader
-							? `${LOADER_NAMES[target.loader] ?? target.loader} ${target.gameVersion}`
+							? `${loaderName(target.loader)} ${target.gameVersion}`
 							: `Minecraft ${target.gameVersion}`
 					return fail(formatMessage(messages.noVersion, { target: targetName }))
 				}
@@ -159,6 +159,14 @@ export function useCurseforgeInstall(classes: Ref<readonly CfCategory[]>) {
 					})
 				}
 				return true
+			}
+
+			const identity = await loadInstalledIdentity(instance.id)
+			if (
+				identity.curseforge_ids.includes(project.id) ||
+				hasInstalledName(new Set(identity.names), project.slug, project.name)
+			) {
+				return fail(formatMessage(messages.alreadyElsewhere, { instance: instance.name }))
 			}
 
 			const dependencies = plan.required.filter((item) => item.status === 'will_install')

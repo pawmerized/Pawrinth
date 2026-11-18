@@ -31,6 +31,7 @@ import { useRouter } from 'vue-router'
 
 import { useAppEvent } from '@/composables/use-app-event'
 import { handleSevereError } from '@/composables/use-error.js'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { trackEvent } from '@/helpers/analytics'
 import { getInstanceIconUrl, kill, run } from '@/helpers/instance'
 import { get_by_instance_id } from '@/helpers/process'
@@ -92,13 +93,15 @@ const messages = defineMessages({
 
 const instanceIcon = computed(() => props.instance.icon_path)
 
+const loaderOf = useInstanceLoader()
 const loader = computed(() => {
-	if (props.instance.loader === 'vanilla') {
+	const played = loaderOf(props.instance)
+	if (played === 'vanilla') {
 		return 'Minecraft'
-	} else if (props.instance.loader === 'neoforge') {
+	} else if (played === 'neoforge') {
 		return 'NeoForge'
 	} else {
-		return capitalizeString(props.instance.loader)
+		return capitalizeString(played)
 	}
 })
 

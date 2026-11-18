@@ -92,11 +92,13 @@ const timestampTooltip = computed(() =>
 	timestamp.value ? formatDateTime(timestamp.value) : undefined,
 )
 
+const offersUpdate = computed(() => props.data.kind !== 'modpack' || !!props.data.updateAvailable)
+
 const showAction = computed(
 	() =>
 		props.showPrimaryAction &&
 		(props.data.kind === 'modpack'
-			? !!props.data.versionNumber
+			? !!props.data.versionNumber || !!props.data.updateAvailable
 			: props.data.updateAvailable || props.disabled),
 )
 </script>
@@ -163,21 +165,21 @@ const showAction = computed(
 		<Button
 			v-if="showAction"
 			type="quiet"
-			:color="data.kind === 'modpack' ? undefined : 'green'"
+			:color="offersUpdate ? 'green' : undefined"
 			:disabled="disabled"
 			class=""
 			@click="emit('primary-action', $event)"
 		>
 			<SpinnerIcon v-if="disabled" aria-hidden="true" class="animate-spin" />
-			<ArrowLeftRightIcon v-else-if="data.kind === 'modpack'" aria-hidden="true" />
+			<ArrowLeftRightIcon v-else-if="!offersUpdate" aria-hidden="true" />
 			<DownloadIcon v-else aria-hidden="true" />
 			<span>
 				{{
 					disabled
 						? (disabledText ?? formatMessage(messages.updating))
-						: data.kind === 'modpack'
-							? formatMessage(messages.switchVersion)
-							: formatMessage(messages.updateAvailable)
+						: offersUpdate
+							? formatMessage(messages.updateAvailable)
+							: formatMessage(messages.switchVersion)
 				}}
 			</span>
 		</Button>

@@ -34,6 +34,13 @@ const messages = defineMessages({
 		defaultMessage: '{name} has nothing to download on Technic.',
 	},
 	installFailed: { id: 'plus.technic.install-failed', defaultMessage: "Couldn't install {name}" },
+	updateFailed: { id: 'plus.technic.update-failed', defaultMessage: "Couldn't update {name}" },
+	keptTitle: { id: 'plus.technic.kept.title', defaultMessage: 'Your changes stay' },
+	keptText: {
+		id: 'plus.technic.kept.text',
+		defaultMessage:
+			'{count, plural, one {# file you changed was} other {# files you changed were}} left as you had {count, plural, one {it} other {them}}: {files}',
+	},
 	unverifiedTitle: {
 		id: 'plus.technic.unverified.title',
 		defaultMessage: 'Some files of {name} didn’t match their checksums',
@@ -68,16 +75,24 @@ function onHide(): void {
 	answer(false)
 }
 
-/** Downloads a Technic pack, converts it and starts installing it as a new instance. */
-async function install(slug: string, name: string): Promise<void> {
+/**
+ * Downloads a Technic pack, converts it and starts installing it, as a new instance or,
+ * with `instanceId`, as an update of the instance that already has the pack.
+ */
+async function install(
+	slug: string,
+	name: string,
+	instanceId: string | null = null,
+): Promise<void> {
 	if (technicPreparing.value !== null) return
 	technicPreparing.value = slug
+	const failed = instanceId ? messages.updateFailed : messages.installFailed
 	try {
 		const details = await plus_technic_pack(slug)
 		if (!details.downloadable) {
 			addNotification({
 				type: 'error',
-				title: formatMessage(messages.installFailed, { name }),
+				title: formatMessage(failed, { name }),
 				text: formatMessage(messages.nothingToDownload, { name: details.name }),
 			})
 			return
@@ -89,8 +104,18 @@ async function install(slug: string, name: string): Promise<void> {
 			if (!allowInsecure || technicPreparing.value !== null) return
 			technicPreparing.value = slug
 		}
-		const prepared = await plus_technic_prepare(slug, allowInsecure)
-		await plus_technic_install(prepared.token)
+		const prepared = await plus_technic_prepare(slug, allowInsecure, instanceId)
+		await plus_technic_install(prepared.token, instanceId)
+		if (prepared.kept.length > 0) {
+			addNotification({
+				type: 'info',
+				title: formatMessage(messages.keptTitle),
+				text: formatMessage(messages.keptText, {
+					count: prepared.kept.length,
+					files: prepared.kept.slice(0, 5).join(', '),
+				}),
+			})
+		}
 		if (prepared.unverified.length > 0) {
 			addNotification({
 				type: 'warning',
@@ -101,7 +126,7 @@ async function install(slug: string, name: string): Promise<void> {
 	} catch (error) {
 		addNotification({
 			type: 'error',
-			title: formatMessage(messages.installFailed, { name }),
+			title: formatMessage(failed, { name }),
 			text: errorText(error),
 		})
 	} finally {

@@ -464,6 +464,16 @@ async fn rollback_enabled(state: &State) -> crate::Result<bool> {
 
 /// Records the instance before an update. Runs before any file is replaced; an
 /// error here stops the update with nothing changed.
+/// Room an update needs on disk. Switching one mod replaces one file, so the margin is
+/// enough; other updates can replace every file in the instance.
+fn space_needed(kind: OperationKind, whole_instance: u64) -> u64 {
+    if kind == OperationKind::UpdateOne {
+        SAFETY_MARGIN_BYTES
+    } else {
+        whole_instance
+    }
+}
+
 pub(crate) async fn begin_update(
     operation_id: &str,
     instance_id: &str,
@@ -474,10 +484,11 @@ pub(crate) async fn begin_update(
         return Ok(false);
     }
     let preflight = preflight_with_state(instance_id, state).await?;
-    if !preflight.enough_space {
+    let needed = space_needed(kind, preflight.required_bytes);
+    if preflight.available_bytes < needed {
         bail!(ErrorKind::InputError(format!(
             "not enough disk space to update with recovery data: {} bytes needed, {} bytes free",
-            preflight.required_bytes, preflight.available_bytes
+            needed, preflight.available_bytes
         )));
     }
     let result: crate::Result<()> = async {
@@ -800,6 +811,18 @@ async fn restore_origin(
     Ok(())
 }
 
+/// What restoring an item leaves in the instance: its later file is gone and its earlier
+/// one is back. Kept in memory, so a restore doesn't read every file again after each item.
+fn after_restoring(current: &mut Vec<ManifestEntry>, item: &ItemDiff) {
+    current.retain(|entry| {
+        [&item.before, &item.after]
+            .into_iter()
+            .flatten()
+            .all(|changed| changed.relative_path != entry.relative_path)
+    });
+    current.extend(item.before.clone());
+}
+
 async fn apply_item(
     instance_id: &str,
     item: &ItemDiff,
@@ -1049,8 +1072,7 @@ pub async fn restore(
             verify_item(&snapshot.instance, &item.diff, &state).await?;
             super::fault::hit("restore-after-item");
             super::fault::fail_point("restore-after-item")?;
-            current =
-                capture(&instance_id, None, &state).await?.manifest.entries;
+            after_restoring(&mut current, &item.diff);
         }
         Ok(())
     }
@@ -1439,4 +1461,19 @@ pub async fn sync_from_instance(
     )
     .await?;
     Ok(report)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn switching_one_mod_only_needs_the_margin() {
+        let whole = 6 * 1024 * 1024 * 1024;
+        assert_eq!(
+            space_needed(OperationKind::UpdateOne, whole),
+            SAFETY_MARGIN_BYTES
+        );
+        assert_eq!(space_needed(OperationKind::UpdateAll, whole), whole);
+    }
 }

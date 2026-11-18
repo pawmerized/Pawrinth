@@ -1,0 +1,213 @@
+{
+	"format": "pawrinth-theme-gallery",
+	"version": 1,
+	"themes": [
+		{
+			"id": "ocean-depths",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Ocean Depths",
+				"base": "dark",
+				"palette": {
+					"background": "#0a1a24",
+					"panel": "#0f2230",
+					"surface": "#142c3c",
+					"raised": "#1c3a4e",
+					"sidebar": "#0f2230",
+					"button": "#1c3a4e",
+					"border": "#28506a",
+					"text": "#e6f6ff",
+					"textMuted": "#8fb3c7",
+					"accent": "#2ec4d6",
+					"selection": "#2ec4d6"
+				}
+			}
+		},
+		{
+			"id": "forest-night",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Forest Night",
+				"base": "dark",
+				"palette": {
+					"background": "#0f1a14",
+					"panel": "#14221a",
+					"surface": "#1a2c22",
+					"raised": "#22392c",
+					"sidebar": "#14221a",
+					"button": "#22392c",
+					"border": "#2f4d3c",
+					"text": "#e8f5ec",
+					"textMuted": "#9bb8a6",
+					"accent": "#5fd38d",
+					"selection": "#5fd38d"
+				}
+			}
+		},
+		{
+			"id": "sunset-ember",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Sunset Ember",
+				"base": "dark",
+				"palette": {
+					"background": "#1c1210",
+					"panel": "#241714",
+					"surface": "#2e1d19",
+					"raised": "#3a2520",
+					"sidebar": "#241714",
+					"button": "#3a2520",
+					"border": "#50342c",
+					"text": "#fff1ea",
+					"textMuted": "#c9a597",
+					"accent": "#ff8a4c",
+					"selection": "#ff8a4c"
+				}
+			}
+		},
+		{
+			"id": "sakura-night",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Sakura Night",
+				"base": "dark",
+				"palette": {
+					"background": "#1b1418",
+					"panel": "#231a1f",
+					"surface": "#2c2127",
+					"raised": "#382a32",
+					"sidebar": "#231a1f",
+					"button": "#382a32",
+					"border": "#4d3a45",
+					"text": "#fdeef5",
+					"textMuted": "#c4a3b4",
+					"accent": "#ff8fc4",
+					"selection": "#ff8fc4"
+				}
+			}
+		},
+		{
+			"id": "mocha-paw",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Mocha Paw",
+				"base": "dark",
+				"palette": {
+					"background": "#1a1512",
+					"panel": "#211b17",
+					"surface": "#2a221d",
+					"raised": "#352b25",
+					"sidebar": "#211b17",
+					"button": "#352b25",
+					"border": "#4a3c33",
+					"text": "#f6ece4",
+					"textMuted": "#b8a597",
+					"accent": "#e0a46b",
+					"selection": "#e0a46b"
+				}
+			}
+		},
+		{
+			"id": "cyber-lime",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Cyber Lime",
+				"base": "dark",
+				"palette": {
+					"background": "#0d0f0a",
+					"panel": "#12150e",
+					"surface": "#181c13",
+					"raised": "#20261a",
+					"sidebar": "#12150e",
+					"button": "#20261a",
+					"border": "#2f3825",
+					"text": "#f1ffe0",
+					"textMuted": "#a3b58c",
+					"accent": "#b6ff3b",
+					"selection": "#b6ff3b"
+				}
+			}
+		},
+		{
+			"id": "arctic",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Arctic",
+				"base": "light",
+				"palette": {
+					"background": "#e9f1f6",
+					"panel": "#f2f7fa",
+					"surface": "#f8fbfd",
+					"raised": "#ffffff",
+					"sidebar": "#f2f7fa",
+					"button": "#ffffff",
+					"border": "#cfdde6",
+					"text": "#10212c",
+					"textMuted": "#4a5f6c",
+					"accent": "#0b6fa4",
+					"selection": "#3aa0d8"
+				}
+			}
+		},
+		{
+			"id": "lavender-mist",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Lavender Mist",
+				"base": "light",
+				"palette": {
+					"background": "#efebf6",
+					"panel": "#f5f2fa",
+					"surface": "#faf8fd",
+					"raised": "#ffffff",
+					"sidebar": "#f5f2fa",
+					"button": "#ffffff",
+					"border": "#dcd3ea",
+					"text": "#221a33",
+					"textMuted": "#5a4f6e",
+					"accent": "#6a3fc0",
+					"selection": "#9b7be0"
+				}
+			}
+		},
+		{
+			"id": "desert-sand",
+			"author": "Pawrinth",
+			"theme": {
+				"format": "pawrinth-theme",
+				"version": 2,
+				"name": "Desert Sand",
+				"base": "light",
+				"palette": {
+					"background": "#f3ede3",
+					"panel": "#f8f3eb",
+					"surface": "#fbf8f2",
+					"raised": "#ffffff",
+					"sidebar": "#f8f3eb",
+					"button": "#ffffff",
+					"border": "#e2d6c4",
+					"text": "#2b2118",
+					"textMuted": "#65584a",
+					"accent": "#a8521b",
+					"selection": "#d9893f"
+				}
+			}
+		}
+	]
+}

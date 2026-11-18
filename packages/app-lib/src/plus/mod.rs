@@ -1,6 +1,7 @@
 //! Pawrinth additions to the launcher core.
 
 pub mod backgrounds;
+pub mod copy_content;
 pub mod curseforge;
 pub mod curseforge_export;
 pub mod curseforge_key;
@@ -11,11 +12,18 @@ pub mod diagnostics;
 pub mod discord;
 pub(crate) mod fault;
 pub(crate) mod guard;
+pub mod horizon;
+pub mod horizon_content;
+pub mod installed_identity;
 pub mod manifest;
 pub mod memory;
+pub mod mod_library;
 pub mod mod_matching;
+pub mod modrinth_app_settings;
 pub mod news;
 pub mod operations;
+pub mod pack_updates;
+pub mod server_pack;
 pub mod settings;
 pub mod setup;
 pub mod skin_gallery;

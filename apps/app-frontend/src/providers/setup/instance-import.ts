@@ -10,6 +10,9 @@ import { type FtbAppInstance, plus_ftb_app_instances } from '@/helpers/plus'
 
 const FTB_APP = 'FTBApp'
 const FTB_APP_LABEL = 'FTB App'
+/** The official Modrinth App. Its database is only ever read from a copy. */
+const MODRINTH_APP = 'ModrinthApp'
+const MODRINTH_APP_LABEL = 'Modrinth App'
 const LOADER_NAMES: Record<string, string> = {
 	forge: 'Forge',
 	neoforge: 'NeoForge',
@@ -66,10 +69,22 @@ export function setupInstanceImportProvider(notificationManager: AbstractWebNoti
 			} catch {
 				// Skip the FTB App when its folder can't be read
 			}
+			try {
+				const path = await get_default_launcher_path(MODRINTH_APP)
+				const instances = path ? await get_importable_instances(MODRINTH_APP, path) : []
+				if (path && instances?.length > 0) {
+					launchers.push({ name: MODRINTH_APP_LABEL, path, instances })
+				}
+			} catch {
+				// Skip the Modrinth App when its instances can't be read
+			}
 			return launchers
 		},
 		async getImportableInstances(launcherName: string, path: string) {
 			if (launcherName === FTB_APP_LABEL) return await ftbInstances(path)
+			if (launcherName === MODRINTH_APP_LABEL) {
+				return (await get_importable_instances(MODRINTH_APP, path)) ?? []
+			}
 			const ftb = await ftbInstances(path).catch(() => [])
 			if (ftb.length > 0) return ftb
 			return (await get_importable_instances(launcherName, path)) ?? []
@@ -84,7 +99,8 @@ export function setupInstanceImportProvider(notificationManager: AbstractWebNoti
 						)
 						continue
 					}
-					await import_instance(sel.launcher, sel.path, instanceName).catch(handleError)
+					const launcher = sel.launcher === MODRINTH_APP_LABEL ? MODRINTH_APP : sel.launcher
+					await import_instance(launcher, sel.path, instanceName).catch(handleError)
 				}
 			}
 		},

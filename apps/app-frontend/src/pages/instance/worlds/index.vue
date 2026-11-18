@@ -19,6 +19,7 @@
 		@confirm="proceedRemoveWorld"
 	/>
 	<DesyncServerModal ref="desyncServerModal" @confirm="confirmDesyncServer" />
+	<CopyContentModal ref="copyContentModal" />
 	<WorldBackupsModal
 		ref="worldBackupsModal"
 		:instance-id="instance.id"
@@ -113,6 +114,7 @@
 					@delete="() => !isManagedServerWorld(world) && promptToRemoveWorld(world)"
 					@desync="() => world.type === 'server' && desyncServerModal?.show(world as ServerWorld)"
 					@open-folder="(world: SingleplayerWorld) => showWorldInFolder(instance.id, world.path)"
+					@copy-to-instance="(world: SingleplayerWorld) => copyWorld(world)"
 				/>
 			</div>
 		</div>
@@ -174,6 +176,7 @@ import EditWorldModal from '@/components/ui/world/modal/EditSingleplayerWorldMod
 import WorldItem from '@/components/ui/world/WorldItem.vue'
 import { useAppEvent } from '@/composables/use-app-event'
 import { handleSevereError } from '@/composables/use-error.js'
+import CopyContentModal from '@/features/plus-copy/copy-content-modal.vue'
 import WorldBackupsModal from '@/features/plus-worlds/world-backups-modal.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project, get_project_v3 } from '@/helpers/cache.js'
@@ -270,6 +273,12 @@ const desyncServerModal = ref<InstanceType<typeof DesyncServerModal>>()
 const worldToRemove = ref<World | null>(null)
 
 const instance = computed(() => instancePage.instance.value!)
+
+const copyContentModal = ref<InstanceType<typeof CopyContentModal> | null>(null)
+
+function copyWorld(world: SingleplayerWorld) {
+	void copyContentModal.value?.show(instance.value.id, [`saves/${world.path}`])
+}
 const playing = instancePage.playing
 const worldBackupsModal = ref<InstanceType<typeof WorldBackupsModal> | null>(null)
 const plusWorldMessages = defineMessages({

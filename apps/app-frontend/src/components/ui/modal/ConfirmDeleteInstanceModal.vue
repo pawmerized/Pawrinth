@@ -46,7 +46,7 @@
 									{{ instance.name }}
 								</span>
 								<span class="truncate text-sm font-medium text-secondary">
-									{{ formatLoader(formatMessage, instance.loader) }} {{ instance.game_version }}
+									{{ formatLoader(formatMessage, loaderOf(instance)) }} {{ instance.game_version }}
 								</span>
 							</div>
 						</div>
@@ -98,10 +98,12 @@ import {
 } from '@modrinth/ui'
 import { computed, nextTick, ref } from 'vue'
 
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { getInstanceIconUrl } from '@/helpers/instance'
 import type { GameInstance } from '@/helpers/types'
 
 const { formatMessage } = useVIntl()
+const loaderOf = useInstanceLoader()
 
 const messages = defineMessages({
 	header: {

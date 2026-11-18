@@ -440,7 +440,7 @@ function toApiLoaderName(loader: string): string {
 const gameVersionsLoading = computed(() => {
 	if (ctx.projectInstall.value) return false
 	const loader = selectedLoader.value
-	if (!loader || loader === 'vanilla') return false
+	if (!loader || ctx.isVanillaLike(loader)) return false
 	if (loader === 'paper') return ctx.paperSupportedVersions.value === null
 	if (loader === 'purpur') return ctx.purpurSupportedVersions.value === null
 	return ctx.loaderVersionsCache.value[toApiLoaderName(loader)] === undefined
@@ -457,6 +457,11 @@ const gameVersionOptions = computed<ComboboxOption<string>[]>(() => {
 					)
 		return versions.map((version) => ({ value: version, label: version }))
 	}
+
+	const fixedVersion = selectedLoader.value
+		? ctx.fixedVersionLoaders[selectedLoader.value]
+		: undefined
+	if (fixedVersion) return [{ value: fixedVersion, label: fixedVersion }]
 
 	const versions = ctx.showSnapshots.value
 		? tags.gameVersions.value
@@ -639,7 +644,7 @@ watch(
 		selectedLoaderVersion.value = null
 
 		if (ctx.projectInstall.value) return
-		if (!loader || !gameVersion || loader === 'vanilla') return
+		if (!loader || !gameVersion || ctx.isVanillaLike(loader)) return
 
 		loaderVersionsLoading.value = true
 

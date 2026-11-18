@@ -130,7 +130,8 @@ watchEffect(() => {
 })
 
 const crashAnalysis = ref(null)
-const { findingsToAnalysis } = useCrashFindings()
+const crashActions = ref([])
+const { findingsToAnalysis, findingActions } = useCrashFindings()
 
 async function analyseForCrash() {
 	const lines = liveConsole.output.value
@@ -141,8 +142,10 @@ async function analyseForCrash() {
 		const { findings } = await plus_diagnose_log(instanceId.value, content)
 		if (findings.length > 0) {
 			crashAnalysis.value = findingsToAnalysis(findings)
+			crashActions.value = findingActions(findings, instancePage.openJavaSettings)
 			return
 		}
+		crashActions.value = []
 		const plusSettings = await plus_settings_get()
 		if (!plusSettings.diagnostics.send_logs_to_mclogs) return
 		const data = await client.mclogs.insights_v1.analyse(content)
@@ -188,8 +191,10 @@ provideConsoleManager({
 	shareDisabled: instancePage.offline,
 	emptyStateType: 'instance',
 	crashAnalysis,
+	crashActions,
 	onDismissCrash: () => {
 		crashAnalysis.value = null
+		crashActions.value = []
 	},
 })
 

@@ -19,6 +19,7 @@ import { useManagedContentPolicy } from '@/composables/instances/use-managed-con
 import { useAppSettings } from '@/composables/use-app-settings.ts'
 import { injectModpackInstall } from '@/features/plus-curseforge/modpack-install-context'
 import { toVersionView } from '@/features/plus-curseforge/project-adapter'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project_versions, get_version } from '@/helpers/cache'
 import {
@@ -49,6 +50,7 @@ const { handleError } = injectNotificationManager()
 const appEvents = injectAppEvents()
 const filePicker = injectFilePicker()
 const { formatMessage } = useVIntl()
+const loaderOf = useInstanceLoader()
 const queryClient = useQueryClient()
 const debug = useDebugLogger('AppInstallationSettings')
 const appSettings = useAppSettings()
@@ -229,7 +231,7 @@ provideInstallationSettings({
 		const rows = [
 			{
 				label: formatMessage(commonMessages.platformLabel),
-				value: formatLoaderLabel(instance.value.loader),
+				value: formatLoaderLabel(loaderOf(instance.value)),
 			},
 			{
 				label: formatMessage(commonMessages.gameVersionLabel),

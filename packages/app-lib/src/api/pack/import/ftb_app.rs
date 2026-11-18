@@ -204,7 +204,7 @@ async fn instance_loader(
     }
 }
 
-async fn has_mods(folder: &Path) -> bool {
+pub(super) async fn has_mods(folder: &Path) -> bool {
     let Ok(mut entries) = tokio::fs::read_dir(folder.join("mods")).await else {
         return false;
     };

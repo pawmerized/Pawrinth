@@ -87,6 +87,8 @@ import { config } from '@/config'
 import { provideMinecraftAccounts } from '@/features/minecraft-accounts/context'
 import CurseforgeModpackInstall from '@/features/plus-curseforge/modpack-install.vue'
 import { provideModpackInstall } from '@/features/plus-curseforge/modpack-install-context'
+import { CREATION_FIXED_VERSION_LOADERS, CREATION_LOADERS } from '@/features/plus-horizon/horizon'
+import { useModLibraryAutoInstall } from '@/features/plus-mod-library/auto-install'
 import { rememberPrivateNames, usePrivacy } from '@/features/plus-privacy/use-privacy'
 import { restoreLastPage } from '@/features/plus-settings/last-page'
 import { initPlusSettings } from '@/features/plus-settings/use-plus-settings'
@@ -208,14 +210,31 @@ const forceSidebar = computed(
 	() =>
 		route.path.startsWith('/browse') ||
 		route.path.startsWith('/curseforge') ||
+		route.path.startsWith('/technic') ||
 		route.path.startsWith('/project') ||
 		route.path.startsWith('/user'),
 )
 const sidebarVisible = computed(() => sidebarToggled.value || forceSidebar.value)
 
+/** CurseForge and Technic browsing count as Discover, like Modrinth's. */
+function isDiscoverPage(current) {
+	return (
+		current.path.startsWith('/browse') ||
+		current.path === '/technic' ||
+		(current.path.startsWith('/curseforge') && !current.path.startsWith('/curseforge/project'))
+	)
+}
+
+function isDiscoverSubpage(current) {
+	return ['/project', '/curseforge/project', '/technic/pack'].some((prefix) =>
+		current.path.startsWith(prefix),
+	)
+}
+
 const notificationManager = new AppNotificationManager()
 provideNotificationManager(notificationManager)
 const { handleError, addNotification } = notificationManager
+useModLibraryAutoInstall(appEvents, (notification) => addNotification(notification))
 
 useAppEvent(
 	'warning',
@@ -1650,6 +1669,8 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 		<CreationFlowModal
 			ref="installationModal"
 			type="instance"
+			:available-loaders="CREATION_LOADERS"
+			:fixed-version-loaders="CREATION_FIXED_VERSION_LOADERS"
 			show-snapshot-toggle
 			:fetch-existing-instance-names="fetchExistingInstanceNames"
 			:search-projects="searchProjects"
@@ -1684,10 +1705,8 @@ provideAppUpdateDownloadProgress(appUpdateDownload)
 			<NavButton
 				v-tooltip.right="formatMessage(commonMessages.discoverContentLabel)"
 				to="/browse/modpack"
-				:is-primary="() => route.path.startsWith('/browse') && !route.query.i && !route.query.sid"
-				:is-subpage="
-					(route) => route.path.startsWith('/project') && !route.query.i && !route.query.sid
-				"
+				:is-primary="() => isDiscoverPage(route) && !route.query.i && !route.query.sid"
+				:is-subpage="(route) => isDiscoverSubpage(route) && !route.query.i && !route.query.sid"
 			>
 				<CompassIcon />
 			</NavButton>

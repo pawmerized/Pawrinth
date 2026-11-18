@@ -4,6 +4,8 @@ import { Button, injectNotificationManager, TeleportOverflowMenu } from '@modrin
 import { open } from '@tauri-apps/plugin-dialog'
 import { useRouter } from 'vue-router'
 
+import { discoverLocation } from '@/features/plus-horizon/horizon-packs'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { add_project_from_path } from '@/helpers/instance'
 
 const { handleError } = injectNotificationManager()
@@ -16,6 +18,7 @@ const props = defineProps({
 })
 
 const router = useRouter()
+const loaderOf = useInstanceLoader()
 
 const handleAddContentFromFile = async () => {
 	const newProject = await open({ multiple: true })
@@ -27,10 +30,13 @@ const handleAddContentFromFile = async () => {
 }
 
 const handleSearchContent = async () => {
-	await router.push({
-		path: `/browse/${props.instance.loader === 'vanilla' ? 'resourcepack' : 'mod'}`,
-		query: { i: props.instance.id },
-	})
+	await router.push(
+		discoverLocation(
+			loaderOf(props.instance),
+			props.instance.id,
+			props.instance.loader === 'vanilla' ? 'resourcepack' : 'mod',
+		),
+	)
 }
 </script>
 

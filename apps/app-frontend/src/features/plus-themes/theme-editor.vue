@@ -36,6 +36,7 @@ import { normalizeBackground } from './background-model'
 import BackgroundSettings from './background-settings.vue'
 import { applyStockTheme, matchAppTheme, persistThemes, type StockTheme } from './theme-actions'
 import { setThemePreview, useThemeLibrary } from './theme-engine'
+import ThemeGallery from './theme-gallery.vue'
 import {
 	type BackgroundAdjustments,
 	contrastIssues,
@@ -627,6 +628,8 @@ function importPasted(): void {
 		</div>
 	</section>
 
+	<ThemeGallery />
+
 	<section class="mt-6 border-0 border-b border-solid border-divider pb-6">
 		<h2 class="m-0 text-xl font-semibold text-contrast">{{ formatMessage(messages.presets) }}</h2>
 		<div class="mt-4 flex flex-col gap-3">
@@ -806,7 +809,11 @@ function importPasted(): void {
 		</div>
 		<p v-if="importError" class="m-0 mt-2 text-red">{{ importError }}</p>
 
-		<div v-if="pendingImport" class="mt-4 flex flex-col gap-3 rounded-2xl bg-surface-2 p-4">
+		<div
+			v-if="pendingImport"
+			class="mt-4 flex flex-col gap-3 rounded-2xl bg-surface-2 p-4"
+			data-theme-import-preview
+		>
 			<h3 class="m-0 text-lg font-semibold text-contrast">
 				{{ formatMessage(messages.previewTitle, { name: pendingImport.theme.name }) }}
 			</h3>

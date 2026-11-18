@@ -10,6 +10,8 @@ export interface PlusSettings {
 		themes: unknown[]
 		background: unknown
 		logo: string | null
+		/** Read with `readCustomLogo`. */
+		custom_logo: unknown
 	}
 	interface: {
 		ui_scale: number
@@ -64,6 +66,93 @@ export interface PlusSettings {
 	curseforge: {
 		use_community_proxy: boolean
 	}
+	mod_library: {
+		enabled: boolean
+		mods: LibraryMod[]
+	}
+	/** Instances that play with Horizon, by id. */
+	horizon: {
+		instances: Record<string, boolean>
+	}
+}
+
+/** A mod in the personal mod library, from either site. */
+export interface LibraryMod {
+	source: 'modrinth' | 'curseforge'
+	project_id: string
+	name: string
+	slug: string | null
+	icon_url: string | null
+	/** Whether new instances get it. */
+	auto_install: boolean
+}
+
+export type LibrarySkipReason =
+	| 'already_installed'
+	| 'no_mod_loader'
+	| 'no_matching_version'
+	| 'curseforge_unavailable'
+	| 'failed'
+
+export interface LibraryReport {
+	installed: string[]
+	skipped: { name: string; reason: LibrarySkipReason; detail: string | null }[]
+}
+
+export interface ServerPackReport {
+	folder: string
+	mods: number
+	left_out: {
+		file: string
+		reason: 'declared_client' | 'modrinth_client_only' | 'curseforge_client_only'
+	}[]
+	java_version: number | null
+}
+
+export type CopyStatus =
+	| 'same_version'
+	| 'other_version'
+	| 'copy_file'
+	| 'already_installed'
+	| 'no_version'
+	| 'curseforge_unavailable'
+	| 'older_game'
+	| 'game_running'
+
+export interface CopyItem {
+	path: string
+	name: string
+	status: CopyStatus
+}
+
+/** What copying content to another instance would do. Nothing changes. */
+export async function plus_copy_content_plan(
+	sourceId: string,
+	targetId: string,
+	paths: string[],
+): Promise<CopyItem[]> {
+	return await invoke('plugin:plus|plus_copy_content_plan', { sourceId, targetId, paths })
+}
+
+export async function plus_copy_content(
+	sourceId: string,
+	targetId: string,
+	paths: string[],
+): Promise<{ copied: string[]; failed: [string, string][] }> {
+	return await invoke('plugin:plus|plus_copy_content', { sourceId, targetId, paths })
+}
+
+/** Makes a ready-to-run server folder for an instance inside `parent`. */
+export async function plus_server_pack_create(
+	instanceId: string,
+	parent: string,
+): Promise<ServerPackReport> {
+	return await invoke('plugin:plus|plus_server_pack_create', { instanceId, parent })
+}
+
+/** Installs the mod library's mods that fit an instance. */
+export async function plus_mod_library_install(instanceId: string): Promise<LibraryReport> {
+	return await invoke('plugin:plus|plus_mod_library_install', { instanceId })
 }
 
 type DeepPartial<T> = {
@@ -196,6 +285,7 @@ export type FindingKind =
 	| 'mod_conflict'
 	| 'mixin_failure'
 	| 'corrupt_config'
+	| 'java_argument'
 
 export interface Finding {
 	kind: FindingKind
@@ -387,15 +477,6 @@ export interface CfInstallReport {
 	unavailable: string[]
 }
 
-export interface CfAvailableUpdate {
-	relative_path: string
-	project: CfProject
-	current_file_name: string
-	current_file_id: number
-	file: CfFile
-	can_download: boolean
-}
-
 export type CfDataMode = 'live' | 'sample' | 'needs_key' | 'key_rejected'
 
 export async function plus_cf_data_mode(): Promise<CfDataMode> {
@@ -479,6 +560,15 @@ export async function plus_cf_files(
 	return await invoke('plugin:plus|plus_cf_files', { projectId, gameVersion, loaderType })
 }
 
+/** Up to 500 of a project's files, newest first, for its Versions tab. */
+export async function plus_cf_all_files(
+	projectId: number,
+	gameVersion: string | null,
+	loaderType: number | null,
+): Promise<CfFile[]> {
+	return await invoke('plugin:plus|plus_cf_all_files', { projectId, gameVersion, loaderType })
+}
+
 export async function plus_cf_changelog(projectId: number, fileId: number): Promise<string> {
 	return await invoke('plugin:plus|plus_cf_changelog', { projectId, fileId })
 }
@@ -540,10 +630,6 @@ export interface CfInstalledFile {
 
 export async function plus_cf_installed(instanceId: string): Promise<CfInstalledFile[]> {
 	return await invoke('plugin:plus|plus_cf_installed', { instanceId })
-}
-
-export async function plus_cf_check_updates(instanceId: string): Promise<CfAvailableUpdate[]> {
-	return await invoke('plugin:plus|plus_cf_check_updates', { instanceId })
 }
 
 export async function plus_cf_apply_updates(
@@ -613,6 +699,29 @@ export async function plus_cf_installed_projects(instanceId: string): Promise<nu
 	return await invoke('plugin:plus|plus_cf_installed_projects', { instanceId })
 }
 
+/** What an instance has installed, by CurseForge project and by name, wherever it came from. */
+export interface InstalledIdentity {
+	curseforge_ids: number[]
+	/** Lowercase letters and digits only. */
+	names: string[]
+}
+
+export async function plus_installed_identity(instanceId: string): Promise<InstalledIdentity> {
+	return await invoke('plugin:plus|plus_installed_identity', { instanceId })
+}
+
+export interface CfInstalledOrigin {
+	relative_path: string
+	file_id: number
+}
+
+export async function plus_cf_installed_file(
+	instanceId: string,
+	projectId: number,
+): Promise<CfInstalledOrigin | null> {
+	return await invoke('plugin:plus|plus_cf_installed_file', { instanceId, projectId })
+}
+
 export interface CfExportReport {
 	listed: number
 	matched: number
@@ -651,6 +760,12 @@ export interface TechnicPackSummary {
 	game_version: string | null
 	installs: number | null
 	ratings: number | null
+	tags: string[]
+}
+
+export interface TechnicPackPage {
+	packs: TechnicPackSummary[]
+	total: number
 }
 
 export interface TechnicPackUpdate {
@@ -690,27 +805,94 @@ export interface TechnicPreparedPack {
 	file_count: number
 	total_bytes: number
 	unverified: string[]
+	/** For an update: files someone changed or added, which the update leaves alone. */
+	kept: string[]
 }
 
-/** Technic's trending packs, or the packs matching a search. */
-export async function plus_technic_browse(query: string | null): Promise<TechnicPackSummary[]> {
-	return await invoke('plugin:plus|plus_technic_browse', { query })
+/** An instance installed from a Technic pack that Pawrinth can update. */
+export interface TechnicInstalledPack {
+	instance_id: string
+	slug: string
+	name: string
+	version: string
+}
+
+export type PackProvider = 'modrinth' | 'curseforge' | 'technic'
+
+/** A newer version of the modpack an instance was installed from. */
+export interface PackUpdate {
+	instance_id: string
+	provider: PackProvider
+	latest: string
+	/** The newer version's id on Modrinth or CurseForge. Technic has none. */
+	latest_id: string | null
+}
+
+/**
+ * Technic's trending packs followed by the ones Pawrinth found, or the packs matching a
+ * search. `sort` is `newest` or `name` to reorder the list shown without a search.
+ */
+export async function plus_technic_browse(
+	query: string | null,
+	offset: number,
+	limit: number,
+	sort: string | null = null,
+): Promise<TechnicPackPage> {
+	return await invoke('plugin:plus|plus_technic_browse', { query, offset, limit, sort })
 }
 
 export async function plus_technic_pack(slug: string): Promise<TechnicPackDetails> {
 	return await invoke('plugin:plus|plus_technic_pack', { slug })
 }
 
-/** Downloads and converts a pack. Packs that download over plain HTTP need `allowInsecure`. */
+/**
+ * Downloads and converts a pack. Packs that download over plain HTTP need `allowInsecure`.
+ * With an instance, it's prepared as an update of the pack that instance already has.
+ */
 export async function plus_technic_prepare(
 	slug: string,
 	allowInsecure: boolean,
+	instanceId: string | null = null,
 ): Promise<TechnicPreparedPack> {
-	return await invoke('plugin:plus|plus_technic_prepare', { slug, allowInsecure })
+	return await invoke('plugin:plus|plus_technic_prepare', { slug, allowInsecure, instanceId })
 }
 
-export async function plus_technic_install(token: string): Promise<InstallJobSnapshot> {
-	return await invoke('plugin:plus|plus_technic_install', { token })
+export async function plus_technic_install(
+	token: string,
+	instanceId: string | null = null,
+): Promise<InstallJobSnapshot> {
+	return await invoke('plugin:plus|plus_technic_install', { token, instanceId })
+}
+
+export async function plus_technic_installed(): Promise<TechnicInstalledPack[]> {
+	return await invoke('plugin:plus|plus_technic_installed')
+}
+
+export interface SettingsImportChange {
+	key: string
+	current: unknown
+	incoming: unknown
+}
+
+/** What importing the official Modrinth App's settings would change. */
+export interface SettingsImportPreview {
+	found: boolean
+	changes: SettingsImportChange[]
+	matching: number
+}
+
+export async function plus_modrinth_settings_preview(): Promise<SettingsImportPreview> {
+	return await invoke('plugin:plus|plus_modrinth_settings_preview')
+}
+
+/** Brings over only the chosen settings. Resolves to how many changed. */
+export async function plus_modrinth_settings_import(keys: string[]): Promise<number> {
+	return await invoke('plugin:plus|plus_modrinth_settings_import', { keys })
+}
+
+/** Instances whose modpack has a newer version. `force` asks the sites again. */
+export async function plus_pack_updates(force = false): Promise<PackUpdate[]> {
+	return await invoke('plugin:plus|plus_pack_updates', { force })
 }
 
 export type PlusMemorySource = 'technic' | 'ftb_app'

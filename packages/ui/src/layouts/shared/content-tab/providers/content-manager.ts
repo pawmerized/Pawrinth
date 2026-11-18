@@ -1,7 +1,10 @@
 import type { ComputedRef, Ref } from 'vue'
 
 import type { ButtonMenuOption } from '#ui/components/base/buttons'
-import type { UpdateAllSelection } from '#ui/components/modal/update-all-modal/update-all-modal-types'
+import type {
+	UpdateAllItem,
+	UpdateAllSelection,
+} from '#ui/components/modal/update-all-modal/update-all-modal-types'
 import { createContext } from '#ui/providers/create-context'
 
 import type {
@@ -76,6 +79,9 @@ export interface ContentManagerContext {
 		selections: UpdateAllSelection[],
 		onProgress?: (completed: number) => void,
 	) => Promise<void>
+	/** Updates the platform finds itself rather than on Modrinth, such as files from another site. */
+	getExternalUpdateAllItems?: (items: ContentItem[]) => UpdateAllItem[]
+	loadExternalUpdateChangelog?: (selection: UpdateAllSelection) => Promise<string>
 
 	// Managed-content actions (optional)
 	runManagedContentPrimaryAction?: (event?: MouseEvent) => void
@@ -91,6 +97,8 @@ export interface ContentManagerContext {
 
 	// Share support (optional — when undefined, share button becomes hidden entirely)
 	shareItems?: (items: ContentItem[], format: 'names' | 'file-names' | 'urls' | 'markdown') => void
+	/** Copies the items to another instance. */
+	copyItems?: (items: ContentItem[]) => void
 
 	// Stable per-row identity. ContentItem.id can be a content hash, so it is not always unique.
 	getItemId?: (item: ContentItem) => string

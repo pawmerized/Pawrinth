@@ -153,6 +153,10 @@ export interface CreationFlowContextValue {
 
 	// Configuration
 	availableLoaders: string[]
+	/** Loaders that make a vanilla instance of one game version, by loader. */
+	fixedVersionLoaders: Record<string, string>
+	/** Vanilla, or a loader in `fixedVersionLoaders`: no loader metadata or loader version. */
+	isVanillaLike: (loader: string | null | undefined) => boolean
 	showSnapshotToggle: boolean
 	disableClose: boolean
 	isInitialSetup: boolean
@@ -254,6 +258,7 @@ let worldCounter = 0
 
 export interface CreationFlowOptions {
 	availableLoaders?: string[]
+	fixedVersionLoaders?: Record<string, string>
 	showSnapshotToggle?: boolean
 	disableClose?: boolean
 	isInitialSetup?: boolean
@@ -290,6 +295,9 @@ export function createCreationFlowContext(
 	const queryClient = useQueryClient()
 	const { formatMessage } = useVIntl()
 	const availableLoaders = options.availableLoaders ?? ['fabric', 'neoforge', 'forge', 'quilt']
+	const fixedVersionLoaders = options.fixedVersionLoaders ?? {}
+	const isVanillaLike = (loader: string | null | undefined) =>
+		loader === 'vanilla' || (!!loader && loader in fixedVersionLoaders)
 	const showSnapshotToggle = options.showSnapshotToggle ?? false
 	const disableClose = options.disableClose ?? false
 	const isInitialSetup = options.isInitialSetup ?? false
@@ -386,7 +394,7 @@ export function createCreationFlowContext(
 	const hideLoaderVersion = computed(
 		() =>
 			setupType.value === 'vanilla' ||
-			selectedLoader.value === 'vanilla' ||
+			isVanillaLike(selectedLoader.value) ||
 			projectInstall.value !== null,
 	)
 
@@ -447,7 +455,7 @@ export function createCreationFlowContext(
 	}
 
 	async function fetchLoaderMetadata(loader?: string | null) {
-		if (!loader || loader === 'vanilla') return
+		if (!loader || isVanillaLike(loader)) return
 		if (loader === 'paper') {
 			await fetchPaperSupportedVersions()
 			return
@@ -462,7 +470,7 @@ export function createCreationFlowContext(
 	async function prefetchLoaderMetadata() {
 		await Promise.allSettled(
 			availableLoaders
-				.filter((loader) => loader !== 'vanilla')
+				.filter((loader) => !isVanillaLike(loader))
 				.map((loader) => fetchLoaderMetadata(loader)),
 		)
 	}
@@ -638,6 +646,8 @@ export function createCreationFlowContext(
 		flowType,
 		formatMessage,
 		availableLoaders,
+		fixedVersionLoaders,
+		isVanillaLike,
 		showSnapshotToggle,
 		disableClose,
 		isInitialSetup,

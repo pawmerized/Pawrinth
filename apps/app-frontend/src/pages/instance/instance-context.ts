@@ -20,6 +20,8 @@ export interface InstancePageContext {
 	stop: (source: string) => Promise<void>
 	playServer: () => Promise<void>
 	openSettings: (tab?: number) => void
+	/** Opens the instance settings on Java and memory. */
+	openJavaSettings: () => void
 	browseContent: (projectType?: string) => Promise<void>
 	browseServers: () => Promise<void>
 	reviewSharedInstanceUpdate: (event?: MouseEvent) => void

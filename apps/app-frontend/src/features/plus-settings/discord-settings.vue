@@ -515,7 +515,7 @@ onMounted(async () => {
 								<img
 									:src="pictureFor(preview[kind].logo_image)"
 									alt=""
-									class="size-16 rounded-xl"
+									class="size-16 rounded-xl object-cover"
 								/>
 								<div
 									v-if="preview[kind].badge"

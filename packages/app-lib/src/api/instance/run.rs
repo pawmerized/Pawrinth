@@ -91,6 +91,17 @@ async fn run_credentials(
         ));
     }
 
+    if let Some(process) = crate::plus::horizon::launch_if_enabled(
+        &context,
+        credentials,
+        &quick_play_type,
+        &state,
+    )
+    .await?
+    {
+        return Ok(process);
+    }
+
     let pre_launch_hook = context
         .launch_overrides
         .hooks

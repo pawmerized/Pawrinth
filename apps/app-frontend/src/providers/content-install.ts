@@ -14,6 +14,7 @@ import type { Router } from 'vue-router'
 
 import { useAppSettings } from '@/composables/use-app-settings.ts'
 import { preferStableVersion } from '@/features/plus-install/version-choice'
+import { holdModLibrary } from '@/features/plus-mod-library/auto-install'
 import { trackEvent } from '@/helpers/analytics'
 import {
 	get_organization,
@@ -719,16 +720,21 @@ export function createContentInstall(opts: {
 			})
 			const id = installJobInstanceId(job)
 			if (!id) return
-			await wait_for_install_job(opts.appEvents, job.job_id)
-			modalRef?.hide()
-			await opts.router.push(`/instance/${encodeURIComponent(id)}`)
-			await request.installToInstance({
-				id,
-				name: data.name,
-				icon_path: null,
-				game_version: data.gameVersion,
-				loader: data.loader as InstanceLoader,
-			} as ExternalInstallInstance)
+			const releaseLibrary = holdModLibrary(id)
+			try {
+				await wait_for_install_job(opts.appEvents, job.job_id)
+				modalRef?.hide()
+				await opts.router.push(`/instance/${encodeURIComponent(id)}`)
+				await request.installToInstance({
+					id,
+					name: data.name,
+					icon_path: null,
+					game_version: data.gameVersion,
+					loader: data.loader as InstanceLoader,
+				} as ExternalInstallInstance)
+			} finally {
+				releaseLibrary()
+			}
 		} catch (err) {
 			opts.handleError(err)
 		}
@@ -963,6 +969,9 @@ export function createContentInstall(opts: {
 			) ?? currentVersions[0]
 
 		let createdInstanceId: string | null = null
+		let releaseLibrary = () => {}
+		let installWaiter: ReturnType<typeof waitForContentInstall> | null = null
+		let installRunning = false
 		try {
 			const job = await install_create_instance({
 				name: data.name,
@@ -974,14 +983,18 @@ export function createContentInstall(opts: {
 			const id = installJobInstanceId(job)
 			if (!id) return
 			createdInstanceId = id
+			releaseLibrary = holdModLibrary(id)
 			await wait_for_install_job(opts.appEvents, job.job_id)
 			addInstallingItem(id, currentProject!, version)
 
+			installWaiter = waitForContentInstall(id, currentProject!.id)
 			const plan = await install_project_with_dependencies(id, {
 				project_id: currentProject!.id,
 				version_id: version.id,
 				content_type: resolveContentType(currentProject!.project_type),
 			})
+			installRunning = true
+			void installWaiter.result.finally(releaseLibrary)
 			await addInstallingItemsForPlan(id, plan, currentProject!, version)
 			await opts.router.push(`/instance/${encodeURIComponent(id)}`)
 
@@ -1001,6 +1014,10 @@ export function createContentInstall(opts: {
 			currentCallback(version.id, resolvedProjectIds(plan))
 			modalRef?.hide()
 		} catch (err) {
+			if (!installRunning) {
+				installWaiter?.cancel()
+				releaseLibrary()
+			}
 			if (createdInstanceId && currentProject) {
 				removeInstallingItems(createdInstanceId, [currentProject.id])
 				markInstanceContentInstallFailed(createdInstanceId)

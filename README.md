@@ -20,10 +20,10 @@
 	<a href="https://github.com/pawmerized/Pawrinth/issues/new/choose">Report a problem</a>
 </p>
 
-Pawrinth is a Minecraft launcher for mods and modpacks from both Modrinth and CurseForge. Browse, install, update and play from one place, make it look the way you like, and undo an update that broke something. It keeps itself up to date, and it has no ads or tracking.
+Pawrinth is a Minecraft launcher for mods and modpacks from Modrinth, CurseForge and Technic. Browse, install, update and play from one place, keep a library of the mods you always use, make it look the way you like, and undo an update that broke something. It can also play Minecraft 26.3 with Horizon. It keeps itself up to date, and it has no ads or tracking.
 
 <p align="center">
-	<img src=".github/assets/screenshots/home.png" alt="Pawrinth's home screen" width="100%">
+	<img src=".github/assets/screenshots/home.png" alt="Pawrinth's home screen with a Modrinth modpack, a Fabric instance and a Horizon instance" width="100%">
 </p>
 
 ## Features
@@ -37,24 +37,53 @@ Pawrinth is a Minecraft launcher for mods and modpacks from both Modrinth and Cu
 - **Technic modpacks** have their own tab on the Modpacks page and install as new instances, with their Forge, Fabric or NeoForge version read from the pack itself.
 - **Mods from anywhere get recognised.** Jars from Technic, the FTB App, other launchers or a folder you copied in are matched to Modrinth or CurseForge by their exact file, so they get updates too. Check mods also finds the same mod installed twice, even from different sites, and removes the extra copy only when you say so.
 - **Import from the FTB App** without downloading packs again, with the pack's loader, mods, configs and worlds.
+- **Import from the Modrinth App** too, with each instance's name, icon, Minecraft version, loader, mods, configs and worlds. The Modrinth App keeps everything it had. Its settings can come along as well, and you choose which.
+- **Installed means installed,** whichever site you browse. A mod you got from Modrinth shows as installed on CurseForge and the other way round, so nothing is added twice.
+- **Modpack updates for every pack** from Modrinth, CurseForge and Technic, with a badge in the library when one is out. An update never moves a pack to another Minecraft version.
+- **Copy to another instance:** mods, resource packs, shaders and worlds, with the right version picked for the other instance. Mods you turned off stay off.
+- **One-click server packs:** a server folder with the mod loader, start scripts and every mod except the client-only ones.
 
 CurseForge needs a free API key from CurseForge, added once under Settings. Pawrinth keeps it in Windows' credential store and only sends it to CurseForge's official API. You can turn on the community proxy curse.tools there instead, if you'd rather not get a key. [How both work](PAWRINTH.md#curseforge).
 
 <p align="center">
 	<img src=".github/assets/screenshots/curseforge.png" alt="Browsing CurseForge modpacks in Pawrinth" width="49%">
-	<img src=".github/assets/screenshots/instance.png" alt="A CurseForge modpack installed as an instance in Pawrinth" width="49%">
+	<img src=".github/assets/screenshots/instance.png" alt="An instance with mods from both Modrinth and CurseForge" width="49%">
+</p>
+
+### Your mod library
+
+- **Save the mods you always use,** such as Sodium, Iris or JEI, by searching Modrinth and CurseForge right in Settings, or from any mod's menu in an instance.
+- **New instances get them on their own,** each in a version made for that instance's Minecraft version and loader, with its dependencies. A mod that's already there, from either site, isn't added twice.
+- **Saving never installs anything.** Turn a mod's New instances switch off to just keep it in the list.
+
+<p align="center">
+	<img src=".github/assets/screenshots/mod-library.png" alt="The mod library in Pawrinth's settings, with mods from Modrinth and CurseForge" width="100%">
+</p>
+
+### Horizon
+
+[Horizon](https://playhorizon.dev) is a fan-made rebuild of Minecraft 26.3 in Rust.
+
+- **Play with Horizon** by choosing it as the loader in Create instance, or by turning it on in a vanilla 26.3 instance's settings. Pawrinth downloads it only when you ask, checks every build against Horizon's signing key, and builds its game files from your own copy of Minecraft.
+- **Horizon's own resource packs and shaders.** A Horizon instance's Discover has just two tabs, Resource Packs and Shaders, both from Horizon's own registry, with the same search, sorting, category filters and pages as the rest of Pawrinth. Every way into Discover for a Horizon instance opens these, never another site's pages.
+- **Checked downloads:** only versions made for the instance's Minecraft version are offered, revoked files never are, and each download must match the size and checksum in Horizon's registry before it's installed.
+- **Kept per instance:** packs go into that instance's own `resourcepacks` and `shaderpacks` folders, where Horizon reads them, and show in its content list with their names, icons, versions and authors. Turn them off, remove them or update them like any other content.
+
+<p align="center">
+	<img src=".github/assets/screenshots/horizon.png" alt="Horizon's resource packs in a Horizon instance's Discover page, with category filters" width="49%">
+	<img src=".github/assets/screenshots/horizon-instance.png" alt="Horizon packs in a Horizon instance's content list" width="49%">
 </p>
 
 ### Make it yours
 
 - **Themes:** Midnight, Nord, Dracula, Catppuccin, Gruvbox and more, or build your own in the theme editor with a live preview.
 - **Accent color and UI scale** for the whole app.
-- **Logos:** keep the paw, or pick Mochi the cat or Nova the unicorn, two pixel-art characters drawn for Pawrinth. The logo you pick shows in the title bar, on the loading screen and on the taskbar.
+- **Logos:** keep the paw, pick Mochi the cat or Nova the unicorn, two pixel-art characters drawn for Pawrinth, or use your own picture at the size you choose. The logo you pick shows in the title bar, on the loading screen and on the taskbar.
 - **Backgrounds:** your own picture or GIF behind the app, with blur, dimming and fit.
-- **Theme files** to share a look with friends.
+- **Theme files** to share a look with friends. A theme gallery for browsing other people's themes is coming.
 
 <p align="center">
-	<img src=".github/assets/screenshots/themes.png" alt="Pawrinth with the Catppuccin Mocha theme and a custom background" width="100%">
+	<img src=".github/assets/screenshots/themes.png" alt="Pawrinth with the Catppuccin Mocha theme and a pixel-art night background" width="100%">
 </p>
 
 ### Updates you can undo
@@ -62,7 +91,8 @@ CurseForge needs a free API key from CurseForge, added once under Settings. Pawr
 - **Update all, safely.** Every update is recorded, and the update history rolls an instance back to how it was, file for file.
 - **Snapshots and compare:** save an instance's content before a big change, and compare two instances side by side.
 - **World backups on a schedule:** hourly, daily or weekly, keeping as many as you choose, with restores that back up the current world first.
-- **Crash help:** common crash causes are pointed out in the logs.
+- **Crash help:** common crash causes are pointed out in the logs, saying what's certain and what's only likely, with a button to the settings that fix it.
+- **Java argument checks:** custom Java arguments are checked against the instance's Java version, memory and loader before they're saved, with suggestions that suit them.
 
 ### And more
 
@@ -114,6 +144,10 @@ To build the installer, run `pnpm exec tauri build --config tauri-release.conf.j
 - **Problems and ideas:** [GitHub issues](https://github.com/pawmerized/Pawrinth/issues/new/choose)
 
 Please report problems with Pawrinth here rather than to Modrinth, since they may come from Pawrinth's own changes.
+
+## Privacy
+
+Pawrinth sends nothing to its developer: no analytics, telemetry, crash reports or ads. [PRIVACY.md](PRIVACY.md) lists every service it contacts and when, and [TERMS.md](TERMS.md) has the terms of service.
 
 ## License
 

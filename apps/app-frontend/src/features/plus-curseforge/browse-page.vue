@@ -42,11 +42,13 @@ import { useDebounceFn } from '@vueuse/core'
 import { type Component, computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import {
 	hasSyncedFilter,
 	useInstanceFilterSync,
 } from '@/features/plus-install/instance-filter-sync'
 import { readInstanceTarget } from '@/features/plus-install/instance-target'
+import { hasInstalledName, loadInstalledIdentity } from '@/features/plus-mods/installed-names'
 import { injectSettingsActions } from '@/features/settings/settings-actions'
 import { getInstanceIconUrl } from '@/helpers/instance'
 import {
@@ -57,7 +59,6 @@ import {
 	plus_cf_classes,
 	plus_cf_data_mode,
 	plus_cf_game_versions,
-	plus_cf_installed_projects,
 	plus_cf_search,
 } from '@/helpers/plus'
 import { instanceDetailQueryOptions } from '@/pages/instance/query-options'
@@ -103,6 +104,7 @@ const CLASS_ICONS: Record<string, Component> = {
 }
 
 const { formatMessage } = useVIntl()
+const loaderOf = useInstanceLoader()
 const route = useRoute()
 const router = useRouter()
 const settingsActions = injectSettingsActions()
@@ -279,6 +281,7 @@ const classSlug = ref(
 	String(route.params.classSlug ?? (authorId.value === null ? 'mc-mods' : ALL_CLASSES)),
 )
 const currentClass = computed(() => classes.value.find((item) => item.slug === classSlug.value))
+
 const projectType = computed(() => classInfo(classSlug.value).projectType)
 
 const snapshotKey = computed(() => `${authorId.value ?? ''}|${classSlug.value}|${instanceId.value}`)
@@ -601,11 +604,13 @@ const modpackInstall = injectModpackInstall()
 const { install: installContent } = useCurseforgeInstall(classes)
 const installingIds = ref(new Set<number>())
 const installedIds = ref(new Set<number>())
+const installedNames = ref(new Set<string>())
 
+/** Includes mods installed from Modrinth, matched by file or by name. */
 async function loadInstalled(): Promise<void> {
-	installedIds.value = new Set(
-		instanceId.value ? await plus_cf_installed_projects(instanceId.value).catch(() => []) : [],
-	)
+	const identity = await loadInstalledIdentity(instanceId.value)
+	installedIds.value = new Set(identity.curseforge_ids)
+	installedNames.value = new Set(identity.names)
 }
 watch(instanceId, () => void loadInstalled(), { immediate: true })
 
@@ -639,7 +644,7 @@ const installContext = computed(() =>
 	instance.value
 		? {
 				name: instance.value.name,
-				loader: instance.value.loader,
+				loader: loaderOf(instance.value),
 				gameVersion: instance.value.game_version,
 				iconSrc: getInstanceIconUrl(instance.value.icon_path),
 				backUrl: `/instance/${encodeURIComponent(instance.value.id)}`,
@@ -710,7 +715,9 @@ function getCardActions(result: CfSearchHit): CardAction[] {
 	}
 	const installing =
 		installingIds.value.has(project.id) || modpackInstall.value?.preparing === project.id
-	const installed = installedIds.value.has(project.id)
+	const installed =
+		installedIds.value.has(project.id) ||
+		hasInstalledName(installedNames.value, project.slug, project.name)
 	return [
 		{
 			key: 'install',

@@ -24,6 +24,8 @@ pub struct PlusSettings {
     pub curseforge: CurseForgeSettings,
     pub automatic_memory: AutomaticMemorySettings,
     pub world_backups: WorldBackupSettings,
+    pub horizon: HorizonSettings,
+    pub mod_library: super::mod_library::ModLibrarySettings,
     /// Fields from a newer build are preserved rather than dropped.
     #[serde(flatten)]
     pub unknown: serde_json::Map<String, serde_json::Value>,
@@ -40,6 +42,8 @@ pub struct AppearanceSettings {
     /// Kept as text so a logo from a newer build doesn't reset every setting;
     /// the frontend shows the paw for names it doesn't know.
     pub logo: Option<String>,
+    /// A picture chosen as the logo, with its size. Validated by the frontend.
+    pub custom_logo: Option<serde_json::Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -254,6 +258,26 @@ impl WorldBackupSchedule {
     }
 }
 
+/// Instances that play with Horizon, by instance id.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct HorizonSettings {
+    pub instances: BTreeMap<String, bool>,
+}
+
+impl HorizonSettings {
+    pub fn is_enabled(&self, instance_id: &str) -> bool {
+        self.instances.get(instance_id).copied().unwrap_or(false)
+    }
+
+    pub fn enabled_instances(&self) -> impl Iterator<Item = &str> {
+        self.instances
+            .iter()
+            .filter(|(_, enabled)| **enabled)
+            .map(|(id, _)| id.as_str())
+    }
+}
+
 impl Default for PlusSettings {
     fn default() -> Self {
         Self {
@@ -269,6 +293,8 @@ impl Default for PlusSettings {
             curseforge: CurseForgeSettings::default(),
             automatic_memory: AutomaticMemorySettings::default(),
             world_backups: WorldBackupSettings::default(),
+            horizon: HorizonSettings::default(),
+            mod_library: super::mod_library::ModLibrarySettings::default(),
             unknown: serde_json::Map::new(),
         }
     }
@@ -407,6 +433,30 @@ mod tests {
         assert_eq!(
             settings.world_backups.instances["local:b"].interval_hours,
             24
+        );
+    }
+
+    #[tokio::test]
+    async fn horizon_is_turned_on_and_off_per_instance() {
+        let db = TestDb::new().await;
+        assert!(!PlusSettings::default().horizon.is_enabled("local:a"));
+        PlusSettings::merge_patch(
+            &json!({ "horizon": { "instances": { "local:a": true, "local:b": true } } }),
+            &db.pool,
+        )
+        .await
+        .unwrap();
+        let settings = PlusSettings::merge_patch(
+            &json!({ "horizon": { "instances": { "local:a": null } } }),
+            &db.pool,
+        )
+        .await
+        .unwrap();
+        assert!(!settings.horizon.is_enabled("local:a"));
+        assert!(settings.horizon.is_enabled("local:b"));
+        assert_eq!(
+            settings.horizon.enabled_instances().collect::<Vec<_>>(),
+            ["local:b"]
         );
     }
 

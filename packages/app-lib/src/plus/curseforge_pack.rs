@@ -30,6 +30,8 @@ use std::pin::Pin;
 use std::time::Duration;
 
 const MANIFEST_NAME: &str = "manifest.json";
+/// Even a huge pack's manifest is a few megabytes, so it's never unpacked past this.
+const MAX_MANIFEST_BYTES: u64 = 16 * 1024 * 1024;
 const INDEX_NAME: &str = "modrinth.index.json";
 const RECORD_NAME: &str = "pawrinth-curseforge.json";
 const ICON_NAME: &str = "icon.png";
@@ -162,10 +164,10 @@ pub struct PackInfo {
     pub kept: Vec<String>,
 }
 
-struct OverrideEntry {
-    index: usize,
-    relative: String,
-    sha1: String,
+pub(super) struct OverrideEntry {
+    pub(super) index: usize,
+    pub(super) relative: String,
+    pub(super) sha1: String,
 }
 
 struct ReadPack {
@@ -234,13 +236,13 @@ pub(super) fn pack_dependencies(
 }
 
 /// The world folder an override belongs to, for paths under `saves/`.
-fn world_of(relative: &str) -> Option<&str> {
+pub(super) fn world_of(relative: &str) -> Option<&str> {
     let mut parts = relative.strip_prefix("saves/")?.split('/');
     let world = parts.next().filter(|world| !world.is_empty())?;
     parts.next().map(|_| world)
 }
 
-fn sha1_hex(mut reader: impl Read) -> std::io::Result<String> {
+pub(super) fn sha1_hex(mut reader: impl Read) -> std::io::Result<String> {
     let mut hasher = sha1_smol::Sha1::new();
     let mut buffer = [0_u8; 64 * 1024];
     loop {
@@ -252,7 +254,7 @@ fn sha1_hex(mut reader: impl Read) -> std::io::Result<String> {
     }
 }
 
-fn file_sha1(path: &Path) -> Option<String> {
+pub(super) fn file_sha1(path: &Path) -> Option<String> {
     sha1_hex(std::io::BufReader::new(std::fs::File::open(path).ok()?)).ok()
 }
 
@@ -304,10 +306,12 @@ async fn remove_old_packs(state: &State) {
     }
 }
 
-/// The newest release that can be downloaded, or a beta or alpha when there's no
-/// release.
-async fn newest_pack_file(
+/// The pack's newest release, or beta or alpha when it has no release. With a Minecraft
+/// version, only files made for it count, so an update never moves an instance to another
+/// version of the game.
+pub(super) async fn newest_pack_file(
     project: &Project,
+    game_version: Option<&str>,
     state: &State,
 ) -> crate::Result<ProjectFile> {
     let options: Vec<FileOption> =
@@ -315,6 +319,11 @@ async fn newest_pack_file(
             .await?
             .into_iter()
             .filter(|file| api::can_download(project, file))
+            .filter(|file| {
+                game_version.is_none_or(|version| {
+                    file.game_versions.iter().any(|listed| listed == version)
+                })
+            })
             .map(|file| FileOption {
                 file,
                 compatibility: Compatibility::Compatible,
@@ -410,7 +419,9 @@ fn read_pack(path: &Path) -> crate::Result<ReadPack> {
             )
         })?;
         let mut text = String::new();
-        entry.read_to_string(&mut text)?;
+        (&mut entry)
+            .take(MAX_MANIFEST_BYTES)
+            .read_to_string(&mut text)?;
         serde_json::from_str(text.trim_start_matches('\u{feff}')).map_err(
             |error| {
                 ErrorKind::InputError(format!(
@@ -603,10 +614,10 @@ async fn resolve_files(
     Ok(resolved)
 }
 
-struct Previous {
-    overrides: BTreeMap<String, String>,
-    instance_dir: PathBuf,
-    keep_disabled: Vec<String>,
+pub(super) struct Previous {
+    pub(super) overrides: BTreeMap<String, String>,
+    pub(super) instance_dir: PathBuf,
+    pub(super) keep_disabled: Vec<String>,
 }
 
 async fn previous_install(
@@ -664,7 +675,7 @@ async fn previous_install(
 /// are only replaced when they're still what the last version of the pack put
 /// there. Content folders belong to the pack, which replaces them on every
 /// update.
-fn overrides_to_keep(
+pub(super) fn overrides_to_keep(
     overrides: &[OverrideEntry],
     previous: &Previous,
 ) -> (HashSet<usize>, Vec<String>) {
@@ -792,7 +803,7 @@ pub async fn prepare(
     }
     let file = match file_id {
         Some(file_id) => api::fetch_file(project_id, file_id, &state).await?,
-        None => newest_pack_file(&project, &state).await?,
+        None => newest_pack_file(&project, None, &state).await?,
     };
     if file.mod_id != project_id {
         bail!(ErrorKind::InputError(
@@ -1121,6 +1132,7 @@ pub(crate) async fn finish_install(
     )
     .execute(&state.pool)
     .await?;
+    super::pack_updates::forget();
     Ok(())
 }
 

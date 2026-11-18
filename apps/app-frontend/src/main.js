@@ -7,6 +7,7 @@ import { createApp } from 'vue'
 
 import App from '@/App.vue'
 import { overlayScrollbarsDirective } from '@/directives/overlayScrollbars'
+import { guardHorizonDiscover } from '@/features/plus-horizon/discover-guard'
 import { applyFirstPaintOverlay } from '@/features/plus-themes/theme-engine'
 import { debugStartup, traceStartupStep } from '@/helpers/startup-debug'
 import i18nPlugin from '@/plugins/i18n'
@@ -18,6 +19,7 @@ applyFirstPaintOverlay()
 const app = createApp(App)
 
 app.use(VueQueryPlugin)
+guardHorizonDiscover(router)
 app.use(router)
 if (import.meta.env.DEV) {
 	void traceStartupStep('Initial router readiness', () => router.isReady()).catch(() => {})

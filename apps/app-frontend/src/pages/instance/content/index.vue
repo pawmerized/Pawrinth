@@ -12,16 +12,6 @@
 					<HistoryIcon aria-hidden="true" />
 				</IconButton>
 				<IconButton
-					v-if="curseforgeReady"
-					v-tooltip="formatMessage(plusMessages.curseforgeUpdates)"
-					type="outlined"
-					size="lg"
-					:label="formatMessage(plusMessages.curseforgeUpdates)"
-					@click="curseforgeUpdatesModal?.show($event)"
-				>
-					<PackageOpenIcon aria-hidden="true" />
-				</IconButton>
-				<IconButton
 					v-tooltip="formatMessage(plusMessages.compare)"
 					type="outlined"
 					size="lg"
@@ -78,7 +68,8 @@
 					:instance-busy="isInstanceBusy"
 				/>
 				<InstanceCompareModal ref="compareModal" :instance-id="instance.id" />
-				<CurseforgeUpdatesModal ref="curseforgeUpdatesModal" :instance-id="instance.id" />
+				<TechnicInstall ref="technicInstaller" />
+				<CopyContentModal ref="copyContentModal" />
 				<ModCheckModal
 					ref="modCheckModal"
 					:instance-id="instance.id"
@@ -177,11 +168,12 @@ import type { Labrinth } from '@modrinth/api-client'
 import {
 	ArrowLeftRightIcon,
 	ClipboardCopyIcon,
+	CopyIcon,
 	FolderOpenIcon,
 	HistoryIcon,
+	LibraryIcon,
 	LockIcon,
 	LockOpenIcon,
-	PackageOpenIcon,
 	ScanEyeIcon,
 } from '@modrinth/assets'
 import {
@@ -210,6 +202,7 @@ import {
 	ReadyTransition,
 	summarizeManagedContent,
 	UnknownFileWarningModal,
+	type UpdateAllItem,
 	type UpdateAllSelection,
 	useDebugLogger,
 	useFormatBytes,
@@ -230,13 +223,25 @@ import { useManagedContentPolicy } from '@/composables/instances/use-managed-con
 import { useSyncedPackActions } from '@/composables/instances/use-synced-pack-actions'
 import { useAppEvent } from '@/composables/use-app-event'
 import { useAppSettings } from '@/composables/use-app-settings.ts'
+import CopyContentModal from '@/features/plus-copy/copy-content-modal.vue'
 import { curseforgeKeyRevision } from '@/features/plus-curseforge/key-state'
 import MissingFilesList from '@/features/plus-curseforge/missing-files-list.vue'
 import { injectModpackInstall } from '@/features/plus-curseforge/modpack-install-context'
 import { installedRowView, toVersionView } from '@/features/plus-curseforge/project-adapter'
-import CurseforgeUpdatesModal from '@/features/plus-curseforge/updates-modal.vue'
+import { HORIZON_LOADER } from '@/features/plus-horizon/horizon'
+import {
+	type HorizonPack,
+	installedPath,
+	KIND_PATHS,
+	plus_horizon_packs,
+} from '@/features/plus-horizon/horizon-packs'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
+import { addToLibrary } from '@/features/plus-mod-library/mod-library'
 import ModCheckModal from '@/features/plus-mods/mod-check-modal.vue'
+import TechnicInstall from '@/features/plus-technic/technic-install.vue'
+import { technicPackPath, technicPreparing } from '@/features/plus-technic/technic-state'
 import InstanceCompareModal from '@/features/plus-updates/instance-compare-modal.vue'
+import { packUpdates, refreshPackUpdates } from '@/features/plus-updates/pack-updates'
 import UpdateHistoryModal from '@/features/plus-updates/update-history-modal.vue'
 import { trackEvent } from '@/helpers/analytics'
 import { get_project_versions, get_version, get_version_many } from '@/helpers/cache.js'
@@ -258,15 +263,17 @@ import { type InstanceContentData, loadInstanceContentData } from '@/helpers/ins
 import {
 	type CfInstalledFile,
 	type CfPackInfo,
+	type LibraryMod,
 	plus_cf_apply_updates,
 	plus_cf_changelog,
-	plus_cf_data_mode,
 	plus_cf_files,
 	plus_cf_install_options,
 	plus_cf_installed,
 	plus_cf_pack_list,
 	plus_operations_list,
+	plus_technic_installed,
 	plus_update_preflight,
+	type TechnicInstalledPack,
 } from '@/helpers/plus'
 import { get as getSettings, set as setSettings } from '@/helpers/settings'
 import { set_synced_pack_enabled, syncedPackKeys } from '@/helpers/synced-packs'
@@ -279,6 +286,22 @@ import { instanceContentQueryOptions, instanceKeys } from '../query-options'
 import { injectSharedInstance } from '../shared-instance-context'
 
 const messages = defineMessages({
+	copyToInstance: {
+		id: 'plus.copy.menu',
+		defaultMessage: 'Copy to another instance',
+	},
+	addToLibrary: {
+		id: 'plus.mod-library.add',
+		defaultMessage: 'Add to my mod library',
+	},
+	addedToLibrary: {
+		id: 'plus.mod-library.added',
+		defaultMessage: 'Added {name} to your mod library',
+	},
+	alreadyInLibrary: {
+		id: 'plus.mod-library.already',
+		defaultMessage: '{name} is already in your mod library',
+	},
 	modpackContentHeader: {
 		id: 'app.instance.content.managed-content.modpack-header',
 		defaultMessage: 'Modpack content',
@@ -397,12 +420,20 @@ watch(projects, (newProjects) => {
 	}
 })
 
+/** CurseForge files count as outdated like Modrinth ones, so Update all and selection include them. */
+function withCurseforgeUpdate(item: ContentItem): ContentItem {
+	return !item.has_update && curseforgeFileOf(item)?.update && canChangeContentVersion(item)
+		? { ...item, has_update: true }
+		: item
+}
+
 const mergedProjects = computed<ContentItem[]>(() => {
 	const active = installingItems.value.get(instance.value.id)
 	const pending = active ?? installingBuffer.value
-	if (pending.length === 0) return projects.value
+	const current = projects.value.map(withCurseforgeUpdate)
+	if (pending.length === 0) return current
 	const pendingProjectIds = new Set(pending.map((p) => p.project?.id).filter(Boolean))
-	const displayProjects = projects.value.map((project) =>
+	const displayProjects = current.map((project) =>
 		project.project?.id && pendingProjectIds.has(project.project.id)
 			? { ...project, installing: true }
 			: project,
@@ -467,19 +498,6 @@ const isBulkOperating = ref(false)
 const updateHistoryModal = ref<InstanceType<typeof UpdateHistoryModal> | null>(null)
 const compareModal = ref<InstanceType<typeof InstanceCompareModal> | null>(null)
 const modCheckModal = ref<InstanceType<typeof ModCheckModal> | null>(null)
-const curseforgeUpdatesModal = ref<InstanceType<typeof CurseforgeUpdatesModal> | null>(null)
-const curseforgeReady = ref(false)
-watch(
-	curseforgeKeyRevision,
-	() => {
-		plus_cf_data_mode()
-			.then((mode) => {
-				curseforgeReady.value = mode === 'live'
-			})
-			.catch(() => {})
-	},
-	{ immediate: true },
-)
 const formatBytes = useFormatBytes()
 const awaitingUpdateSummary = ref<number | null>(null)
 const { addPopupNotification } = injectPopupNotificationManager()
@@ -500,10 +518,6 @@ const plusMessages = defineMessages({
 		defaultMessage: 'Restore previous versions',
 	},
 	updateHistory: { id: 'plus.content.update-history', defaultMessage: 'Update history' },
-	curseforgeUpdates: {
-		id: 'plus.content.curseforge-updates',
-		defaultMessage: 'CurseForge updates',
-	},
 	curseforgeSource: { id: 'plus.content.curseforge-source', defaultMessage: 'CurseForge' },
 	packMissingHeader: {
 		id: 'plus.content.curseforge-pack.missing.header',
@@ -545,14 +559,29 @@ const curseforgePack = ref<CfPackInfo | null>(null)
 const modpackInstall = injectModpackInstall()
 const packMissingModal = ref<InstanceType<typeof NewModal> | null>(null)
 
+const technicPack = ref<TechnicInstalledPack | null>(null)
+const technicInstaller = ref<InstanceType<typeof TechnicInstall> | null>(null)
+const packUpdate = computed(() => packUpdates.value.get(instance.value.id) ?? null)
+
 async function loadCurseforgePack() {
 	if (instance.value.link?.type !== 'imported_modpack') {
 		curseforgePack.value = null
+		technicPack.value = null
 		return
 	}
-	const packs = await plus_cf_pack_list().catch(() => [])
-	curseforgePack.value = packs.find((pack) => pack.instance_id === instance.value.id) ?? null
+	const instanceId = instance.value.id
+	const [packs, technicPacks] = await Promise.all([
+		plus_cf_pack_list().catch(() => []),
+		plus_technic_installed().catch(() => []),
+	])
+	if (instanceId !== instance.value.id) return
+	curseforgePack.value = packs.find((pack) => pack.instance_id === instanceId) ?? null
+	technicPack.value = curseforgePack.value
+		? null
+		: (technicPacks.find((pack) => pack.instance_id === instanceId) ?? null)
 }
+
+void refreshPackUpdates()
 
 watch(
 	() => [instance.value.id, instance.value.link?.type, instance.value.link?.version_number],
@@ -581,6 +610,44 @@ async function refreshCurseforgeFiles(): Promise<void> {
 	} catch (error) {
 		debug('Could not read CurseForge files', error)
 	}
+}
+
+const loaderOf = useInstanceLoader()
+const horizonFiles = ref(new Map<string, HorizonPack>())
+
+/** Packs from Horizon's registry are named from it, the way CurseForge files are. */
+async function refreshHorizonFiles(): Promise<void> {
+	const instanceId = instance.value.id
+	if (loaderOf(instance.value) !== HORIZON_LOADER) {
+		horizonFiles.value = new Map()
+		return
+	}
+	try {
+		const packs = await Promise.all([
+			plus_horizon_packs(instanceId, 'resource_pack'),
+			plus_horizon_packs(instanceId, 'shader'),
+		])
+		if (instanceId !== instance.value.id) return
+		horizonFiles.value = new Map(
+			packs.flat().flatMap((pack) => {
+				const path = installedPath(pack)
+				return path ? [[path, pack] as const] : []
+			}),
+		)
+	} catch (error) {
+		debug('Could not read Horizon packs', error)
+	}
+}
+
+watch(
+	() => [loaderOf(instance.value), projects.value.map((item) => item.file_path).join('|')],
+	() => void refreshHorizonFiles(),
+	{ immediate: true },
+)
+
+function horizonPackOf(item: ContentItem): HorizonPack | undefined {
+	if (item.project || !item.file_path) return undefined
+	return horizonFiles.value.get(withoutDisabledSuffix(item.file_path))
 }
 
 const isInstanceBusy = computed(() => instance.value?.install_stage !== 'installed')
@@ -744,10 +811,14 @@ const managedContent = computed<ManagedContentData | null>(() => {
 								path: `/curseforge/project/${pack.project_id}`,
 								query: { i: instancePage.instanceId.value },
 							}
-						: undefined,
+						: technicPack.value
+							? technicPackPath(technicPack.value.slug)
+							: undefined,
 			},
 			summary: managedContentSummary.value,
-			versionNumber: linkedModpackVersion.value?.version_number ?? pack?.version,
+			versionNumber:
+				linkedModpackVersion.value?.version_number ?? pack?.version ?? technicPack.value?.version,
+			updateAvailable: !!packUpdate.value,
 			versionLink:
 				linkedModpackProject.value && linkedModpackVersion.value
 					? {
@@ -757,7 +828,10 @@ const managedContent = computed<ManagedContentData | null>(() => {
 					: undefined,
 			updatedAt: linkedModpackVersion.value?.date_published,
 		},
-		disabled: isModpackUpdating.value || isInstanceBusy.value,
+		disabled:
+			isModpackUpdating.value ||
+			isInstanceBusy.value ||
+			(!!technicPack.value && technicPreparing.value === technicPack.value.slug),
 		disabledText: formatMessage(commonMessages.updatingLabel),
 	}
 })
@@ -1223,12 +1297,25 @@ const bulkUpdateMutation = useMutation({
 async function bulkUpdateSelections(selections: UpdateAllSelection[]) {
 	if (isInstanceBusy.value || bulkUpdateMutation.isPending.value) return
 	const instanceId = instance.value.id
+	const curseforgeUpdates = selections.flatMap((selection) => {
+		const item = projects.value.find((project) => getContentItemId(project) === selection.id)
+		const file = item && curseforgeFileOf(item)
+		if (!item || !file || !canChangeContentVersion(item)) return []
+		return [
+			{
+				relative_path: file.relative_path,
+				project_id: file.project_id,
+				file_id: Number(selection.version.id),
+			},
+		]
+	})
 	const updates = selections.flatMap((selection) => {
 		const item =
 			projects.value.find((project) => getContentItemId(project) === selection.id) ??
 			projects.value.find((project) => project.project?.id === selection.projectId)
 		if (
 			!item ||
+			curseforgeFileOf(item) ||
 			!canChangeContentVersion(item) ||
 			!item.file_path ||
 			item.version?.id === selection.version.id
@@ -1236,7 +1323,7 @@ async function bulkUpdateSelections(selections: UpdateAllSelection[]) {
 			return []
 		return [{ project_path: item.file_path, version_id: selection.version.id }]
 	})
-	if (!updates.length) return
+	if (!updates.length && !curseforgeUpdates.length) return
 	const preflight = await plus_update_preflight(instanceId)
 	if (preflight.rollback_enabled && !preflight.enough_space) {
 		addNotification({
@@ -1256,8 +1343,46 @@ async function bulkUpdateSelections(selections: UpdateAllSelection[]) {
 			text: formatMessage(plusMessages.overBudgetText),
 		})
 	}
+	if (curseforgeUpdates.length) {
+		try {
+			await plus_cf_apply_updates(instanceId, curseforgeUpdates)
+		} catch (error) {
+			handleError(error as Error)
+		}
+		await refreshContentState('must_revalidate')
+		await refreshCurseforgeFiles()
+	}
+	if (!updates.length) return
 	await bulkUpdateMutation.mutateAsync({ instanceId, updates })
 	awaitingUpdateSummary.value = Date.now() / 1000 - 5
+}
+
+function curseforgeUpdateAllItems(items: ContentItem[]): UpdateAllItem[] {
+	return items.flatMap((item) => {
+		const file = curseforgeFileOf(item)
+		if (!file?.update || !item.has_update || item.locked) return []
+		const view = installedRowView(
+			file,
+			instance.value.id,
+			formatMessage(plusMessages.curseforgeSource),
+		)
+		return [
+			{
+				id: getContentItemId(item),
+				project: {
+					id: `curseforge:${file.project_id}`,
+					title: view.title ?? item.file_name,
+					icon_url: view.iconUrl ?? null,
+				},
+				currentVersion: {
+					id: String(file.file_id),
+					version_number: view.versionNumber ?? item.file_name,
+				},
+				versions: [toVersionView(file.update)],
+				initialVersionId: String(file.update.id),
+			},
+		]
+	})
 }
 
 async function showUpdateSummary(startedAt: number) {
@@ -1281,6 +1406,7 @@ async function showUpdateSummary(startedAt: number) {
 }
 
 watch(isInstanceBusy, (busy) => {
+	if (!busy) void refreshPackUpdates(true)
 	if (busy || awaitingUpdateSummary.value === null) return
 	const startedAt = awaitingUpdateSummary.value
 	awaitingUpdateSummary.value = null
@@ -1765,7 +1891,7 @@ async function handleCurseforgePackVersions() {
 	loadingChangelog.value = false
 
 	await nextTick()
-	contentUpdaterModal.value?.show(String(pack.file_id))
+	contentUpdaterModal.value?.show(packUpdate.value?.latest_id ?? String(pack.file_id))
 
 	try {
 		const files = await plus_cf_files(pack.project_id, null, null)
@@ -1780,6 +1906,12 @@ async function handleCurseforgePackVersions() {
 	} finally {
 		if (isActiveUpdateRequest(requestId)) loadingVersions.value = false
 	}
+}
+
+async function handleTechnicPackUpdate() {
+	const pack = technicPack.value
+	if (!pack) return
+	await technicInstaller.value?.install(pack.slug, pack.name, instance.value.id)
 }
 
 async function handleVersionSelect(version: Labrinth.Versions.v2.Version) {
@@ -1965,6 +2097,53 @@ const packActions = useSyncedPackActions(instance, syncedContentModal, canMutate
 	refreshContentState('must_revalidate'),
 )
 
+/** The mod library entry for a mod, from whichever site it came. */
+function libraryEntryOf(item: ContentItem): LibraryMod | null {
+	if (item.project_type !== 'mod') return null
+	if (item.project) {
+		return {
+			source: 'modrinth',
+			project_id: item.project.id,
+			name: item.project.title,
+			slug: item.project.slug ?? null,
+			icon_url: item.project.icon_url ?? null,
+			auto_install: true,
+		}
+	}
+	const project = curseforgeFileOf(item)?.project
+	return project
+		? {
+				source: 'curseforge',
+				project_id: String(project.id),
+				name: project.name,
+				slug: project.slug,
+				icon_url: project.logo?.thumbnailUrl ?? null,
+				auto_install: true,
+			}
+		: null
+}
+
+const copyContentModal = ref<InstanceType<typeof CopyContentModal> | null>(null)
+
+function copyItems(items: ContentItem[]): void {
+	const paths = items.map((item) => item.file_path).filter((path): path is string => !!path)
+	if (paths.length > 0) void copyContentModal.value?.show(instance.value.id, paths)
+}
+
+async function saveToLibrary(entry: LibraryMod): Promise<void> {
+	try {
+		const result = await addToLibrary(entry)
+		addNotification({
+			type: result.added ? 'success' : 'info',
+			title: result.added
+				? formatMessage(messages.addedToLibrary, { name: entry.name })
+				: formatMessage(messages.alreadyInLibrary, { name: result.existing.name }),
+		})
+	} catch (error) {
+		handleError(error as Error)
+	}
+}
+
 function getOverflowOptions(item: ContentItem): ButtonMenuOption[] {
 	const options: ButtonMenuOption[] = packActions.overflowOptions(item)
 
@@ -1974,6 +2153,25 @@ function getOverflowOptions(item: ContentItem): ButtonMenuOption[] {
 		icon: FolderOpenIcon,
 		action: () => highlightModInInstance(instance.value.id, item.file_path),
 	})
+
+	if (item.file_path && !isServerInstance.value) {
+		options.push({
+			id: 'copy-to-instance',
+			label: formatMessage(messages.copyToInstance),
+			icon: CopyIcon,
+			action: () => copyItems([item]),
+		})
+	}
+
+	const libraryEntry = libraryEntryOf(item)
+	if (libraryEntry) {
+		options.push({
+			id: 'add-to-library',
+			label: formatMessage(messages.addToLibrary),
+			icon: LibraryIcon,
+			action: () => void saveToLibrary(libraryEntry),
+		})
+	}
 
 	const curseforgeUrl = curseforgeFileOf(item)?.project?.links?.websiteUrl
 	if (curseforgeUrl) {
@@ -2085,7 +2283,9 @@ const managedContentPrimaryAction = computed(() =>
 			? handleModpackUpdate
 			: curseforgePack.value && !isQuarantined.value
 				? handleCurseforgePackVersions
-				: undefined,
+				: technicPack.value && packUpdate.value && !isQuarantined.value
+					? handleTechnicPackUpdate
+					: undefined,
 )
 
 provideContentManager({
@@ -2133,6 +2333,12 @@ provideContentManager({
 	hasUpdateSupport: true,
 	updateItem: handleUpdate,
 	bulkUpdateSelections,
+	getExternalUpdateAllItems: curseforgeUpdateAllItems,
+	loadExternalUpdateChangelog: (selection: UpdateAllSelection) =>
+		plus_cf_changelog(
+			Number(selection.projectId.replace('curseforge:', '')),
+			Number(selection.version.id),
+		),
 	bulkUpdatesInBackground: true,
 	currentGameVersion: computed(() => instance.value.game_version),
 	currentLoader: computed(() => instance.value.loader),
@@ -2145,33 +2351,50 @@ provideContentManager({
 	switchVersion: handleSwitchVersion,
 	getOverflowOptions,
 	shareItems: handleShareItems,
+	copyItems: isServerInstance.value ? undefined : copyItems,
 	getItemId: getContentItemId,
 	mapToTableItem: (item: ContentItem) => {
 		const curseforgeFile = curseforgeFileOf(item)
-		const curseforge =
-			curseforgeFile &&
-			installedRowView(
-				curseforgeFile,
-				instancePage.instanceId.value,
-				formatMessage(plusMessages.curseforgeSource),
-			)
+		const horizonPack = horizonPackOf(item)
+		const sourceView =
+			(curseforgeFile &&
+				installedRowView(
+					curseforgeFile,
+					instancePage.instanceId.value,
+					formatMessage(plusMessages.curseforgeSource),
+				)) ||
+			(horizonPack && {
+				title: horizonPack.name,
+				iconUrl: horizonPack.icon ?? undefined,
+				projectLink: {
+					path: `/horizon/${KIND_PATHS[horizonPack.kind]}`,
+					query: { i: instancePage.instanceId.value },
+				},
+				versionNumber: horizonPack.update_available ? undefined : horizonPack.version,
+				owner: {
+					id: `horizon:${horizonPack.id}`,
+					name: horizonPack.authors.join(', '),
+					type: 'user' as const,
+					link: horizonPack.page_url,
+				},
+			})
 		return {
 			id: getContentItemId(item),
 			project: item.project ?? {
 				id: item.file_name,
 				slug: null,
 				title:
-					curseforge?.title ??
+					sourceView?.title ??
 					item.embedded_metadata?.name ??
 					item.file_name.replace('.disabled', ''),
-				icon_url: curseforge?.iconUrl ?? item.embedded_metadata?.icon_url ?? null,
+				icon_url: sourceView?.iconUrl ?? item.embedded_metadata?.icon_url ?? null,
 			},
 			projectLink: item.project?.id
 				? { path: `/project/${item.project.id}`, query: { i: instancePage.instanceId.value } }
-				: curseforge?.projectLink,
+				: sourceView?.projectLink,
 			version: item.version ?? {
 				id: item.file_name,
-				version_number: curseforge?.versionNumber ?? contentVersionLabel(item),
+				version_number: sourceView?.versionNumber ?? contentVersionLabel(item),
 				file_name: item.file_name,
 			},
 			versionLink:
@@ -2186,8 +2409,8 @@ provideContentManager({
 						...item.owner,
 						link: contentOwnerLink(item.owner),
 					}
-				: curseforge?.owner,
-			external: curseforge ? false : (item.external ?? !item.project),
+				: sourceView?.owner,
+			external: sourceView ? false : (item.external ?? !item.project),
 			enabled: canMutateContent(item) ? item.enabled : undefined,
 			synced: !!item.synced_pack,
 			syncUpdatePending: item.synced_pack?.update_pending,
@@ -2195,7 +2418,8 @@ provideContentManager({
 			installing: item.installing,
 			hideDelete: !canDeleteContent(item),
 			hideSwitchVersion:
-				!canChangeContentVersion(item) || (!curseforge && (!item.project?.id || !item.version?.id)),
+				!canChangeContentVersion(item) ||
+				(!curseforgeFile && (!item.project?.id || !item.version?.id)),
 			hasUpdate:
 				(canUpdateProject(item) || (!!curseforgeFile?.update && canChangeContentVersion(item))) &&
 				!item.locked,

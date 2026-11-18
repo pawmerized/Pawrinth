@@ -11,6 +11,8 @@ import InstanceCardView from '@/components/ui/library/instance-group/instance-ca
 import { getLibraryInstanceSelectionKey, useLibrary } from '@/components/ui/library/use-library'
 import { useAppEvent } from '@/composables/use-app-event'
 import { handleSevereError } from '@/composables/use-error.js'
+import { discoverLocation } from '@/features/plus-horizon/horizon-packs'
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import { trackEvent } from '@/helpers/analytics'
 import { install_existing_instance, install_pack_to_existing_instance } from '@/helpers/install'
 import { kill, run } from '@/helpers/instance'
@@ -122,6 +124,7 @@ const { isDragging } = useDraggable({
 })
 
 const router = useRouter()
+const loaderOf = useInstanceLoader()
 
 const seeInstance = async () => {
 	if (installing.value) return
@@ -231,10 +234,13 @@ const openFolder = async () => {
 
 const addContent = async () => {
 	if (props.instance.quarantined || installing.value || modLoading.value) return
-	await router.push({
-		path: `/browse/${props.instance.loader === 'vanilla' ? 'datapack' : 'mod'}`,
-		query: { i: props.instance.id },
-	})
+	await router.push(
+		discoverLocation(
+			loaderOf(props.instance),
+			props.instance.id,
+			props.instance.loader === 'vanilla' ? 'datapack' : 'mod',
+		),
+	)
 }
 
 defineExpose({

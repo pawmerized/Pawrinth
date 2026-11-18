@@ -7,6 +7,7 @@ import {
 	ClockArrowUpIcon,
 	CodeIcon,
 	CompassIcon,
+	CopyIcon,
 	DownloadIcon,
 	DropdownIcon,
 	FileIcon,
@@ -163,6 +164,10 @@ const messages = defineMessages({
 	shareMarkdownLinks: {
 		id: 'content.page-layout.share.markdown-links',
 		defaultMessage: 'Markdown links',
+	},
+	copyToInstance: {
+		id: 'content.page-layout.copy-to-instance',
+		defaultMessage: 'Copy to…',
 	},
 	share: {
 		id: 'content.page-layout.share.label',
@@ -853,6 +858,7 @@ const updateAllItems = ref<UpdateAllItem[]>([])
 const loadingUpdateAll = ref(false)
 const loadingUpdateAllChangelog = ref(false)
 let updateAllRequestId = 0
+let externalUpdateIds = new Set<string>()
 
 const hasBulkUpdateSupport = computed(() => !!ctx.bulkUpdateSelections)
 
@@ -899,11 +905,13 @@ async function openUpdateAll(items: ContentItem[]) {
 	)
 		return
 	const candidates = getUpdateAllCandidates(items)
-	if (candidates.length === 0) return
-	if (candidates.length === 1 && ctx.updateItem) {
-		handleUpdateById(getItemId(candidates[0]))
+	const external = ctx.getExternalUpdateAllItems?.(items) ?? []
+	if (candidates.length + external.length === 0) return
+	if (candidates.length + external.length === 1 && ctx.updateItem) {
+		handleUpdateById(candidates.length === 1 ? getItemId(candidates[0]) : external[0].id)
 		return
 	}
+	externalUpdateIds = new Set(external.map((item) => item.id))
 
 	const requestId = ++updateAllRequestId
 	updateAllItems.value = []
@@ -940,7 +948,7 @@ async function openUpdateAll(items: ContentItem[]) {
 	const recommended = await recommendedPromise
 	if (requestId !== updateAllRequestId) return
 
-	updateAllItems.value = candidates.map((item) => {
+	const modrinthItems = candidates.map((item) => {
 		const preferredVersionId = item.update_version_id!
 		const versions = projectVersions.get(item.project!.id) ?? []
 		const preferredVersion =
@@ -988,6 +996,7 @@ async function openUpdateAll(items: ContentItem[]) {
 			initialVersionId: preferredVersionId,
 		}
 	})
+	updateAllItems.value = [...modrinthItems, ...external]
 	loadingUpdateAll.value = false
 	if (failedToLoadVersions) {
 		addNotification({ type: 'error', title: formatMessage(messages.failedToLoadUpdates) })
@@ -995,7 +1004,7 @@ async function openUpdateAll(items: ContentItem[]) {
 }
 
 function preloadUpdateAllChangelog(selection: UpdateAllSelection) {
-	if (selection.version.changelog != null) return
+	if (selection.version.changelog != null || externalUpdateIds.has(selection.id)) return
 	void queryClient.prefetchQuery({
 		queryKey: ['labrinth', 'version', 'v2', selection.version.id],
 		queryFn: () => client.labrinth.versions_v2.getVersion(selection.version.id),
@@ -1008,11 +1017,16 @@ async function loadUpdateAllChangelog(selection: UpdateAllSelection) {
 	const requestId = updateAllRequestId
 	loadingUpdateAllChangelog.value = true
 	try {
-		const version = await queryClient.fetchQuery({
-			queryKey: ['labrinth', 'version', 'v2', selection.version.id],
-			queryFn: () => client.labrinth.versions_v2.getVersion(selection.version.id),
-			staleTime: 5 * 60_000,
-		})
+		const version = externalUpdateIds.has(selection.id)
+			? {
+					...selection.version,
+					changelog: (await ctx.loadExternalUpdateChangelog?.(selection)) ?? '',
+				}
+			: await queryClient.fetchQuery({
+					queryKey: ['labrinth', 'version', 'v2', selection.version.id],
+					queryFn: () => client.labrinth.versions_v2.getVersion(selection.version.id),
+					staleTime: 5 * 60_000,
+				})
 		if (requestId !== updateAllRequestId) return
 		updateAllItems.value = updateAllItems.value.map((item) => ({
 			...item,
@@ -1504,6 +1518,16 @@ const confirmUnlinkModal = ref<InstanceType<typeof ConfirmUnlinkModal>>()
 				>
 					<DownloadIcon />
 					<span class="bar-label">{{ formatMessage(commonMessages.updateButton) }}</span>
+				</Button>
+
+				<Button
+					v-if="ctx.copyItems"
+					v-tooltip="formatMessage(messages.copyToInstance)"
+					type="quiet"
+					@click="ctx.copyItems!(selectedItems)"
+				>
+					<CopyIcon />
+					<span class="bar-label">{{ formatMessage(messages.copyToInstance) }}</span>
 				</Button>
 
 				<TeleportOverflowMenu

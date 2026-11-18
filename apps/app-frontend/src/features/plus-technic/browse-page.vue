@@ -1,25 +1,26 @@
 <script setup lang="ts">
-import { DownloadIcon, SearchIcon, SpinnerIcon } from '@modrinth/assets'
+import { CompassIcon, PlusIcon, SpinnerIcon } from '@modrinth/assets'
+import type { CardAction } from '@modrinth/ui'
 import {
 	Admonition,
+	BrowsePageLayout,
 	Button,
 	commonMessages,
 	defineMessages,
-	Input,
-	LoadingIndicator,
-	ProjectCard,
-	ProjectCardList,
+	getProjectTypeIcon,
+	provideBrowseManager,
 	useVIntl,
 } from '@modrinth/ui'
 import { useDebounceFn } from '@vueuse/core'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, shallowRef, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { errorText } from '@/features/plus-curseforge/project-adapter'
 import ProviderSwitch from '@/features/plus-curseforge/provider-switch.vue'
-import { plus_technic_browse, type TechnicPackSummary } from '@/helpers/plus'
-import { useBreadcrumb } from '@/shared/breadcrumbs'
+import { plus_technic_browse } from '@/helpers/plus'
+import { useRootBreadcrumb } from '@/shared/breadcrumbs'
 
+import { type TechnicSearchHit, toTechnicHit } from './technic-hit'
 import TechnicInstall from './technic-install.vue'
 import { technicPackPath, technicPreparing } from './technic-state'
 
@@ -28,145 +29,201 @@ const route = useRoute()
 const router = useRouter()
 
 const messages = defineMessages({
-	title: { id: 'plus.technic.title', defaultMessage: 'Technic modpacks' },
-	description: {
-		id: 'plus.technic.description',
+	title: { id: 'plus.technic.discover', defaultMessage: 'Discover on Technic' },
+	modpacks: { id: 'plus.technic.modpacks', defaultMessage: 'Modpacks' },
+	trending: { id: 'plus.technic.sort.trending', defaultMessage: 'Trending' },
+	relevance: { id: 'plus.technic.sort.relevance', defaultMessage: 'Relevance' },
+	newest: { id: 'plus.technic.sort.newest', defaultMessage: 'Newest' },
+	name: { id: 'plus.technic.sort.name', defaultMessage: 'Name' },
+	gathered: {
+		id: 'plus.technic.gathered',
 		defaultMessage:
-			'Modpacks from the Technic Platform. Each one is made and hosted by its creator, and installs as a new instance.',
+			"Technic has no list of all its modpacks, so these are its trending packs followed by the ones Pawrinth found through Technic's search. Search to find any pack that isn't here.",
 	},
-	searchPlaceholder: { id: 'plus.technic.search', defaultMessage: 'Search Technic modpacks' },
-	trending: { id: 'plus.technic.trending', defaultMessage: 'Trending on Technic' },
-	results: { id: 'plus.technic.results', defaultMessage: 'Search results' },
-	noResults: { id: 'plus.technic.no-results', defaultMessage: 'No Technic modpacks match that.' },
+	searchLimit: {
+		id: 'plus.technic.search-limit',
+		defaultMessage:
+			'Technic sends at most 50 results for a search, so try a more exact name if a pack is missing.',
+	},
 	failedHeader: { id: 'plus.technic.failed', defaultMessage: "Couldn't load Technic" },
 	retry: { id: 'plus.technic.retry', defaultMessage: 'Try again' },
-	minecraft: { id: 'plus.technic.minecraft', defaultMessage: 'Minecraft {version}' },
 })
 
+/** Searches keep Technic's own order. The gathered list can also be reordered. */
+const TRENDING = { name: 'trending', display: formatMessage(messages.trending) }
+const NEWEST = { name: 'newest', display: formatMessage(messages.newest) }
+const NAME = { name: 'name', display: formatMessage(messages.name) }
+const RELEVANCE = { name: 'relevance', display: formatMessage(messages.relevance) }
+const BROWSE_SORTS = [TRENDING, NEWEST, NAME]
+
 const query = ref(typeof route.query.q === 'string' ? route.query.q : '')
-const results = ref<TechnicPackSummary[]>([])
+const searching = computed(() => query.value.trim().length > 0)
+const sortType = shallowRef(searching.value ? RELEVANCE : TRENDING)
+const maxResults = ref(10)
+const currentPage = ref(1)
+const totalHits = ref(0)
+const projectHits = shallowRef<TechnicSearchHit[]>([])
 const loading = ref(true)
+const refreshing = ref(false)
 const loadError = ref<string | null>(null)
 const installer = ref<InstanceType<typeof TechnicInstall> | null>(null)
 let request = 0
 
-const searching = computed(() => query.value.trim().length > 0)
-
 async function load(): Promise<void> {
 	const id = ++request
-	loading.value = true
+	if (projectHits.value.length === 0) loading.value = true
+	else refreshing.value = true
 	loadError.value = null
 	try {
-		const packs = await plus_technic_browse(query.value.trim() || null)
-		if (id === request) results.value = packs
+		const page = await plus_technic_browse(
+			query.value.trim() || null,
+			(currentPage.value - 1) * maxResults.value,
+			maxResults.value,
+			searching.value ? null : sortType.value.name,
+		)
+		if (id !== request) return
+		projectHits.value = page.packs.map(toTechnicHit)
+		totalHits.value = page.total
 	} catch (error) {
-		if (id === request) {
-			results.value = []
-			loadError.value = errorText(error)
-		}
+		if (id !== request) return
+		projectHits.value = []
+		totalHits.value = 0
+		loadError.value = errorText(error)
 	} finally {
-		if (id === request) loading.value = false
+		if (id === request) {
+			loading.value = false
+			refreshing.value = false
+		}
 	}
 }
 
 const search = useDebounceFn(() => {
 	const text = query.value.trim()
 	void router.replace({ query: text ? { q: text } : {} })
+	currentPage.value = 1
 	void load()
 }, 400)
 
-function summaryOf(pack: TechnicPackSummary): string {
+watch(query, () => void search())
+watch(searching, (value) => (sortType.value = value ? RELEVANCE : TRENDING))
+watch(sortType, (value, previous) => {
+	if (searching.value || value.name === previous.name) return
+	currentPage.value = 1
+	void load()
+})
+watch(maxResults, () => {
+	currentPage.value = 1
+	void load()
+})
+
+function getCardActions(result: TechnicSearchHit): CardAction[] {
+	const preparing = technicPreparing.value === result.slug
 	return [
-		pack.game_version ? formatMessage(messages.minecraft, { version: pack.game_version }) : null,
-		pack.summary,
+		{
+			key: 'install',
+			label: formatMessage(
+				preparing ? commonMessages.installingLabel : commonMessages.installButton,
+			),
+			icon: preparing ? SpinnerIcon : PlusIcon,
+			iconClass: preparing ? 'animate-spin' : undefined,
+			disabled: technicPreparing.value !== null,
+			color: 'brand',
+			type: 'outlined',
+			onClick: () => installer.value?.install(result.slug, result.name),
+		},
 	]
-		.filter(Boolean)
-		.join(' · ')
 }
 
-useBreadcrumb({
-	slot: 'page',
+provideBrowseManager({
+	tags: ref({ gameVersions: [], loaders: [], categories: [] }),
+	projectType: computed(() => 'modpack'),
+	query,
+	filters: computed(() => []),
+	currentFilters: ref([]),
+	toggledGroups: ref([]),
+	overriddenProvidedFilterTypes: ref([]),
+	providedFilters: computed(() => []),
+	installContext: computed(() => null),
+	serverFilterTypes: computed(() => []),
+	serverCurrentFilters: ref([]),
+	serverToggledGroups: ref([]),
+	effectiveSortTypes: computed(() => (searching.value ? [RELEVANCE] : BROWSE_SORTS)),
+	effectiveCurrentSortType: sortType,
+	loading,
+	refreshing,
+	projectHits,
+	serverHits: shallowRef([]),
+	totalHits,
+	pageCount: computed(() => Math.max(1, Math.ceil(totalHits.value / maxResults.value))),
+	maxResults,
+	currentPage,
+	isServerType: computed(() => false),
+	effectiveLayout: computed(() => 'list' as const),
+	deprioritizedTags: computed(() => []),
+	excludeLoaders: computed(() => false),
+	loadFailed: computed(() => loadError.value !== null),
+	refreshSearch: load,
+	setPage: async (page: number) => {
+		currentPage.value = page
+		await load()
+	},
+	clearSearch: () => {
+		query.value = ''
+	},
+	onFilterChange: () => {},
+	linkOverridesAdvancedPrefs: ref(false),
+	applySavedAdvancedPrefs: () => {},
+	getProjectLink: (result: TechnicSearchHit) => technicPackPath(result.slug),
+	getServerProjectLink: () => '',
+	getAuthorLink: (result: TechnicSearchHit) => technicPackPath(result.slug),
+	selectableProjectTypes: computed(() => [
+		{
+			label: formatMessage(messages.modpacks),
+			href: '/technic',
+			icon: getProjectTypeIcon('modpack'),
+		},
+	]),
+	showProjectTypeTabs: computed(() => true),
+	variant: 'app',
+	getCardActions: (result: TechnicSearchHit) => getCardActions(result),
+	maxResultsOptions: computed(() => [5, 10, 20]),
+} as never)
+
+useRootBreadcrumb({
+	slot: 'browse',
 	id: () => 'technic-browse',
 	label: () => formatMessage(messages.title),
 	to: () => route.fullPath,
+	visual: { type: 'icon', component: CompassIcon },
 })
 
 onMounted(load)
 </script>
 
 <template>
-	<div class="flex flex-col gap-4 p-6">
-		<ProviderSwitch />
-		<div>
-			<h1 class="m-0 text-2xl font-semibold text-contrast">{{ formatMessage(messages.title) }}</h1>
-			<p class="m-0 mt-1 text-secondary">{{ formatMessage(messages.description) }}</p>
-		</div>
-		<Input
-			v-model="query"
-			:icon="SearchIcon"
-			clearable
-			:placeholder="formatMessage(messages.searchPlaceholder)"
-			:spellcheck="false"
-			autocomplete="off"
-			wrapper-class="w-full"
-			@update:model-value="search"
-		/>
-		<Admonition
-			v-if="loadError"
-			type="critical"
-			:header="formatMessage(messages.failedHeader)"
-			inline-actions
-		>
-			{{ loadError }}
-			<template #actions>
-				<Button @click="load">{{ formatMessage(messages.retry) }}</Button>
-			</template>
-		</Admonition>
-		<LoadingIndicator v-else-if="loading" />
-		<p v-else-if="results.length === 0" class="m-0 text-secondary">
-			{{ formatMessage(messages.noResults) }}
-		</p>
-		<template v-else>
-			<h2 class="m-0 text-lg font-semibold text-contrast">
-				{{ formatMessage(searching ? messages.results : messages.trending) }}
-			</h2>
-			<ProjectCardList layout="list">
-				<ProjectCard
-					v-for="pack in results"
-					:key="pack.slug"
-					layout="list"
-					:link="technicPackPath(pack.slug)"
-					:icon-url="pack.icon_url ?? undefined"
-					:title="pack.name"
-					:author="pack.author ? { name: pack.author } : undefined"
-					:summary="summaryOf(pack)"
-					:downloads="pack.installs ?? undefined"
+	<div class="flex flex-col gap-2 p-6">
+		<BrowsePageLayout>
+			<template #before-tabs>
+				<ProviderSwitch />
+				<p v-if="!searching" class="m-0 text-sm text-secondary">
+					{{ formatMessage(messages.gathered) }}
+				</p>
+				<p v-else-if="totalHits >= 50" class="m-0 text-sm text-secondary">
+					{{ formatMessage(messages.searchLimit) }}
+				</p>
+				<Admonition
+					v-if="loadError"
+					type="critical"
+					:header="formatMessage(messages.failedHeader)"
+					inline-actions
 				>
+					{{ loadError }}
 					<template #actions>
-						<Button
-							type="colored"
-							color="brand"
-							:disabled="technicPreparing !== null"
-							@click="installer?.install(pack.slug, pack.name)"
-						>
-							<SpinnerIcon
-								v-if="technicPreparing === pack.slug"
-								class="animate-spin"
-								aria-hidden="true"
-							/>
-							<DownloadIcon v-else aria-hidden="true" />
-							{{
-								formatMessage(
-									technicPreparing === pack.slug
-										? commonMessages.installingLabel
-										: commonMessages.installButton,
-								)
-							}}
-						</Button>
+						<Button @click="load">{{ formatMessage(messages.retry) }}</Button>
 					</template>
-				</ProjectCard>
-			</ProjectCardList>
-		</template>
+				</Admonition>
+			</template>
+		</BrowsePageLayout>
 		<TechnicInstall ref="installer" />
 	</div>
 </template>

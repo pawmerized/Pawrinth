@@ -2,8 +2,9 @@ import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { getCurrentWindow, LogicalSize } from '@tauri-apps/api/window'
 import { readonly, ref, shallowRef, watch } from 'vue'
 
+import { readCustomLogo, setCurrentCustomLogo } from '@/features/plus-logos/custom-logo'
 import { currentLogo, resolveLogo, setCurrentLogo } from '@/features/plus-logos/logos'
-import { applyWindowIcon } from '@/features/plus-logos/window-icon'
+import { applyCustomWindowIcon, applyWindowIcon } from '@/features/plus-logos/window-icon'
 import { setThemeLibrary, startThemeEngine } from '@/features/plus-themes/theme-engine'
 import {
 	plus_settings_get,
@@ -31,12 +32,21 @@ async function applyUiScale(scale: number): Promise<void> {
 	)
 }
 
+let windowShowsCustom = false
+
 function applyLogo(value: PlusSettings['appearance']): void {
+	const custom = value.logo === 'custom' ? readCustomLogo(value.custom_logo) : null
 	const logo = resolveLogo(value.logo)
-	const windowShowsPaw = logo === 'paw' && currentLogo.value === 'paw'
+	const windowShowsPaw = logo === 'paw' && currentLogo.value === 'paw' && !windowShowsCustom
 	setCurrentLogo(logo)
-	if (windowShowsPaw) return
-	void applyWindowIcon(logo).catch((error) => {
+	setCurrentCustomLogo(custom)
+	windowShowsCustom = !!custom
+	const icon = custom
+		? applyCustomWindowIcon(custom)
+		: windowShowsPaw
+			? null
+			: applyWindowIcon(logo)
+	void icon?.catch((error) => {
 		console.error('Failed to set the window icon', error)
 	})
 }
@@ -67,6 +77,11 @@ export async function initPlusSettings(): Promise<void> {
 	}
 }
 
+/** Reads the settings again after something else changed them, such as turning Horizon on. */
+export async function reloadPlusSettings(): Promise<void> {
+	settings.value = await plus_settings_get()
+}
+
 export async function patchPlusSettings(patch: PlusSettingsPatch): Promise<PlusSettings> {
 	const updated = await plus_settings_patch(patch)
 	settings.value = updated
@@ -77,7 +92,12 @@ watch(settings, (value, previous) => {
 	if (!value) return
 	applyInterfaceClasses(value.interface)
 	applyPrivacyClasses(value.privacy)
-	if (previous && previous.appearance.logo !== value.appearance.logo) {
+	if (
+		previous &&
+		(previous.appearance.logo !== value.appearance.logo ||
+			JSON.stringify(previous.appearance.custom_logo) !==
+				JSON.stringify(value.appearance.custom_logo))
+	) {
 		applyLogo(value.appearance)
 	}
 	if (previous && previous.interface.ui_scale !== value.interface.ui_scale) {

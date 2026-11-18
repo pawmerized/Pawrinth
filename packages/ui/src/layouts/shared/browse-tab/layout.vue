@@ -304,7 +304,7 @@ function getProjectCardTags(result: Labrinth.Search.v3.ResultSearchProject, disp
 			"
 			class="offline text-center"
 		>
-			<p>{{ formatMessage(messages.noResults) }}</p>
+			<p>{{ ctx.noResultsMessage?.value || formatMessage(messages.noResults) }}</p>
 		</section>
 
 		<ProjectCardList v-else :layout="ctx.effectiveLayout.value">

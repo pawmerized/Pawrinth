@@ -5,6 +5,7 @@ import {
 	CodeIcon,
 	CoffeeIcon,
 	InfoIcon,
+	RocketIcon,
 	Settings2Icon,
 	UsersIcon,
 	WindowIcon,
@@ -23,6 +24,8 @@ import type { PlatformTag } from '@modrinth/utils'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, nextTick, ref, watch } from 'vue'
 
+import { isHorizonCandidate } from '@/features/plus-horizon/horizon'
+import HorizonSettings from '@/features/plus-horizon/horizon-settings.vue'
 import { get_project_v3 } from '@/helpers/cache'
 import { get_linked_modpack_info, getInstanceIconUrl } from '@/helpers/instance'
 import { get_loader_versions } from '@/helpers/metadata'
@@ -168,6 +171,16 @@ const tabs = computed<TabbedModalTab[]>(() => [
 		category: tabCategories.game,
 		content: SyncedOptionsSettings,
 	},
+	{
+		name: defineMessage({
+			id: 'instance.settings.tabs.horizon',
+			defaultMessage: 'Horizon',
+		}),
+		icon: RocketIcon,
+		category: tabCategories.game,
+		content: HorizonSettings,
+		shown: isHorizonCandidate(props.instance),
+	},
 ])
 
 function getSupportedModpackLoaders() {
@@ -222,7 +235,17 @@ function show(tabIndex?: number) {
 	}
 }
 
-defineExpose({ show, hide })
+function showHorizon() {
+	const visibleTabs = tabs.value.filter((tab) => tab.shown !== false)
+	show(visibleTabs.findIndex((tab) => tab.content === HorizonSettings))
+}
+
+function showJava() {
+	const visibleTabs = tabs.value.filter((tab) => tab.shown !== false)
+	show(visibleTabs.findIndex((tab) => tab.content === JavaSettings))
+}
+
+defineExpose({ show, hide, showHorizon, showJava })
 </script>
 <template>
 	<TabbedModal

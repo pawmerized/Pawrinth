@@ -349,6 +349,17 @@ pub static REQWEST_CLIENT: LazyLock<reqwest::Client> = LazyLock::new(|| {
         .expect("client configuration should be valid")
 });
 
+/// For requests that carry an API key. reqwest keeps custom headers such as
+/// `x-api-key` when a redirect changes host, so this client never follows one.
+pub static NO_REDIRECT_REQWEST_CLIENT: LazyLock<reqwest::Client> =
+    LazyLock::new(|| {
+        reqwest_client_builder_with_timeout()
+            .https_only(true)
+            .redirect(reqwest::redirect::Policy::none())
+            .build()
+            .expect("client configuration should be valid")
+    });
+
 pub static INSECURE_NO_TIMEOUT_REQWEST_CLIENT: LazyLock<reqwest::Client> =
     LazyLock::new(|| {
         reqwest_client_builder()

@@ -179,6 +179,7 @@ import {
 	PackageIcon,
 	PlayIcon,
 	ReportIcon,
+	ServerIcon,
 	SettingsIcon,
 	StopCircleIcon,
 	TimerIcon,
@@ -203,6 +204,7 @@ import {
 } from '@modrinth/ui'
 import { computed } from 'vue'
 
+import { useInstanceLoader } from '@/features/plus-horizon/instance-loader'
 import type { GameInstance } from '@/helpers/types'
 
 import InstanceHeaderServerMetadata from './instance-page-header-server-metadata.vue'
@@ -216,6 +218,7 @@ const messages = defineMessages({
 		id: 'instance.action.export-modpack',
 		defaultMessage: 'Export modpack',
 	},
+	serverPack: { id: 'plus.server-pack.action', defaultMessage: 'Make a server pack' },
 	instanceSettings: {
 		id: 'instance.action.settings',
 		defaultMessage: 'Instance settings',
@@ -307,6 +310,7 @@ const emit = defineEmits<{
 	openFolder: []
 	export: []
 	createShortcut: []
+	serverPack: []
 	report: [event?: MouseEvent]
 }>()
 
@@ -316,7 +320,10 @@ const { formatMessage } = useVIntl()
 
 const isInstalling = computed(() => installingStages.includes(props.instance.install_stage))
 
-const loaderDisplayName = computed(() => formatLoaderLabel(props.instance.loader) as ServerLoader)
+const loaderOf = useInstanceLoader()
+const loaderDisplayName = computed(
+	() => formatLoaderLabel(loaderOf(props.instance)) as ServerLoader,
+)
 const loaderLabel = computed(() =>
 	[loaderDisplayName.value, props.instance.game_version].filter(Boolean).join(' '),
 )
@@ -376,6 +383,12 @@ const moreActions = computed<ButtonMenuOption[]>(() => {
 				label: formatMessage(messages.createShortcut),
 				icon: ExternalIcon,
 				action: () => emit('createShortcut'),
+			},
+			{
+				id: 'server-pack',
+				label: formatMessage(messages.serverPack),
+				icon: ServerIcon,
+				action: () => emit('serverPack'),
 			},
 		)
 	}

@@ -24,6 +24,7 @@ pub enum FindingKind {
     ModConflict,
     MixinFailure,
     CorruptConfig,
+    JavaArgument,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -66,6 +67,27 @@ fn subject_after(line: &str, markers: &[&str]) -> Option<String> {
 
 fn classify(line: &str) -> Option<(FindingKind, Confidence, Option<String>)> {
     let lower = line.to_lowercase();
+    if lower.contains("unrecognized vm option")
+        || lower.contains("unrecognized option:")
+        || lower
+            .contains("must be enabled via -xx:+unlockexperimentalvmoptions")
+    {
+        return Some((
+            FindingKind::JavaArgument,
+            Confidence::Confirmed,
+            subject_after(line, &["option '", "option: ", "VM option '"]),
+        ));
+    }
+    if lower.contains("conflicting collector combinations")
+        || lower.contains("initial heap size set to a larger value")
+        || lower.contains("invalid maximum heap size")
+        || lower.contains("invalid initial heap size")
+    {
+        return Some((FindingKind::JavaArgument, Confidence::Confirmed, None));
+    }
+    if lower.contains("could not create the java virtual machine") {
+        return Some((FindingKind::JavaArgument, Confidence::Possible, None));
+    }
     if lower.contains("requires") && lower.contains("which is missing") {
         return Some((
             FindingKind::MissingDependency,
@@ -206,6 +228,23 @@ mod tests {
             &[],
         );
         assert_eq!(diagnosis.findings[0].kind, FindingKind::JavaVersion);
+    }
+
+    #[test]
+    fn java_argument_errors_name_the_option() {
+        let diagnosis = diagnose(
+            "Unrecognized VM option 'MaxPermSize=256m'
+Error: Could not create the Java Virtual Machine.",
+            &[],
+        );
+        assert_eq!(diagnosis.findings.len(), 2);
+        assert_eq!(diagnosis.findings[0].kind, FindingKind::JavaArgument);
+        assert_eq!(diagnosis.findings[0].confidence, Confidence::Confirmed);
+        assert_eq!(
+            diagnosis.findings[0].subject.as_deref(),
+            Some("MaxPermSize")
+        );
+        assert_eq!(diagnosis.findings[1].confidence, Confidence::Possible);
     }
 
     #[test]

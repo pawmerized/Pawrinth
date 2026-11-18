@@ -8,6 +8,7 @@ import {
 	HeartHandshakeIcon,
 	KeyIcon,
 	LanguagesIcon,
+	LibraryIcon,
 	LightBulbIcon,
 	ModrinthIcon,
 	PaintbrushIcon,
@@ -36,6 +37,7 @@ import { platform as getOsPlatform, version as getOsVersion } from '@tauri-apps/
 import { computed, ref } from 'vue'
 
 import { useAppSettings } from '@/composables/use-app-settings.ts'
+import PlusModLibrarySettings from '@/features/plus-mod-library/mod-library-settings.vue'
 import PlusAboutSettings from '@/features/plus-settings/about-settings.vue'
 import PlusCurseforgeSettings from '@/features/plus-settings/curseforge-settings.vue'
 import PlusDiscordSettings from '@/features/plus-settings/discord-settings.vue'
@@ -254,6 +256,15 @@ const tabs = [
 		category: tabCategories.modrinthPlus,
 		icon: RefreshCwIcon,
 		content: PlusRecoverySettings,
+	},
+	{
+		name: defineMessage({
+			id: 'plus.settings.tabs.mod-library',
+			defaultMessage: 'Mod library',
+		}),
+		category: tabCategories.modrinthPlus,
+		icon: LibraryIcon,
+		content: PlusModLibrarySettings,
 	},
 	{
 		name: defineMessage({

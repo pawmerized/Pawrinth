@@ -210,6 +210,15 @@ pub(super) fn http_client() -> &'static reqwest::Client {
     &crate::util::fetch::REQWEST_CLIENT
 }
 
+/// The client for requests that send the key, which never follows a redirect.
+pub(super) fn keyed_client() -> &'static reqwest::Client {
+    #[cfg(debug_assertions)]
+    if local_api_base().is_some() {
+        return &crate::util::fetch::INSECURE_REQWEST_CLIENT;
+    }
+    &crate::util::fetch::NO_REDIRECT_REQWEST_CLIENT
+}
+
 /// How requests reach CurseForge.
 #[derive(Clone)]
 pub(super) enum Access {
@@ -340,7 +349,8 @@ pub async fn game_versions() -> crate::Result<Vec<GameVersion>> {
     get_public("/minecraft/version", &state).await
 }
 
-/// Only these hosts ever receive the key.
+/// Hosts a request may go to while a key is in use. The key itself is only sent to
+/// the API, never to the download servers.
 pub(super) fn is_curseforge_host(url: &str) -> bool {
     #[cfg(debug_assertions)]
     if local_api_base().is_some_and(|base| url.starts_with(&base)) {
@@ -413,12 +423,21 @@ async fn send_request(
     };
     let _permit = state.api_semaphore.0.acquire().await?;
     let mut last_error = String::new();
+    let key = match access {
+        Access::Key(key) if from_api => Some(key),
+        _ => None,
+    };
+    let client = if key.is_some() {
+        keyed_client()
+    } else {
+        http_client()
+    };
     for attempt in 1..=MAX_ATTEMPTS {
         let mut request = match body {
-            Some(body) => http_client().post(url).json(body),
-            None => http_client().get(url),
+            Some(body) => client.post(url).json(body),
+            None => client.get(url),
         };
-        if let Access::Key(key) = access {
+        if let Some(key) = key {
             request = request.header("x-api-key", key.header_value()?);
         }
         let response =
@@ -755,6 +774,41 @@ pub async fn files(
     fetch_files(project_id, game_version.as_deref(), loader_type, &state).await
 }
 
+const FILES_PAGE_SIZE: usize = 50;
+/// A project page lists up to this many pages of files, newest first, which covers
+/// every file most projects have without hundreds of requests for the biggest.
+const MAX_FILE_PAGES: usize = 10;
+
+/// Every file for a version and loader, newest first, a page at a time, for a
+/// project's Versions tab. Installing only ever needs the newest page.
+pub async fn all_files(
+    project_id: u64,
+    game_version: Option<String>,
+    loader_type: Option<u32>,
+) -> crate::Result<Vec<ProjectFile>> {
+    #[cfg(debug_assertions)]
+    if samples::is_sample_id(project_id) {
+        return samples::files(project_id);
+    }
+    let state = State::get().await?;
+    let first_page =
+        files_path(project_id, game_version.as_deref(), loader_type);
+    let mut files = Vec::new();
+    for page in 0..MAX_FILE_PAGES {
+        let batch: Vec<ProjectFile> = get_data(
+            &format!("{first_page}&index={}", page * FILES_PAGE_SIZE),
+            &state,
+        )
+        .await?;
+        let last = batch.len() < FILES_PAGE_SIZE;
+        files.extend(batch);
+        if last {
+            break;
+        }
+    }
+    Ok(files)
+}
+
 fn loader_type(loader: ModLoader) -> Option<u32> {
     match loader {
         ModLoader::Forge => Some(1),
@@ -948,6 +1002,7 @@ struct TargetInstance {
     game_version: String,
     loader: ModLoader,
     entries: Vec<ManifestEntry>,
+    identity: super::installed_identity::InstalledIdentity,
 }
 
 async fn target_instance(
@@ -955,10 +1010,14 @@ async fn target_instance(
     loader_override: Option<&str>,
 ) -> crate::Result<TargetInstance> {
     let manifest = operations::instance_manifest(instance_id).await?;
+    let state = State::get().await?;
+    let identity =
+        super::installed_identity::of_instance(instance_id, &state).await?;
     Ok(TargetInstance {
         game_version: manifest.game_version,
         loader: loader_override.map_or(manifest.loader, ModLoader::from_string),
         entries: manifest.entries,
+        identity,
     })
 }
 
@@ -966,12 +1025,26 @@ pub(super) fn curseforge_ref(project_id: u64) -> String {
     format!("curseforge:{project_id}")
 }
 
-fn installed(target: &TargetInstance, project_id: u64) -> bool {
+/// Whether a file in the instance is this CurseForge project's, wherever it was
+/// downloaded from.
+fn installed_by_id(target: &TargetInstance, project_id: u64) -> bool {
     let wanted = curseforge_ref(project_id);
     target
         .entries
         .iter()
         .any(|entry| entry.project_id.as_deref() == Some(wanted.as_str()))
+        || target.identity.curseforge_ids.contains(&project_id)
+}
+
+/// Whether the instance has this project, or the same mod from somewhere else, so a
+/// dependency isn't installed twice.
+fn installed(target: &TargetInstance, project: &Project) -> bool {
+    installed_by_id(target, project.id)
+        || super::installed_identity::has_name(
+            &target.identity,
+            &project.slug,
+            &project.name,
+        )
 }
 
 fn project_type_for_class(slug: &str) -> Option<ProjectType> {
@@ -1037,7 +1110,7 @@ async fn plan_dependency(
     let project = fetch_project(project_id, state).await?;
     let website_url = project.links.website_url.clone();
     let name = project.name.clone();
-    if installed(target, project_id) {
+    if installed(target, &project) {
         return Ok(PlannedDependency {
             project_id,
             name,
@@ -1207,7 +1280,7 @@ pub async fn plan_install(
         .dependencies
         .iter()
         .filter(|dependency| dependency.relation_type == RELATION_INCOMPATIBLE)
-        .filter(|dependency| installed(&target, dependency.mod_id))
+        .filter(|dependency| installed_by_id(&target, dependency.mod_id))
         .map(|dependency| curseforge_ref(dependency.mod_id))
         .collect();
 
@@ -1423,11 +1496,47 @@ pub async fn installed_projects(instance_id: &str) -> crate::Result<Vec<u64>> {
     Ok(projects.into_iter().collect())
 }
 
+/// Where a CurseForge project's file is in an instance and which file it is.
+#[derive(Clone, Debug, Serialize)]
+pub struct InstalledOrigin {
+    pub relative_path: String,
+    pub file_id: u64,
+}
+
+/// The file of this project the instance has, read from Pawrinth's own records
+/// without asking CurseForge anything.
+pub async fn installed_origin(
+    instance_id: &str,
+    project_id: u64,
+) -> crate::Result<Option<InstalledOrigin>> {
+    let state = State::get().await?;
+    let project_ref = curseforge_ref(project_id);
+    for (relative_path, (origin_project, file_ref)) in
+        origins(instance_id, &state).await?
+    {
+        let Ok(file_id) = file_ref.parse::<u64>() else {
+            continue;
+        };
+        if origin_project == project_ref
+            && still_present(instance_id, &relative_path).await
+        {
+            return Ok(Some(InstalledOrigin {
+                relative_path,
+                file_id,
+            }));
+        }
+    }
+    Ok(None)
+}
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct InstallReport {
     pub installed: Vec<String>,
     pub already_installed: Vec<String>,
     pub unavailable: Vec<String>,
+    /// Where the chosen file went in the instance.
+    #[serde(skip)]
+    pub path: String,
 }
 
 /// Installs a file and its required dependencies. It stops before changing anything
@@ -1495,7 +1604,9 @@ pub async fn install(
             _ => {}
         }
     }
-    install_file(instance_id, &plan.project, &plan.file, None, &state).await?;
+    report.path =
+        install_file(instance_id, &plan.project, &plan.file, None, &state)
+            .await?;
     report.installed.push(plan.project.name.clone());
     crate::event::emit::emit_instance(
         instance_id,
@@ -1643,17 +1754,24 @@ pub async fn installed_files(
     if origins.is_empty() {
         return Ok(Vec::new());
     }
-    let parsed = origins.into_iter().filter_map(
-        |(relative_path, (project_ref, file_ref))| {
-            let project_id = project_ref
-                .strip_prefix("curseforge:")?
-                .parse::<u64>()
-                .ok()?;
-            Some((relative_path, project_id, file_ref.parse::<u64>().ok()?))
-        },
-    );
+    let mut parsed = Vec::new();
+    for (relative_path, (project_ref, file_ref)) in origins {
+        let (Some(project_id), Ok(file_id)) = (
+            project_ref
+                .strip_prefix("curseforge:")
+                .and_then(|id| id.parse::<u64>().ok()),
+            file_ref.parse::<u64>(),
+        ) else {
+            continue;
+        };
+        // A file another updater replaced or removed keeps its record, but isn't installed.
+        if still_present(instance_id, &relative_path).await {
+            parsed.push((relative_path, project_id, file_id));
+        }
+    }
     if data_mode().await != DataMode::Live {
         return Ok(parsed
+            .into_iter()
             .map(|(relative_path, project_id, file_id)| InstalledFile {
                 relative_path,
                 project_id,

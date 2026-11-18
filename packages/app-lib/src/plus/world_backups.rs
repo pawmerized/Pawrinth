@@ -72,7 +72,7 @@ pub struct RestoreReport {
 
 /// A world or backup name from outside, which has to be a single plain folder or file
 /// name.
-fn plain_name(name: &str) -> crate::Result<&str> {
+pub(super) fn plain_name(name: &str) -> crate::Result<&str> {
     let mut components = Path::new(name).components();
     match (components.next(), components.next()) {
         (Some(Component::Normal(_)), None)
@@ -84,7 +84,7 @@ fn plain_name(name: &str) -> crate::Result<&str> {
     }
 }
 
-fn instance_folder(instance_id: &str) -> String {
+pub(super) fn instance_folder(instance_id: &str) -> String {
     instance_id
         .chars()
         .map(|c| {

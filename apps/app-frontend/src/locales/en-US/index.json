@@ -3923,6 +3923,9 @@
   "instance.settings.tabs.hooks.wrapper.enter": {
     "message": "Enter wrapper command..."
   },
+  "instance.settings.tabs.horizon": {
+    "message": "Horizon"
+  },
   "instance.settings.tabs.installation": {
     "message": "Installation"
   },
@@ -4310,6 +4313,9 @@
   "plus.about.not-included.list": {
     "message": "Ads, error reporting to Sentry, Modrinth Hosting and its support chat, and playtime analytics."
   },
+  "plus.about.privacy": {
+    "message": "Privacy policy"
+  },
   "plus.about.releases": {
     "message": "Release notes"
   },
@@ -4324,6 +4330,9 @@
   },
   "plus.about.support": {
     "message": "Report problems on Pawrinth's GitHub rather than to Modrinth, since they may come from Pawrinth's own changes."
+  },
+  "plus.about.terms": {
+    "message": "Terms of Service"
   },
   "plus.about.title": {
     "message": "About Pawrinth"
@@ -4517,9 +4526,6 @@
   "plus.content.curseforge-source": {
     "message": "CurseForge"
   },
-  "plus.content.curseforge-updates": {
-    "message": "CurseForge updates"
-  },
   "plus.content.no-space": {
     "message": "Not enough disk space"
   },
@@ -4546,6 +4552,63 @@
   },
   "plus.content.update-history": {
     "message": "Update history"
+  },
+  "plus.copy.action": {
+    "message": "Copy {count, plural, one {# item} other {# items}}"
+  },
+  "plus.copy.back": {
+    "message": "Choose another instance"
+  },
+  "plus.copy.checking": {
+    "message": "Checking what fits…"
+  },
+  "plus.copy.choose": {
+    "message": "Choose where to copy {count, plural, one {# item} other {# items}}. Pawrinth checks each one against that instance first."
+  },
+  "plus.copy.copied": {
+    "message": "Copied {count, plural, one {# item} other {# items}} to {name}"
+  },
+  "plus.copy.failed": {
+    "message": "Some items couldn’t be copied"
+  },
+  "plus.copy.menu": {
+    "message": "Copy to another instance"
+  },
+  "plus.copy.no-others": {
+    "message": "There’s no other instance to copy to."
+  },
+  "plus.copy.nothing": {
+    "message": "Nothing here can be copied to {name}."
+  },
+  "plus.copy.status.already-installed": {
+    "message": "Already there"
+  },
+  "plus.copy.status.copy-file": {
+    "message": "Copied as it is"
+  },
+  "plus.copy.status.curseforge-unavailable": {
+    "message": "Needs CurseForge set up in API configuration"
+  },
+  "plus.copy.status.game-running": {
+    "message": "Close the game first, so the copy is complete"
+  },
+  "plus.copy.status.no-version": {
+    "message": "No version for {target}"
+  },
+  "plus.copy.status.older-game": {
+    "message": "Not copied: {target} is older, which can damage a world"
+  },
+  "plus.copy.status.other-version": {
+    "message": "Gets the version made for {target}"
+  },
+  "plus.copy.status.same-version": {
+    "message": "Same version fits"
+  },
+  "plus.copy.title": {
+    "message": "Copy to another instance"
+  },
+  "plus.copy.world-menu": {
+    "message": "Copy to another instance"
   },
   "plus.curseforge.author.all": {
     "message": "All"
@@ -4603,6 +4666,9 @@
   },
   "plus.curseforge.development.text": {
     "message": "This development build found a key in CURSEFORGE_API_KEY. Release builds ignore that variable. A key saved here takes priority."
+  },
+  "plus.curseforge.direct.already-elsewhere": {
+    "message": "{instance} already has this mod, installed from another site. Remove that copy first to use the CurseForge one."
   },
   "plus.curseforge.direct.conflicts": {
     "message": "This version says it doesn't work with {count, plural, one {# project} other {# projects}} already in the instance."
@@ -4778,9 +4844,6 @@
   "plus.curseforge.page.tab.versions": {
     "message": "Versions"
   },
-  "plus.curseforge.project.changelog": {
-    "message": "Changelog"
-  },
   "plus.curseforge.project.not-distributable": {
     "message": "This project's author doesn't allow downloads through other apps. You can still get it from the CurseForge website."
   },
@@ -4916,24 +4979,6 @@
   "plus.curseforge.unchecked.text": {
     "message": "CurseForge couldn’t be reached just now. Test the connection to try again."
   },
-  "plus.curseforge.updates": {
-    "message": "CurseForge updates"
-  },
-  "plus.curseforge.updates.apply": {
-    "message": "{count, plural, one {Update # project} other {Update # projects}}"
-  },
-  "plus.curseforge.updates.blocked": {
-    "message": "This author doesn't allow downloads through other apps."
-  },
-  "plus.curseforge.updates.done": {
-    "message": "CurseForge updates finished"
-  },
-  "plus.curseforge.updates.none": {
-    "message": "Everything installed from CurseForge is up to date."
-  },
-  "plus.curseforge.updates.note": {
-    "message": "Old versions are kept, so you can restore them from Update history."
-  },
   "plus.diagnostics.confirmed": {
     "message": "The log says: {detail}"
   },
@@ -4945,6 +4990,12 @@
   },
   "plus.diagnostics.evidence": {
     "message": "Log line: {line}"
+  },
+  "plus.diagnostics.java-argument": {
+    "message": "Java refused to start with its arguments{subject, select, none {} other { ({subject})}}."
+  },
+  "plus.diagnostics.java-argument.fix": {
+    "message": "Open this instance’s Java settings. Custom Java arguments marks the problem in red and offers a fix."
   },
   "plus.diagnostics.java-version": {
     "message": "The game or a mod needs a different Java version."
@@ -4975,6 +5026,9 @@
   },
   "plus.diagnostics.mod-conflict.fix": {
     "message": "Disable one of the mods named in the log line below."
+  },
+  "plus.diagnostics.open-java": {
+    "message": "Open Java settings"
   },
   "plus.diagnostics.out-of-memory": {
     "message": "The game ran out of memory."
@@ -5315,6 +5369,90 @@
   "plus.history.title": {
     "message": "Update history"
   },
+  "plus.horizon.browse.failed": {
+    "message": "Horizon’s registry couldn’t be reached"
+  },
+  "plus.horizon.browse.game-version": {
+    "message": "Game version"
+  },
+  "plus.horizon.browse.registry-empty": {
+    "message": "Horizon’s registry has no {kind, select, shader {shader packs} other {resource packs}} for Minecraft {version} right now. New ones show here as soon as Horizon lists them."
+  },
+  "plus.horizon.browse.sort.downloads": {
+    "message": "Downloads"
+  },
+  "plus.horizon.browse.sort.newest": {
+    "message": "Date published"
+  },
+  "plus.horizon.browse.sort.relevance": {
+    "message": "Relevance"
+  },
+  "plus.horizon.browse.sort.updated": {
+    "message": "Date updated"
+  },
+  "plus.horizon.files": {
+    "message": "Horizon"
+  },
+  "plus.horizon.ineligible": {
+    "message": "Horizon only plays vanilla Minecraft 26.3. Change this instance in Installation to use it."
+  },
+  "plus.horizon.installed": {
+    "message": "Installed: {version}"
+  },
+  "plus.horizon.intro": {
+    "message": "Horizon is a third-party fan project: a rebuild of Minecraft: Java Edition 26.3 in Rust by the Horizon project, not made by Mojang, Microsoft or Pawrinth. When you play with it, Pawrinth gives it your Minecraft sign-in, just as it does for Minecraft. It plays this instance’s worlds, resource packs and data packs, but not Java mods. Back up worlds you care about before trying it."
+  },
+  "plus.horizon.needs-setup": {
+    "message": "Horizon needs preparing again, which usually happens after an update."
+  },
+  "plus.horizon.not-set-up": {
+    "message": "Not set up yet."
+  },
+  "plus.horizon.packs.back": {
+    "message": "Back to instance"
+  },
+  "plus.horizon.packs.installed-title": {
+    "message": "Installed {name}"
+  },
+  "plus.horizon.packs.no-match": {
+    "message": "No packs match your search or filters."
+  },
+  "plus.horizon.packs.not-horizon": {
+    "message": "These packs are for instances that play with Horizon. Turn Horizon on in this instance’s settings to use them."
+  },
+  "plus.horizon.packs.retry": {
+    "message": "Try again"
+  },
+  "plus.horizon.packs.update": {
+    "message": "Update"
+  },
+  "plus.horizon.play": {
+    "message": "Play with Horizon"
+  },
+  "plus.horizon.play.description": {
+    "message": "The Play button starts Horizon instead of Java Minecraft, signed in with your Minecraft account. Turn this off to go back."
+  },
+  "plus.horizon.remove": {
+    "message": "Remove Horizon"
+  },
+  "plus.horizon.remove.button": {
+    "message": "Remove"
+  },
+  "plus.horizon.remove.description": {
+    "message": "Deletes Horizon and the files it prepared, and turns it off for every instance. Worlds stay in their instances."
+  },
+  "plus.horizon.set-up": {
+    "message": "Set up Horizon"
+  },
+  "plus.horizon.set-up.description": {
+    "message": "Downloads Horizon (about 60 MB) from its official GitHub release, and installs it only if it’s signed with Horizon’s release key, which is built into Pawrinth. Then it gets Minecraft 26.3’s server file from Mojang and builds Horizon’s files from your Minecraft, including about 380 MB of sounds. It takes a few minutes, and every 26.3 instance shares it."
+  },
+  "plus.horizon.unsupported": {
+    "message": "Horizon has no build for this computer yet."
+  },
+  "plus.horizon.update": {
+    "message": "Check for updates"
+  },
   "plus.interface.compact": {
     "message": "Compact layout"
   },
@@ -5329,6 +5467,45 @@
   },
   "plus.interface.logo": {
     "message": "Logo"
+  },
+  "plus.interface.logo.custom": {
+    "message": "Your own"
+  },
+  "plus.interface.logo.custom.another": {
+    "message": "Choose another picture"
+  },
+  "plus.interface.logo.custom.apply": {
+    "message": "Apply"
+  },
+  "plus.interface.logo.custom.file-filter": {
+    "message": "Images"
+  },
+  "plus.interface.logo.custom.height": {
+    "message": "Height"
+  },
+  "plus.interface.logo.custom.keep-ratio": {
+    "message": "Keep the picture’s proportions"
+  },
+  "plus.interface.logo.custom.keep-ratio.note": {
+    "message": "When this is off, the width and height set the space the logo gets, and the picture still fits inside it without stretching."
+  },
+  "plus.interface.logo.custom.preview": {
+    "message": "Preview in the title bar. Nothing changes until you apply it."
+  },
+  "plus.interface.logo.custom.reset": {
+    "message": "Reset to default"
+  },
+  "plus.interface.logo.custom.rounded": {
+    "message": "Round the corners"
+  },
+  "plus.interface.logo.custom.title": {
+    "message": "Your own logo"
+  },
+  "plus.interface.logo.custom.unreadable": {
+    "message": "That picture couldn’t be shown. Choose a PNG, JPEG or WebP image."
+  },
+  "plus.interface.logo.custom.width": {
+    "message": "Width"
   },
   "plus.interface.logo.description": {
     "message": "Shown in the title bar, on the loading screen and as the window icon on the taskbar. Shortcuts keep the paw."
@@ -5371,6 +5548,78 @@
   },
   "plus.interface.title": {
     "message": "Interface"
+  },
+  "plus.java-args.explain.g1": {
+    "message": "Uses the G1 garbage collector, which cleans up memory in small steps."
+  },
+  "plus.java-args.explain.g1-new-size": {
+    "message": "Keeps at least 20% of memory for new objects, which Minecraft makes many of."
+  },
+  "plus.java-args.explain.g1-reserve": {
+    "message": "Keeps 20% free as a buffer, so memory doesn’t run out during cleanup."
+  },
+  "plus.java-args.explain.generational": {
+    "message": "Turns on ZGC’s generational mode, which handles short-lived objects better. Java 23 and newer use it already."
+  },
+  "plus.java-args.explain.pause": {
+    "message": "Aims for cleanup pauses of 50 milliseconds or less."
+  },
+  "plus.java-args.explain.region": {
+    "message": "Splits memory into 32 MB regions, so large chunks of world data fit in one."
+  },
+  "plus.java-args.explain.unlock": {
+    "message": "Lets Java accept the experimental G1 options that follow."
+  },
+  "plus.java-args.explain.zgc": {
+    "message": "Uses ZGC, which cleans up memory while the game keeps running."
+  },
+  "plus.java-args.fix": {
+    "message": "Fix"
+  },
+  "plus.java-args.in-use": {
+    "message": "In use"
+  },
+  "plus.java-args.not-saved": {
+    "message": "These arguments aren’t saved until the problems marked in red are fixed, so the game keeps starting with the last ones that work."
+  },
+  "plus.java-args.preset.generational-zgc": {
+    "message": "Generational ZGC"
+  },
+  "plus.java-args.preset.generational-zgc.text": {
+    "message": "Cleans up memory while the game keeps running, with pauses under a millisecond, so there are fewer stutters. It uses more memory and some extra CPU."
+  },
+  "plus.java-args.preset.mojang-g1": {
+    "message": "Minecraft launcher settings"
+  },
+  "plus.java-args.preset.mojang-g1.text": {
+    "message": "What Minecraft’s own launcher uses: the G1 garbage collector, tuned for short pauses. Works on every Java version Minecraft runs on."
+  },
+  "plus.java-args.remove": {
+    "message": "Remove"
+  },
+  "plus.java-args.remove-earlier": {
+    "message": "Remove the earlier one"
+  },
+  "plus.java-args.suggestions": {
+    "message": "Suggestions"
+  },
+  "plus.java-args.suggestions-for": {
+    "message": "Suggestions for Java {version}"
+  },
+  "plus.java-args.suggestions-note": {
+    "message": "Only settings that suit this instance’s Java and memory are suggested. Using one replaces the garbage collector settings above and keeps everything else."
+  },
+  "plus.java-args.unknown-java": {
+    "message": "this Java"
+  },
+  "plus.java-args.use": {
+    "message": "Use these"
+  },
+  "plus.java-args.what-they-do": {
+    "message": "What these do"
+  },
+  "plus.library.pack-update": {
+    "message": "Modpack update available: {version}"
   },
   "plus.memory.applied": {
     "message": "Pawrinth set this instance to match."
@@ -5431,6 +5680,117 @@
   },
   "plus.mineskin.settings.unchecked": {
     "message": "The key is saved, but MineSkin couldn't check it right now."
+  },
+  "plus.mod-library.add": {
+    "message": "Add to my mod library"
+  },
+  "plus.mod-library.added": {
+    "message": "Added {name} to your mod library"
+  },
+  "plus.mod-library.already": {
+    "message": "{name} is already in your mod library"
+  },
+  "plus.mod-library.auto-install": {
+    "message": "New instances"
+  },
+  "plus.mod-library.browse.add": {
+    "message": "Add"
+  },
+  "plus.mod-library.browse.by": {
+    "message": "by {author}"
+  },
+  "plus.mod-library.browse.curseforge-off": {
+    "message": "CurseForge needs to be set up first: add a key or turn on curse.tools in API configuration."
+  },
+  "plus.mod-library.browse.description": {
+    "message": "Saving a mod only adds it to your library. Nothing is installed until you create an instance."
+  },
+  "plus.mod-library.browse.downloads": {
+    "message": "{count} downloads"
+  },
+  "plus.mod-library.browse.empty": {
+    "message": "No mods match your search."
+  },
+  "plus.mod-library.browse.failed": {
+    "message": "Couldn’t search {source}. Check your connection and try again."
+  },
+  "plus.mod-library.browse.more": {
+    "message": "Show more"
+  },
+  "plus.mod-library.browse.remove": {
+    "message": "Remove {name}"
+  },
+  "plus.mod-library.browse.retry": {
+    "message": "Try again"
+  },
+  "plus.mod-library.browse.saved": {
+    "message": "Saved"
+  },
+  "plus.mod-library.browse.saved-from": {
+    "message": "Saved from {source}"
+  },
+  "plus.mod-library.browse.search": {
+    "message": "Search mods…"
+  },
+  "plus.mod-library.browse.title": {
+    "message": "Find mods"
+  },
+  "plus.mod-library.description": {
+    "message": "Mods you use in most instances. Saving one doesn’t install it anywhere: each new instance from Create instance gets the mods with New instances on, which is how they start, in a version for its Minecraft version and mod loader and with what they need. Turn it off for mods you only want to keep in the list. Mods an instance already has, from either site, aren’t added twice."
+  },
+  "plus.mod-library.empty": {
+    "message": "Your mod library is empty."
+  },
+  "plus.mod-library.enabled": {
+    "message": "Add these to new instances"
+  },
+  "plus.mod-library.enabled.text": {
+    "message": "Turn this off to keep the list without installing anything."
+  },
+  "plus.mod-library.how-to-add": {
+    "message": "Find mods below, or use a mod’s ⋯ menu in an instance’s content and choose Add to my mod library."
+  },
+  "plus.mod-library.installed.title": {
+    "message": "Added {count, plural, one {# mod} other {# mods}} from your mod library"
+  },
+  "plus.mod-library.move-down": {
+    "message": "Move {name} down"
+  },
+  "plus.mod-library.move-up": {
+    "message": "Move {name} up"
+  },
+  "plus.mod-library.remove": {
+    "message": "Remove {name}"
+  },
+  "plus.mod-library.skip.already-installed": {
+    "message": "{name}: already in this instance"
+  },
+  "plus.mod-library.skip.curseforge-unavailable": {
+    "message": "{name}: CurseForge isn’t set up in API configuration"
+  },
+  "plus.mod-library.skip.failed": {
+    "message": "{name}: {detail}"
+  },
+  "plus.mod-library.skip.no-matching-version": {
+    "message": "{name}: no version for this Minecraft version and loader"
+  },
+  "plus.mod-library.skip.no-mod-loader": {
+    "message": "{name}: this instance has no mod loader"
+  },
+  "plus.mod-library.skipped.title": {
+    "message": "Some mods from your mod library weren’t added"
+  },
+  "plus.mod-library.source": {
+    "message": "Site to search"
+  },
+  "plus.mod-library.source.curseforge": {
+    "message": "CurseForge"
+  },
+  "plus.mod-library.source.modrinth": {
+    "message": "Modrinth"
+  },
+  "plus.mod-library.title": {
+    "message": "Mod library"
   },
   "plus.mods.check.again": {
     "message": "Check again"
@@ -5678,6 +6038,108 @@
   "plus.recovery.usage": {
     "message": "Currently using {used} across {count, plural, one {# entry} other {# entries}}."
   },
+  "plus.server-pack.action": {
+    "message": "Make a server pack"
+  },
+  "plus.server-pack.choose": {
+    "message": "Choose where to put the server folder"
+  },
+  "plus.server-pack.making": {
+    "message": "Making a server pack for {name}…"
+  },
+  "plus.server-pack.ready": {
+    "message": "Server pack ready"
+  },
+  "plus.server-pack.summary": {
+    "message": "{mods, plural, one {# mod} other {# mods}} included.{left, plural, =0 {} other { Left out because they only work in the game client: {names}.}} Read README.txt in the folder before starting it."
+  },
+  "plus.settings-import.all-match": {
+    "message": "Your settings already match the Modrinth App’s."
+  },
+  "plus.settings-import.description": {
+    "message": "Pawrinth found the Modrinth App on this computer. Choose which of its settings to use here. Nothing changes until you import, and the Modrinth App keeps its own settings."
+  },
+  "plus.settings-import.empty": {
+    "message": "None"
+  },
+  "plus.settings-import.import": {
+    "message": "Import {count, plural, one {# setting} other {# settings}}"
+  },
+  "plus.settings-import.imported": {
+    "message": "Imported {count, plural, one {# setting} other {# settings}}"
+  },
+  "plus.settings-import.key.advanced-rendering": {
+    "message": "Advanced rendering"
+  },
+  "plus.settings-import.key.collapsed-navigation": {
+    "message": "Collapsed navigation"
+  },
+  "plus.settings-import.key.default-page": {
+    "message": "Start page"
+  },
+  "plus.settings-import.key.discord-rpc": {
+    "message": "Discord status"
+  },
+  "plus.settings-import.key.downloads": {
+    "message": "Downloads at once"
+  },
+  "plus.settings-import.key.env": {
+    "message": "Default environment variables"
+  },
+  "plus.settings-import.key.fullscreen": {
+    "message": "Start the game in fullscreen"
+  },
+  "plus.settings-import.key.hide-on-start": {
+    "message": "Hide the launcher while playing"
+  },
+  "plus.settings-import.key.java-args": {
+    "message": "Default Java arguments"
+  },
+  "plus.settings-import.key.locale": {
+    "message": "Language"
+  },
+  "plus.settings-import.key.memory": {
+    "message": "Default memory"
+  },
+  "plus.settings-import.key.native-decorations": {
+    "message": "Native window frame"
+  },
+  "plus.settings-import.key.post-exit": {
+    "message": "Command after the game closes"
+  },
+  "plus.settings-import.key.pre-launch": {
+    "message": "Command before launch"
+  },
+  "plus.settings-import.key.resolution": {
+    "message": "Game window size"
+  },
+  "plus.settings-import.key.theme": {
+    "message": "Theme"
+  },
+  "plus.settings-import.key.toggle-sidebar": {
+    "message": "Hide the right sidebar"
+  },
+  "plus.settings-import.key.wrapper": {
+    "message": "Wrapper command"
+  },
+  "plus.settings-import.key.writes": {
+    "message": "Files written at once"
+  },
+  "plus.settings-import.not-found": {
+    "message": "The Modrinth App isn’t on this computer, so there’s nothing to import."
+  },
+  "plus.settings-import.not-imported": {
+    "message": "Its data folder, telemetry and ad choices aren’t imported. Pawrinth keeps its own."
+  },
+  "plus.settings-import.off": {
+    "message": "Off"
+  },
+  "plus.settings-import.on": {
+    "message": "On"
+  },
+  "plus.settings-import.title": {
+    "message": "Settings from the Modrinth App"
+  },
   "plus.settings.category": {
     "message": "Pawrinth"
   },
@@ -5692,6 +6154,9 @@
   },
   "plus.settings.tabs.interface": {
     "message": "Interface"
+  },
+  "plus.settings.tabs.mod-library": {
+    "message": "Mod library"
   },
   "plus.settings.tabs.privacy": {
     "message": "Streamer mode"
@@ -5924,11 +6389,14 @@
   "plus.technic.back": {
     "message": "Back"
   },
-  "plus.technic.description": {
-    "message": "Modpacks from the Technic Platform. Each one is made and hosted by its creator, and installs as a new instance."
+  "plus.technic.discover": {
+    "message": "Discover on Technic"
   },
   "plus.technic.failed": {
     "message": "Couldn't load Technic"
+  },
+  "plus.technic.gathered": {
+    "message": "Technic has no list of all its modpacks, so these are its trending packs followed by the ones Pawrinth found through Technic's search. Search to find any pack that isn't here."
   },
   "plus.technic.insecure.header": {
     "message": "This pack downloads insecurely"
@@ -5942,11 +6410,17 @@
   "plus.technic.install-failed": {
     "message": "Couldn't install {name}"
   },
+  "plus.technic.kept.text": {
+    "message": "{count, plural, one {# file you changed was} other {# files you changed were}} left as you had {count, plural, one {it} other {them}}: {files}"
+  },
+  "plus.technic.kept.title": {
+    "message": "Your changes stay"
+  },
   "plus.technic.minecraft": {
     "message": "Minecraft {version}"
   },
-  "plus.technic.no-results": {
-    "message": "No Technic modpacks match that."
+  "plus.technic.modpacks": {
+    "message": "Modpacks"
   },
   "plus.technic.nothing-to-download": {
     "message": "{name} has nothing to download on Technic."
@@ -6008,26 +6482,32 @@
   "plus.technic.provider": {
     "message": "Technic"
   },
-  "plus.technic.results": {
-    "message": "Search results"
-  },
   "plus.technic.retry": {
     "message": "Try again"
   },
-  "plus.technic.search": {
-    "message": "Search Technic modpacks"
+  "plus.technic.search-limit": {
+    "message": "Technic sends at most 50 results for a search, so try a more exact name if a pack is missing."
   },
-  "plus.technic.title": {
-    "message": "Technic modpacks"
+  "plus.technic.sort.name": {
+    "message": "Name"
   },
-  "plus.technic.trending": {
-    "message": "Trending on Technic"
+  "plus.technic.sort.newest": {
+    "message": "Newest"
+  },
+  "plus.technic.sort.relevance": {
+    "message": "Relevance"
+  },
+  "plus.technic.sort.trending": {
+    "message": "Trending"
   },
   "plus.technic.unverified.text": {
     "message": "{files} didn’t match the checksums the pack’s server lists, even after downloading again. They came over a secure connection, so the pack’s creator most likely changed them without updating the list."
   },
   "plus.technic.unverified.title": {
     "message": "Some files of {name} didn’t match their checksums"
+  },
+  "plus.technic.update-failed": {
+    "message": "Couldn't update {name}"
   },
   "plus.themes.applied": {
     "message": "Applied"
@@ -6124,6 +6604,18 @@
   },
   "plus.themes.file-filter": {
     "message": "Pawrinth theme"
+  },
+  "plus.themes.gallery": {
+    "message": "Theme gallery"
+  },
+  "plus.themes.gallery.coming-soon": {
+    "message": "Coming soon"
+  },
+  "plus.themes.gallery.coming-soon.heading": {
+    "message": "Themes made by other players are on their way"
+  },
+  "plus.themes.gallery.coming-soon.text": {
+    "message": "Browsing and sharing themes inside Pawrinth isn’t available yet. Until it is, share a theme as a theme file with Import and export below."
   },
   "plus.themes.import": {
     "message": "Import and export"

@@ -11,6 +11,7 @@ use theseus::plus::diagnostics::{self, CrashDiagnosis};
 use theseus::plus::discord::{
     self, DiscordCheck, DiscordPreview, DiscordStatus,
 };
+use theseus::plus::horizon::{self, HorizonStatus};
 use theseus::plus::manifest::{
     ManifestComparison, VersionedManifest, compare_manifests,
 };
@@ -26,7 +27,7 @@ use theseus::plus::skin_gallery::{
     self, GalleryKeyOutcome, GalleryKeyStatus, GalleryPage, GallerySkinDetails,
 };
 use theseus::plus::skin_lookup::{self, SkinLookup};
-use theseus::plus::technic::{self, PackDetails, PackSummary};
+use theseus::plus::technic::{self, PackDetails, PackPage};
 use theseus::plus::theme_files;
 use theseus::plus::world_backups::{
     self, InstanceBackups, RestoreReport as WorldRestoreReport, WorldBackup,
@@ -75,6 +76,7 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             plus_cf_project,
             plus_cf_description,
             plus_cf_files,
+            plus_cf_all_files,
             plus_cf_changelog,
             plus_cf_install_options,
             plus_cf_plan_install,
@@ -88,10 +90,22 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             plus_cf_export,
             plus_cf_installed_in,
             plus_cf_installed_projects,
+            plus_cf_installed_file,
             plus_technic_browse,
             plus_technic_pack,
             plus_technic_prepare,
             plus_technic_install,
+            plus_technic_installed,
+            plus_pack_updates,
+            plus_installed_identity,
+            plus_modrinth_settings_preview,
+            plus_mod_library_install,
+            plus_server_pack_create,
+            plus_copy_content_plan,
+            plus_copy_content,
+            plus_horizon_packs,
+            plus_horizon_pack_install,
+            plus_modrinth_settings_import,
             plus_memory_status,
             plus_memory_set_manual,
             plus_memory_use_automatic,
@@ -104,6 +118,10 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
             plus_world_backup_now,
             plus_world_backup_restore,
             plus_world_backup_delete,
+            plus_horizon_status,
+            plus_horizon_set_up,
+            plus_horizon_set_enabled,
+            plus_horizon_remove,
         ])
         .build()
 }
@@ -272,6 +290,15 @@ pub async fn plus_cf_files(
 }
 
 #[tauri::command]
+pub async fn plus_cf_all_files(
+    project_id: u64,
+    game_version: Option<String>,
+    loader_type: Option<u32>,
+) -> Result<Vec<ProjectFile>> {
+    Ok(curseforge::all_files(project_id, game_version, loader_type).await?)
+}
+
+#[tauri::command]
 pub async fn plus_cf_changelog(
     project_id: u64,
     file_id: u64,
@@ -383,6 +410,14 @@ pub async fn plus_cf_installed_projects(
 }
 
 #[tauri::command]
+pub async fn plus_cf_installed_file(
+    instance_id: String,
+    project_id: u64,
+) -> Result<Option<curseforge::InstalledOrigin>> {
+    Ok(curseforge::installed_origin(&instance_id, project_id).await?)
+}
+
+#[tauri::command]
 pub async fn plus_cf_export(
     instance_id: String,
     export_path: std::path::PathBuf,
@@ -410,8 +445,11 @@ pub async fn plus_cf_pack_list() -> Result<Vec<PackInfo>> {
 #[tauri::command]
 pub async fn plus_technic_browse(
     query: Option<String>,
-) -> Result<Vec<PackSummary>> {
-    Ok(technic::browse(query).await?)
+    offset: usize,
+    limit: usize,
+    sort: Option<String>,
+) -> Result<PackPage> {
+    Ok(technic::browse(query, offset, limit, sort).await?)
 }
 
 #[tauri::command]
@@ -423,15 +461,121 @@ pub async fn plus_technic_pack(slug: String) -> Result<PackDetails> {
 pub async fn plus_technic_prepare(
     slug: String,
     allow_insecure: bool,
+    instance_id: Option<String>,
 ) -> Result<technic::PreparedPack> {
-    Ok(technic::prepare(slug, allow_insecure).await?)
+    Ok(technic::prepare(slug, allow_insecure, instance_id).await?)
 }
 
 #[tauri::command]
 pub async fn plus_technic_install(
     token: String,
+    instance_id: Option<String>,
 ) -> Result<theseus::install::InstallJobSnapshot> {
-    Ok(technic::install(token).await?)
+    Ok(technic::install(token, instance_id).await?)
+}
+
+#[tauri::command]
+pub async fn plus_technic_installed() -> Result<Vec<technic::InstalledInfo>> {
+    Ok(technic::installed_packs().await?)
+}
+
+/// Horizon's resource packs or shader packs that run on an instance.
+#[tauri::command]
+pub async fn plus_horizon_packs(
+    instance_id: String,
+    kind: theseus::plus::horizon_content::PackKind,
+) -> Result<Vec<theseus::plus::horizon_content::HorizonPack>> {
+    Ok(theseus::plus::horizon_content::list(&instance_id, kind).await?)
+}
+
+/// Installs a Horizon pack, replacing an older version of it.
+#[tauri::command]
+pub async fn plus_horizon_pack_install(
+    instance_id: String,
+    kind: theseus::plus::horizon_content::PackKind,
+    id: String,
+) -> Result<String> {
+    Ok(
+        theseus::plus::horizon_content::install(&instance_id, kind, &id)
+            .await?,
+    )
+}
+
+/// What copying content to another instance would do, without doing it.
+#[tauri::command]
+pub async fn plus_copy_content_plan(
+    source_id: String,
+    target_id: String,
+    paths: Vec<String>,
+) -> Result<Vec<theseus::plus::copy_content::CopyItem>> {
+    Ok(
+        theseus::plus::copy_content::plan(&source_id, &target_id, paths)
+            .await?,
+    )
+}
+
+/// Copies content to another instance as planned.
+#[tauri::command]
+pub async fn plus_copy_content(
+    source_id: String,
+    target_id: String,
+    paths: Vec<String>,
+) -> Result<theseus::plus::copy_content::CopyReport> {
+    Ok(
+        theseus::plus::copy_content::copy(&source_id, &target_id, paths)
+            .await?,
+    )
+}
+
+/// Makes a server folder for an instance inside the chosen folder.
+#[tauri::command]
+pub async fn plus_server_pack_create(
+    instance_id: String,
+    parent: std::path::PathBuf,
+) -> Result<theseus::plus::server_pack::ServerPackReport> {
+    Ok(theseus::plus::server_pack::create(&instance_id, parent).await?)
+}
+
+/// Installs the mod library's mods that fit a new instance.
+#[tauri::command]
+pub async fn plus_mod_library_install(
+    instance_id: String,
+) -> Result<theseus::plus::mod_library::LibraryReport> {
+    Ok(theseus::plus::mod_library::install_into(&instance_id).await?)
+}
+
+/// What importing the official Modrinth App's settings would change.
+#[tauri::command]
+pub async fn plus_modrinth_settings_preview()
+-> Result<theseus::plus::modrinth_app_settings::SettingsPreview> {
+    Ok(theseus::plus::modrinth_app_settings::preview().await?)
+}
+
+/// Brings over the chosen settings from the official Modrinth App.
+#[tauri::command]
+pub async fn plus_modrinth_settings_import(keys: Vec<String>) -> Result<usize> {
+    Ok(theseus::plus::modrinth_app_settings::apply(keys).await?)
+}
+
+/// What an instance has installed, by CurseForge project and by name, so either
+/// site's pages can tell a mod is already there.
+#[tauri::command]
+pub async fn plus_installed_identity(
+    instance_id: String,
+) -> Result<theseus::plus::installed_identity::InstalledIdentity> {
+    let state = theseus::State::get().await?;
+    Ok(
+        theseus::plus::installed_identity::of_instance(&instance_id, &state)
+            .await?,
+    )
+}
+
+/// Instances whose modpack has a newer version on Modrinth, CurseForge or Technic.
+#[tauri::command]
+pub async fn plus_pack_updates(
+    force: bool,
+) -> Result<Vec<theseus::plus::pack_updates::PackUpdate>> {
+    Ok(theseus::plus::pack_updates::check(force).await?)
 }
 
 /// FTB App instances in a folder, with their own names, since their folders are
@@ -626,4 +770,28 @@ pub async fn plus_skin_file_save(
 pub async fn plus_detect_minecraft_folder()
 -> Result<Option<theseus::plus::setup::MinecraftFolder>> {
     Ok(theseus::plus::setup::detect_minecraft_folder().await)
+}
+
+#[tauri::command]
+pub async fn plus_horizon_status(instance_id: String) -> Result<HorizonStatus> {
+    Ok(horizon::status(&instance_id).await?)
+}
+
+/// Downloads or updates Horizon and prepares it from Minecraft 26.3.
+#[tauri::command]
+pub async fn plus_horizon_set_up(instance_id: String) -> Result<HorizonStatus> {
+    Ok(horizon::set_up(&instance_id).await?)
+}
+
+#[tauri::command]
+pub async fn plus_horizon_set_enabled(
+    instance_id: String,
+    enabled: bool,
+) -> Result<()> {
+    Ok(horizon::set_enabled(&instance_id, enabled).await?)
+}
+
+#[tauri::command]
+pub async fn plus_horizon_remove() -> Result<()> {
+    Ok(horizon::remove().await?)
 }

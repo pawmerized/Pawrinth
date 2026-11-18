@@ -74,6 +74,17 @@ const messages = defineMessages({
 		id: 'plus.diagnostics.corrupt-config.fix',
 		defaultMessage: 'Check the config file named in the log line below.',
 	},
+	java_argument: {
+		id: 'plus.diagnostics.java-argument',
+		defaultMessage:
+			'Java refused to start with its arguments{subject, select, none {} other { ({subject})}}.',
+	},
+	java_argument_fix: {
+		id: 'plus.diagnostics.java-argument.fix',
+		defaultMessage:
+			'Open this instance’s Java settings. Custom Java arguments marks the problem in red and offers a fix.',
+	},
+	openJava: { id: 'plus.diagnostics.open-java', defaultMessage: 'Open Java settings' },
 	related: {
 		id: 'plus.diagnostics.related',
 		defaultMessage: 'Installed files that match: {files}',
@@ -90,7 +101,11 @@ const fixes: Record<FindingKind, (typeof messages)[keyof typeof messages]> = {
 	mod_conflict: messages.mod_conflict_fix,
 	mixin_failure: messages.mixin_failure_fix,
 	corrupt_config: messages.corrupt_config_fix,
+	java_argument: messages.java_argument_fix,
 }
+
+/** Findings that are fixed in an instance's Java and memory settings. */
+const JAVA_SETTINGS_KINDS = new Set<FindingKind>(['java_version', 'out_of_memory', 'java_argument'])
 
 /** Fits local findings into the crash panel the logs page already has. */
 export function useCrashFindings() {
@@ -132,5 +147,12 @@ export function useCrashFindings() {
 		}
 	}
 
-	return { findingsToAnalysis }
+	/** A button to the Java settings, when that's where a finding is fixed. */
+	function findingActions(findings: Finding[], openJavaSettings: () => void) {
+		return findings.some((finding) => JAVA_SETTINGS_KINDS.has(finding.kind))
+			? [{ label: formatMessage(messages.openJava), onClick: openJavaSettings }]
+			: []
+	}
+
+	return { findingsToAnalysis, findingActions }
 }
