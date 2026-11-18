@@ -2,6 +2,13 @@
 	"all_news_url": "https://github.com/pawmerized/Pawrinth/releases",
 	"articles": [
 		{
+			"title": "Pawrinth 0.2.0",
+			"summary": "Horizon with its own resource packs and shaders, Technic modpacks, a mod library for new instances, copying between instances, server packs, world backups and more.",
+			"date": "2026-11-18",
+			"link": "https://github.com/pawmerized/Pawrinth/releases/tag/v0.2.0",
+			"category": "release"
+		},
+		{
 			"title": "Welcome to Pawrinth",
 			"summary": "CurseForge modpacks and exports, themes, update history with rollback, Discord status and automatic updates, in one launcher.",
 			"date": "2026-11-04",

@@ -89,7 +89,6 @@ export interface LibraryMod {
 
 export type LibrarySkipReason =
 	| 'already_installed'
-	| 'no_mod_loader'
 	| 'no_matching_version'
 	| 'curseforge_unavailable'
 	| 'failed'

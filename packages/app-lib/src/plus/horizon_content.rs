@@ -212,10 +212,13 @@ fn chosen_version<'a>(
     })
 }
 
-/// Files in the folder that belong to a project, matched the way Horizon's registry names
-/// them: `<id>-<version>.<extension>`.
-fn installed_files(folder: &Path, id: &str, kind: PackKind) -> Vec<String> {
-    let prefix = format!("{id}-");
+/// Files in the folder that belong to a project: only those named exactly like one of its
+/// versions in the registry, so a file someone named after the pack is never taken for it.
+fn installed_files(
+    folder: &Path,
+    project: &IndexProject,
+    kind: PackKind,
+) -> Vec<String> {
     std::fs::read_dir(folder)
         .into_iter()
         .flatten()
@@ -223,7 +226,10 @@ fn installed_files(folder: &Path, id: &str, kind: PackKind) -> Vec<String> {
         .filter_map(|entry| entry.file_name().into_string().ok())
         .filter(|name| {
             let enabled = name.trim_end_matches(".disabled");
-            enabled.starts_with(&prefix) && kind.accepts(enabled)
+            kind.accepts(enabled)
+                && project.versions.iter().any(|version| {
+                    version.file.name.eq_ignore_ascii_case(enabled)
+                })
         })
         .collect()
 }
@@ -257,9 +263,8 @@ pub async fn list(
         })
         .filter_map(|project| {
             let version = chosen_version(&index, project, kind, &game_version)?;
-            let installed = installed_files(&folder, &project.id, kind)
-                .into_iter()
-                .next();
+            let installed =
+                installed_files(&folder, project, kind).into_iter().next();
             let update_available = installed.as_deref().is_some_and(|name| {
                 name.trim_end_matches(".disabled") != version.file.name
             });
@@ -346,7 +351,7 @@ pub async fn install(
     }
 
     let folder = instance_dir.join(kind.folder());
-    let older = installed_files(&folder, id, kind);
+    let older = installed_files(&folder, project, kind);
     let staging = tempfile::tempdir()?;
     let downloaded = staging.path().join(&version.file.name);
     tokio::fs::write(&downloaded, &bytes).await?;
@@ -457,13 +462,22 @@ mod tests {
         for name in [
             "aurora-1.hshader",
             "aurora-2.hshader.disabled",
+            "aurora-my-edit.hshader",
             "auroras-1.hshader",
             "aurora-1.txt",
         ] {
             std::fs::write(folder.path().join(name), b"x").unwrap();
         }
+        let aurora = project(
+            "aurora",
+            &[
+                ("26.3", "aurora-2.hshader", "b"),
+                ("26.3", "aurora-1.hshader", "a"),
+                ("26.3", "aurora-1.txt", "c"),
+            ],
+        );
         let mut found =
-            installed_files(folder.path(), "aurora", PackKind::Shader);
+            installed_files(folder.path(), &aurora, PackKind::Shader);
         found.sort();
         assert_eq!(found, ["aurora-1.hshader", "aurora-2.hshader.disabled"]);
         assert_eq!(sha256_hex(b"abc").len(), 64);

@@ -5774,9 +5774,6 @@
   "plus.mod-library.skip.no-matching-version": {
     "message": "{name}: no version for this Minecraft version and loader"
   },
-  "plus.mod-library.skip.no-mod-loader": {
-    "message": "{name}: this instance has no mod loader"
-  },
   "plus.mod-library.skipped.title": {
     "message": "Some mods from your mod library weren’t added"
   },

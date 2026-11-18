@@ -50,7 +50,6 @@ impl Default for ModLibrarySettings {
 #[serde(rename_all = "snake_case")]
 pub enum SkipReason {
     AlreadyInstalled,
-    NoModLoader,
     NoMatchingVersion,
     CurseforgeUnavailable,
     Failed,
@@ -157,10 +156,8 @@ pub async fn install_into(instance_id: &str) -> crate::Result<LibraryReport> {
     let Some(metadata) = crate::api::instance::get(instance_id).await? else {
         return Ok(report);
     };
+    // Vanilla and Horizon instances can't load mods, which is expected, so it isn't reported.
     if metadata.applied_content_set.loader == ModLoader::Vanilla {
-        for item in wanted {
-            report.skip(&item.name, SkipReason::NoModLoader, None);
-        }
         return Ok(report);
     }
 

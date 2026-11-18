@@ -91,7 +91,7 @@ import { CREATION_FIXED_VERSION_LOADERS, CREATION_LOADERS } from '@/features/plu
 import { useModLibraryAutoInstall } from '@/features/plus-mod-library/auto-install'
 import { rememberPrivateNames, usePrivacy } from '@/features/plus-privacy/use-privacy'
 import { restoreLastPage } from '@/features/plus-settings/last-page'
-import { initPlusSettings } from '@/features/plus-settings/use-plus-settings'
+import { initPlusSettings, reloadPlusSettings } from '@/features/plus-settings/use-plus-settings'
 import PlusBackgroundLayer from '@/features/plus-themes/background-layer.vue'
 import SetupWizard from '@/features/plus-wizard/setup-wizard.vue'
 import AppSettingsModal from '@/features/settings/app-settings-modal/index.vue'
@@ -235,6 +235,16 @@ const notificationManager = new AppNotificationManager()
 provideNotificationManager(notificationManager)
 const { handleError, addNotification } = notificationManager
 useModLibraryAutoInstall(appEvents, (notification) => addNotification(notification))
+// A duplicate of a Horizon instance gets its Horizon setting from the backend.
+useAppEvent(
+	'install_job',
+	(job) => {
+		if (job.kind === 'duplicate_instance' && job.status === 'succeeded') {
+			reloadPlusSettings().catch(() => {})
+		}
+	},
+	appEvents,
+)
 
 useAppEvent(
 	'warning',

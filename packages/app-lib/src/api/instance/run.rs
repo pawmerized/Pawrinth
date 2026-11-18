@@ -91,17 +91,6 @@ async fn run_credentials(
         ));
     }
 
-    if let Some(process) = crate::plus::horizon::launch_if_enabled(
-        &context,
-        credentials,
-        &quick_play_type,
-        &state,
-    )
-    .await?
-    {
-        return Ok(process);
-    }
-
     let pre_launch_hook = context
         .launch_overrides
         .hooks
@@ -289,6 +278,21 @@ async fn run_credentials(
     }
 
     crate::minecraft_skins::flush_pending_skin_change().await?;
+    if let Some(process) = crate::plus::horizon::launch_if_enabled(
+        &context,
+        credentials,
+        &quick_play_type,
+        crate::plus::horizon::Hooks {
+            env_vars: &launch_env_args,
+            wrapper: wrapper.as_deref(),
+            post_exit: post_exit_hook.clone(),
+        },
+        &state,
+    )
+    .await?
+    {
+        return Ok(process);
+    }
     crate::launcher::launch_minecraft(
         &java_args,
         &launch_env_args,

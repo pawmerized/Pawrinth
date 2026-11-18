@@ -1282,6 +1282,12 @@ async fn run_request_inner(
                 InstallPhaseDetails::Empty,
             )
             .await?;
+            crate::plus::horizon::copy_choice(
+                &source_instance_id,
+                &instance_id,
+                &state.pool,
+            )
+            .await?;
             let context =
                 crate::state::instances::commands::get_instance_launch_context(
                     &instance_id,

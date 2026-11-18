@@ -243,6 +243,14 @@ pub async fn set_enabled(
     enabled: bool,
 ) -> crate::Result<()> {
     let state = State::get().await?;
+    write_enabled(instance_id, enabled, &state.pool).await
+}
+
+async fn write_enabled(
+    instance_id: &str,
+    enabled: bool,
+    pool: &sqlx::SqlitePool,
+) -> crate::Result<()> {
     let value = if enabled {
         serde_json::Value::Bool(true)
     } else {
@@ -250,9 +258,25 @@ pub async fn set_enabled(
     };
     PlusSettings::merge_patch(
         &serde_json::json!({ "horizon": { "instances": { instance_id: value } } }),
-        &state.pool,
+        pool,
     )
     .await?;
+    Ok(())
+}
+
+/// A duplicate of an instance that plays with Horizon plays with Horizon too.
+pub(crate) async fn copy_choice(
+    from_instance_id: &str,
+    to_instance_id: &str,
+    pool: &sqlx::SqlitePool,
+) -> crate::Result<()> {
+    if PlusSettings::read(pool)
+        .await?
+        .horizon
+        .is_enabled(from_instance_id)
+    {
+        write_enabled(to_instance_id, true, pool).await?;
+    }
     Ok(())
 }
 
@@ -937,12 +961,38 @@ fn session_json(credentials: &Credentials) -> serde_json::Value {
     })
 }
 
+/// The instance's launch hooks and environment variables, already expanded, which apply
+/// to Horizon the same way they apply to Minecraft.
+pub(crate) struct Hooks<'a> {
+    pub env_vars: &'a [(String, String)],
+    pub wrapper: Option<&'a str>,
+    pub post_exit: Option<String>,
+}
+
+/// Horizon's client, run through the instance's wrapper command when it has one.
+fn client_command(
+    client: &Path,
+    wrapper: Option<&str>,
+) -> crate::Result<Command> {
+    let Some(wrapper) = wrapper else {
+        return Ok(hidden(client));
+    };
+    let invalid = || {
+        ErrorKind::LauncherError(format!("invalid wrapper command {wrapper}"))
+    };
+    let mut parts = shlex::split(wrapper).ok_or_else(invalid)?.into_iter();
+    let mut command = hidden(Path::new(&parts.next().ok_or_else(invalid)?));
+    command.args(parts).arg(client);
+    Ok(command)
+}
+
 /// Starts the instance with Horizon when it's turned on for it, and returns `None` when
 /// it isn't, so the normal launch goes ahead.
 pub(crate) async fn launch_if_enabled(
     context: &InstanceLaunchContext,
     credentials: &Credentials,
     quick_play: &QuickPlayType,
+    hooks: Hooks<'_>,
     state: &Arc<State>,
 ) -> crate::Result<Option<ProcessMetadata>> {
     let settings = PlusSettings::read(&state.pool).await?;
@@ -997,7 +1047,8 @@ pub(crate) async fn launch_if_enabled(
     )
     .await?;
 
-    let mut command = hidden(&folders.program("horizon-client"));
+    let mut command =
+        client_command(&folders.program("horizon-client"), hooks.wrapper)?;
     command
         .args(launch_args(
             &folders.resources,
@@ -1006,6 +1057,7 @@ pub(crate) async fn launch_if_enabled(
             &window,
             quick_play,
         ))
+        .envs(hooks.env_vars.iter().cloned())
         .current_dir(&game_dir);
 
     crate::state::instances::commands::set_instance_last_played(
@@ -1031,8 +1083,8 @@ pub(crate) async fn launch_if_enabled(
             &instance.path,
             &instance.name,
             command,
-            None,
-            Vec::new(),
+            hooks.post_exit,
+            hooks.env_vars.to_vec(),
             state.directories.instance_logs_dir(&instance.path),
             false,
             session,
@@ -1246,6 +1298,41 @@ mod tests {
             writer.write_all(data).unwrap();
         }
         writer.finish().unwrap().into_inner()
+    }
+
+    #[test]
+    fn the_wrapper_command_runs_horizon() {
+        let client = Path::new("game/horizon-client.exe");
+        let wrapped =
+            client_command(client, Some("gamemoderun --flag")).unwrap();
+        let wrapped = wrapped.as_std();
+        assert_eq!(wrapped.get_program(), "gamemoderun");
+        assert_eq!(
+            wrapped.get_args().collect::<Vec<_>>(),
+            ["--flag", "game/horizon-client.exe"]
+        );
+        assert_eq!(
+            client_command(client, None).unwrap().as_std().get_program(),
+            client.as_os_str()
+        );
+        assert!(client_command(client, Some("\"unclosed")).is_err());
+    }
+
+    #[tokio::test]
+    async fn a_duplicate_of_a_horizon_instance_plays_with_horizon() {
+        let db = crate::plus::testing::TestDb::new().await;
+        write_enabled("local:horizon", true, &db.pool)
+            .await
+            .unwrap();
+        copy_choice("local:horizon", "local:copy", &db.pool)
+            .await
+            .unwrap();
+        copy_choice("local:vanilla", "local:vanilla-copy", &db.pool)
+            .await
+            .unwrap();
+        let horizon = PlusSettings::read(&db.pool).await.unwrap().horizon;
+        assert!(horizon.is_enabled("local:copy"));
+        assert!(!horizon.is_enabled("local:vanilla-copy"));
     }
 
     #[test]

@@ -20,10 +20,6 @@ const messages = defineMessages({
 		id: 'plus.mod-library.skip.already-installed',
 		defaultMessage: '{name}: already in this instance',
 	},
-	no_mod_loader: {
-		id: 'plus.mod-library.skip.no-mod-loader',
-		defaultMessage: '{name}: this instance has no mod loader',
-	},
 	no_matching_version: {
 		id: 'plus.mod-library.skip.no-matching-version',
 		defaultMessage: '{name}: no version for this Minecraft version and loader',
